@@ -1,0 +1,1 @@
+double savgol_weight(int i, int center, int window, int polyorder, int derivative);
