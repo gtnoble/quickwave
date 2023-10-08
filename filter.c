@@ -1,13 +1,20 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 #include <sqlite3ext.h>
 SQLITE_EXTENSION_INIT3
 #include "savgol.h"
 #include "filter.h"
 
+#define PI 3.14159265358979323846
+
+double sign(double x);
 
 double filter_evaluate(double input, DigitalFilter *filter) {
+    assert(filter != NULL);
+
     double accumulate = 0;
+    assert(filter->previous_inputs != NULL);
     circbuf_shift(input, filter->previous_inputs);
     for (size_t i = 0; i < filter->n_feedforward; i++) {
         accumulate +=  *circbuf_element(-i, filter->previous_inputs) *
@@ -15,18 +22,21 @@ double filter_evaluate(double input, DigitalFilter *filter) {
     }
 
     if (filter->n_feedback > 0) {
+        assert(filter->previous_outputs != NULL);
         for (size_t i = 0; i < filter->n_feedback; i++) {
             accumulate += *circbuf_element(-i, filter->previous_outputs) *
                 filter->feedback[i];
         }
         circbuf_shift(accumulate, filter->previous_outputs);
     }
+    filter->current_output = accumulate;
 
     return accumulate;
 }
 
 double filter_current_value(DigitalFilter *filter) {
-    return filter->previous_outputs->buffer[0];
+    assert(filter != NULL);
+    return filter->current_output;
 }
 
 
@@ -76,18 +86,49 @@ void filter_free(DigitalFilter *filter) {
     sqlite3_free(filter);
 }
 
-DigitalFilter *filter_make_savgol(size_t filter_length, int deriv, int polyorder) {
+int filter_make_savgol(
+    DigitalFilter **filter, 
+    size_t filter_length, 
+    int derivative, 
+    int polynomial_order
+) {
     // Window length must be odd
-    if ((filter_length & 0x1) != 0) {
-        return NULL;
+    if ((filter_length & 0x1) != 1 ||
+        filter_length == 0) {
+        return IMPROPER_PARAMS;
     }
-    size_t center = filter_length / 2 + 1;
-    DigitalFilter *filter = filter_make(filter_length, 0);
+    //size_t center = filter_length / 2 + 1;
+    int center = 0;
+    *filter = filter_make(filter_length, 0);
     if (filter == NULL) {
-        return NULL;
+        return ALLOCATION_FAILURE;
     }
+
+    assert((*filter)->feedforward != NULL);
     for (size_t i = 0; i < filter_length; i++) {
-        filter->feedforward[i] = savgol_weight(i, center, filter_length, polyorder, deriv);
+        (*filter)->feedforward[i] = savgol_weight(i, center, filter_length, polynomial_order, derivative);
     }
-    return filter;
+    return FILTER_OK;
+}
+
+double update_pll(double signal, PhaseLockedLoop *pll) {
+    double frequency_velocity = sin(pll->phase_accumulator) * sign(signal);
+    return update_vco(
+        filter_evaluate(frequency_velocity, pll->loop_filter), 
+        &pll->phase_accumulator
+    );
+}
+
+double update_vco(double angular_freq, double *phase_accumulator) {
+    *phase_accumulator = fmod((*phase_accumulator + angular_freq), 2 * PI);
+    return sin(*phase_accumulator);
+}
+
+double sign(double x) {
+    if (x > 0) 
+        return 1.0;
+    else if (x < 0)
+        return -1.0;
+    else
+        return 0.0;
 }

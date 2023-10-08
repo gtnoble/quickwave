@@ -1,3 +1,4 @@
+#include <assert.h>
 
 static double gp(int i, int m, int k, int s) {
 
@@ -30,10 +31,18 @@ static double genfact(int a, int b) {
 // lease-square point of the sth derivative, over 2m+1 points
 // order n
 double savgol_weight(int i, int center, int window, int polyorder, int derivative) {
+    assert(i >= 0);
+    assert(window > 0);
+    // Window length must be odd
+    assert((window & 0x1) == 1);
+    assert(polyorder > 0);
+    assert(derivative >= 0);
+
+    int n = window / 2;
     int k;
     double w = 0;
     for (k=0; k<=polyorder; k++) {
-	w += (2*k+1)*(genfact(2*window,k)/genfact(2*window+k+1,k+1))*gp(i,window,k,0)*gp(center,window,k,derivative);
+	w += (2*k+1)*(genfact(2*n,k)/genfact(2*n+k+1,k+1))*gp(i-n,n,k,0)*gp(center,n,k,derivative);
     }
     return w;
 }

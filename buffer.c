@@ -1,9 +1,12 @@
 #include <stdlib.h>
 #include <sqlite3ext.h>
+#include <assert.h>
 SQLITE_EXTENSION_INIT3
 #include "buffer.h"
 
 double circbuf_shift(double element, CircularBuffer *buf) {
+    assert(buf != NULL);
+    assert(buf->buffer != NULL);
     buf->index = modular_add(buf->index, 1, buf->n_elements);
     double last_element = buf->buffer[buf->index];
     buf->buffer[buf->index] = element;

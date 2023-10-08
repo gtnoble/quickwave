@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <assert.h>
 #include <sqlite3ext.h>
 SQLITE_EXTENSION_INIT3
 
@@ -23,22 +24,41 @@ static void sqldsp_savgol_step(
     int nArg, 
     sqlite3_value *apArg[]
 ){
-    DigitalFilter *filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
-    if (filter == NULL) {
-        filter = filter_make_savgol(
+    DigitalFilter **filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
+    if (*filter == NULL) {
+        int status = filter_make_savgol(
+            filter,
             sqlite3_value_int(apArg[1]), 
             sqlite3_value_int(apArg[2]), 
             sqlite3_value_int(apArg[3]));
+        switch (status) {
+            case ALLOCATION_FAILURE:
+                sqlite3_result_error(ctx, "Error: Could not allocate savgol filter", -1);
+                return;
+            case IMPROPER_PARAMS:
+                sqlite3_result_error(ctx, "Error: improper savgol parameters passed", -1);
+                return;
+            case FILTER_OK:
+                return;
+            default:
+                sqlite3_result_error(ctx, "Error: an unknown error occured", -1);
+        }
     }
+    assert(*filter != NULL);
 
-    filter_evaluate(sqlite3_value_double(apArg[0]), filter);
-    filter->window_size++;
+    filter_evaluate(sqlite3_value_double(apArg[0]), *filter);
+    (*filter)->window_size++;
 }
 
 static void sqldsp_savgol_final(sqlite3_context *ctx) {
-    DigitalFilter *filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
-    sqlite3_result_double(ctx, filter_current_value(filter));
-    filter_free(filter);
+    DigitalFilter **filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
+    if (*filter == NULL) {
+        sqlite3_result_error(ctx, "Error: savgol filter not allocated", -1);
+        return;
+    }
+    sqlite3_result_double(ctx, filter_current_value(*filter));
+    filter_free(*filter);
+    *filter = NULL;
 }
 
 static void sqldsp_savgol_inverse(
@@ -46,22 +66,29 @@ static void sqldsp_savgol_inverse(
     int nArg,
     sqlite3_value *apArg[]
 ) {
-    DigitalFilter *filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
-    if (filter->window_size > filter->n_feedforward) {
-        filter->window_size--;
+    DigitalFilter **filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
+    if (*filter == NULL) {
+        sqlite3_result_error(ctx, "Error: savgol filter not allocated", -1);
+        return;
     }
-    else {
+    if ((*filter)->window_size <= (*filter)->n_feedforward) {
         sqlite3_result_error(
             ctx, 
-            "Error: the window size must never be less than the filter length", 
-            SQLITE_MISUSE
+            "Error: the window size must never be less than the savgol filter length", 
+            -1
         );
+        return;
     }
+    (*filter)->window_size--;
 }
 
 static void sqldsp_savgol_value(sqlite3_context *ctx) {
-    DigitalFilter *filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
-    sqlite3_result_double(ctx, filter_current_value(filter));
+    DigitalFilter **filter = sqlite3_aggregate_context(ctx, sizeof(DigitalFilter *));
+    if (*filter == NULL) {
+        sqlite3_result_error(ctx, "Error: savgol filter not allocated", -1);
+        return;
+    }
+    sqlite3_result_double(ctx, filter_current_value(*filter));
 }
 
 int register_savgol(sqlite3 *db) {
