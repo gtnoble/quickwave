@@ -9,6 +9,7 @@ SQLITE_EXTENSION_INIT3
 #define PI 3.14159265358979323846
 
 double sign(double x);
+double update_vco(double angular_freq, double *phase_accumulator);
 
 double filter_evaluate(double input, DigitalFilter *filter) {
     assert(filter != NULL);
@@ -111,8 +112,53 @@ int filter_make_savgol(
     return FILTER_OK;
 }
 
-double update_pll(double signal, PhaseLockedLoop *pll) {
-    double frequency_velocity = sin(pll->phase_accumulator) * sign(signal);
+int filter_make_first_order_iir(
+    DigitalFilter **filter,
+    double cutoff_frequency
+) {
+    if (cutoff_frequency > 0.5 || cutoff_frequency < 0) {
+        return IMPROPER_PARAMS;
+    }
+    double angular_frequency = cutoff_frequency * 2 * PI;
+    double alpha = 
+        cos(angular_frequency) -
+        1 +
+        sqrt(
+            pow(cos(angular_frequency), 2) - 4 * cos(angular_frequency) + 3
+        );
+    *filter = filter_make(1, 1);
+    if (filter == NULL) {
+        return ALLOCATION_FAILURE;
+    }
+    (*filter)->feedforward[0] = alpha;
+    (*filter)->feedback[0] = 1 - alpha;
+    return FILTER_OK;
+}
+
+int pll_make(PhaseLockedLoop **pll, double loop_filter_cutoff) {
+    DigitalFilter *loop_filter;
+    int status = filter_make_first_order_iir(&loop_filter, loop_filter_cutoff);
+    if (status != FILTER_OK) {
+        return status;
+    }
+
+    *pll = sqlite3_malloc(sizeof(PhaseLockedLoop));
+    if (*pll == NULL) {
+        filter_free(loop_filter);
+        return ALLOCATION_FAILURE;
+    }
+    (*pll)->loop_filter = loop_filter;
+    (*pll)->phase_accumulator = 0;
+    return FILTER_OK;
+}
+
+void pll_free(PhaseLockedLoop *pll) {
+    filter_free(pll->loop_filter);
+    sqlite3_free(pll);
+}
+
+double pll_update(double input, PhaseLockedLoop *pll) {
+    double frequency_velocity = sin(pll->phase_accumulator) * sign(input);
     return update_vco(
         filter_evaluate(frequency_velocity, pll->loop_filter), 
         &pll->phase_accumulator

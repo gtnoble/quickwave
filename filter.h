@@ -2,6 +2,7 @@
 
 enum filter_errors {
     FILTER_OK,
+    FILTER_ERROR,
     ALLOCATION_FAILURE,
     IMPROPER_PARAMS
 };
@@ -28,4 +29,7 @@ DigitalFilter *filter_make(size_t n_feedforward, size_t n_feedback);
 void filter_free(DigitalFilter *filter);
 double filter_current_value(DigitalFilter *filter);
 int filter_make_savgol(DigitalFilter **filter, size_t window_length, int deriv, int polyorder);
-double update_vco(double angular_freq, double *phase_accumulator);
+int filter_make_first_order_iir(DigitalFilter **filter, double cutoff_frequency);
+int pll_make(PhaseLockedLoop **pll, double loop_filter_cutoff);
+double pll_update(double input, PhaseLockedLoop *pll);
+void pll_free(PhaseLockedLoop *pll);
