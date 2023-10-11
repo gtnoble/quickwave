@@ -39,9 +39,10 @@ static void sqldsp_savgol_step(
                 sqlite3_result_error(ctx, "Error: improper savgol parameters passed", -1);
                 return;
             case FILTER_OK:
-                return;
+                break;
             default:
                 sqlite3_result_error(ctx, "Error: an unknown error occured", -1);
+                return;
         }
     }
     assert(*filter != NULL);
