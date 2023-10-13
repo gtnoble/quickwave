@@ -30,6 +30,9 @@ void filter_free(DigitalFilter *filter);
 double filter_current_value(DigitalFilter *filter);
 int filter_make_savgol(DigitalFilter **filter, size_t window_length, int deriv, int polyorder);
 int filter_make_first_order_iir(DigitalFilter **filter, double cutoff_frequency);
-int pll_make(PhaseLockedLoop **pll, double loop_filter_cutoff);
+int pll_make(PhaseLockedLoop **pll, double loop_filter_cutoff, double initial_freq);
 double pll_update(double input, PhaseLockedLoop *pll);
 void pll_free(PhaseLockedLoop *pll);
+
+double sign(double x);
+double update_vco(double angular_freq, double *phase_accumulator);

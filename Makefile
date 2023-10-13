@@ -9,13 +9,13 @@ libsqldsp.so: lib/main.o lib/filter.o lib/functions.o lib/buffer.o lib/savgol.o
 tests/test_%: tests/%.o tests/%.test.o tests
 	${CC} ${TESTFLAGS} -c $^ -lsqlite3 -o $@
 
-tests/test_filter: tests/filter.test.o tests/filter.o tests/savgol.o tests
-	${CC} ${TESTFLAGS} tests/filter.test.o tests/filter.o tests/buffer.o tests/savgol.c -lsqlite3 -o tests/test_filter
+tests/test_filter: tests/filter.test.o tests/filter.o tests/savgol.o tests/buffer.o ext/munit/munit.o tests
+	${CC} ${TESTFLAGS} tests/filter.test.o tests/filter.o tests/buffer.o tests/savgol.o ext/munit/munit.o -lsqlite3 -lm -o tests/test_filter
 
 tests/%.o: %.c
 	${CC} ${TESTFLAGS} -c $< -o $@
 
-tests/%.test.o: tests/%.test.c
+tests/%.test.o: tests/%.test.c ext/munit/munit.h
 	${CC} ${TESTFLAGS} -c $< -o $@
 
 tests/%.test.c: %.h
@@ -25,10 +25,13 @@ lib/%.o: %.c
 
 %.c: %.h
 
+ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
+	${CC} -c $< -o $@
+
 tests:
 	mkdir -p tests
 
-test: tests tests/test_filter tests/test_%
+test: tests tests/test_filter
 
 clean:
 	rm -rf tests/*.o

@@ -8,8 +8,7 @@ SQLITE_EXTENSION_INIT3
 
 #define PI 3.14159265358979323846
 
-double sign(double x);
-double update_vco(double angular_freq, double *phase_accumulator);
+double fmod_euclidean(double x, double y);
 
 double filter_evaluate(double input, DigitalFilter *filter) {
     assert(filter != NULL);
@@ -95,7 +94,9 @@ int filter_make_savgol(
 ) {
     // Window length must be odd
     if ((filter_length & 0x1) != 1 ||
-        filter_length == 0) {
+        filter_length == 0 ||
+        derivative < 0 ||
+        derivative > polynomial_order) {
         return IMPROPER_PARAMS;
     }
     //size_t center = filter_length / 2 + 1;
@@ -135,12 +136,13 @@ int filter_make_first_order_iir(
     return FILTER_OK;
 }
 
-int pll_make(PhaseLockedLoop **pll, double loop_filter_cutoff) {
+int pll_make(PhaseLockedLoop **pll, double loop_filter_cutoff, double initial_freq) {
     DigitalFilter *loop_filter;
     int status = filter_make_first_order_iir(&loop_filter, loop_filter_cutoff);
     if (status != FILTER_OK) {
         return status;
     }
+    loop_filter->previous_outputs->buffer[0] = initial_freq;
 
     *pll = sqlite3_malloc(sizeof(PhaseLockedLoop));
     if (*pll == NULL) {
@@ -158,15 +160,15 @@ void pll_free(PhaseLockedLoop *pll) {
 }
 
 double pll_update(double input, PhaseLockedLoop *pll) {
-    double frequency_velocity = sin(pll->phase_accumulator) * sign(input);
+    double frequency_velocity = sin(pll->phase_accumulator) * input * 10;
     return update_vco(
         filter_evaluate(frequency_velocity, pll->loop_filter), 
-        &pll->phase_accumulator
+        &(pll->phase_accumulator)
     );
 }
 
 double update_vco(double angular_freq, double *phase_accumulator) {
-    *phase_accumulator = fmod((*phase_accumulator + angular_freq), 2 * PI);
+    *phase_accumulator = fmod_euclidean((*phase_accumulator + angular_freq), 2 * PI);
     return sin(*phase_accumulator);
 }
 
@@ -177,4 +179,13 @@ double sign(double x) {
         return -1.0;
     else
         return 0.0;
+}
+
+double fmod_euclidean(double x, double y) {
+    double m = fmod(x, y);
+    if (m < 0)
+    {
+        m = (y < 0) ? m - y : m + y;
+    }
+    return m;
 }

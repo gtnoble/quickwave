@@ -35,7 +35,7 @@ double savgol_weight(int i, int center, int window, int polyorder, int derivativ
     assert(window > 0);
     // Window length must be odd
     assert((window & 0x1) == 1);
-    assert(polyorder > 0);
+    assert(polyorder >= 0);
     assert(derivative >= 0);
 
     int n = window / 2;

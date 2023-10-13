@@ -1,8 +1,8 @@
 sqlite_cmds='
 .load ./libsqldsp
-select savgol(price, 3, '^$1^', 1) over (rows unbounded preceding) from tradebot_historical where sym="spy";
+select savgol(price, '^$1^', '^$2^', '^$3^') over (rows unbounded preceding) from tradebot_historical where sym="spy";
 '
 
 
-echo $sqlite_cmds | sqlite3 tests/tradebot_public_2023_09_19.sqlite | tee filtered.log | gnuplot -p -e 'plot ''<cat'''
+echo $sqlite_cmds | sqlite3 tests/tradebot_public_2023_09_19.sqlite | tee filtered.log | gnuplot -p -e 'plot ''< cat -'' with lines'
 
