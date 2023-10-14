@@ -10,7 +10,10 @@ tests/test_%: tests/%.o tests/%.test.o tests
 	${CC} ${TESTFLAGS} -c $^ -lsqlite3 -o $@
 
 tests/test_filter: tests/filter.test.o tests/filter.o tests/savgol.o tests/buffer.o ext/munit/munit.o tests
-	${CC} ${TESTFLAGS} tests/filter.test.o tests/filter.o tests/buffer.o tests/savgol.o ext/munit/munit.o -lsqlite3 -lm -o tests/test_filter
+	${CC} ${TESTFLAGS} tests/filter.test.o tests/filter.o tests/buffer.o tests/savgol.o ext/munit/munit.o -lsqlite3 -lm -o $@
+
+tests/test_pll: tests/pll.test.o tests/pll.o tests/buffer.o ext/munit/munit.o tests
+	${CC} ${TESTFLAGS} tests/pll.test.o tests/pll.o tests/filter.o tests/buffer.o tests/savgol.o ext/munit/munit.o -lsqlite3 -lm -o $@
 
 tests/%.o: %.c
 	${CC} ${TESTFLAGS} -c $< -o $@
@@ -31,7 +34,7 @@ ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 tests:
 	mkdir -p tests
 
-test: tests tests/test_filter
+test: tests tests/test_filter tests/test_pll
 
 clean:
 	rm -rf tests/*.o
