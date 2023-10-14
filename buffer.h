@@ -8,6 +8,7 @@ typedef struct {
 
 double circbuf_shift(double element, CircularBuffer *buf);
 double *circbuf_element(int index, CircularBuffer *buf);
+double circbuf_interpolated_element(double index, CircularBuffer *buf);
 CircularBuffer *circbuf_new(size_t size);
 void circbuf_free(CircularBuffer *buf);
 

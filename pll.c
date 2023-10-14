@@ -75,12 +75,12 @@ double update_vco(double angular_freq, double *phase_accumulator, bool allow_neg
 
 double complex quadrature_demod(double frequency, double phase, CircularBuffer *lagged_input) {
     int quadrature_element_index = 0;
-    int in_phase_element_index;
+    double in_phase_element_index;
     if (frequency < 0)
         in_phase_element_index = 0;
     else {
         int last_element_index = -(lagged_input->n_elements) + 1;
-        int quadrature_lag = (int) round(-(1 / frequency));
+        double quadrature_lag = -(1 / frequency);
         if (quadrature_lag < last_element_index) {
             in_phase_element_index = last_element_index;
         }
@@ -88,8 +88,9 @@ double complex quadrature_demod(double frequency, double phase, CircularBuffer *
             in_phase_element_index = quadrature_lag;
         }
     }
-    return *circbuf_element(quadrature_element_index, lagged_input)  * sin(phase) * I + 
-        *circbuf_element(in_phase_element_index, lagged_input) * cos(phase);
+    return 
+        *circbuf_element(quadrature_element_index, lagged_input)  * sin(phase) * I + 
+        circbuf_interpolated_element(in_phase_element_index, lagged_input) * cos(phase);
 }
 
 double sign(double x) {

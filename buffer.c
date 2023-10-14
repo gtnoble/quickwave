@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 #include <sqlite3ext.h>
 #include <assert.h>
 SQLITE_EXTENSION_INIT3
@@ -17,6 +18,13 @@ double *circbuf_element(int index, CircularBuffer *buf) {
     return &buf->buffer[modular_add(index, buf->index, buf->n_elements)];
 }
 
+double circbuf_interpolated_element(double index, CircularBuffer *buf) {
+    double fraction_between_elements = index - floor(index);
+    return 
+        *circbuf_element((int) floor(index), buf) * fraction_between_elements +
+        *circbuf_element((int) ceil(index), buf) * (1 - fraction_between_elements);
+}
+
 CircularBuffer *circbuf_new(size_t size) {
     CircularBuffer *circbuf = sqlite3_malloc(sizeof(CircularBuffer));
     if (circbuf == NULL) 
@@ -31,7 +39,7 @@ CircularBuffer *circbuf_new(size_t size) {
     circbuf->n_elements = size;
     circbuf->index = 0;
 
-    for (int ii = 0; ii < size; ii++) {
+    for (size_t ii = 0; ii < size; ii++) {
         circbuf->buffer[ii] = 0.0;
     }
     return circbuf;

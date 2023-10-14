@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -Wpedantic
+CFLAGS=-g -Wall -Wpedantic -Wextra
 TESTFLAGS=${CFLAGS} -DSQLITE_CORE 
 BUILDFLAGS=${CFLAGS} -fPIC
 
