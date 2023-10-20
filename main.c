@@ -17,9 +17,10 @@ __declspec(dllexport)
 */
 int sqlite3_sqldsp_init(
   sqlite3 *db, 
-  char **pzErrMsg, 
+  char /*pzErrMsg*/, 
   const sqlite3_api_routines *pApi
 ){
+
   int rc = SQLITE_OK;
   SQLITE_EXTENSION_INIT2(pApi);
   /* Insert here calls to

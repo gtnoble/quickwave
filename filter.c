@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
+#include <complex.h>
 #include <sqlite3ext.h>
 SQLITE_EXTENSION_INIT3
 #include "savgol.h"
@@ -8,12 +9,12 @@ SQLITE_EXTENSION_INIT3
 
 #define PI 3.14159265358979323846
 
-double fmod_euclidean(double x, double y);
+double sinc(double x);
 
-double filter_evaluate(double input, DigitalFilter *filter) {
+double complex filter_evaluate(double complex input, DigitalFilter *filter) {
     assert(filter != NULL);
 
-    double accumulate = 0;
+    double _Complex accumulate = 0;
     assert(filter->previous_inputs != NULL);
     circbuf_shift(input, filter->previous_inputs);
     for (size_t i = 0; i < filter->n_feedforward; i++) {
@@ -34,7 +35,7 @@ double filter_evaluate(double input, DigitalFilter *filter) {
     return accumulate;
 }
 
-double filter_current_value(DigitalFilter *filter) {
+double complex filter_current_value(DigitalFilter *filter) {
     assert(filter != NULL);
     return filter->current_output;
 }
@@ -59,13 +60,13 @@ DigitalFilter *filter_make(size_t n_feedforward, size_t n_feedback) {
 
     if (n_feedback > 0)
         if (
-            (filter->feedback = sqlite3_malloc(sizeof(double) * n_feedback)) == NULL ||
+            (filter->feedback = sqlite3_malloc(sizeof(double complex) * n_feedback)) == NULL ||
             (filter->previous_outputs = circbuf_new(n_feedback)) == NULL
         )
             goto fail;
 
     if (
-        (filter->feedforward = sqlite3_malloc(sizeof(double) * n_feedforward)) == NULL ||
+        (filter->feedforward = sqlite3_malloc(sizeof(double complex) * n_feedforward)) == NULL ||
         (filter->previous_inputs = circbuf_new(n_feedforward)) == NULL
     ) {
         goto fail;
@@ -86,40 +87,35 @@ void filter_free(DigitalFilter *filter) {
     sqlite3_free(filter);
 }
 
-int filter_make_savgol(
-    DigitalFilter **filter, 
+DigitalFilter *filter_make_savgol(
     size_t filter_length, 
     int derivative, 
     int polynomial_order
 ) {
     // Window length must be odd
-    if ((filter_length & 0x1) != 1 ||
-        filter_length == 0 ||
-        derivative < 0 ||
-        derivative > polynomial_order) {
-        return IMPROPER_PARAMS;
-    }
+    assert((filter_length & 0x1) == 1);
+    assert(filter_length > 0);
+    assert(derivative >= 0);
+    assert(derivative <= polynomial_order);
+
     //size_t center = filter_length / 2 + 1;
     int center = 0;
-    *filter = filter_make(filter_length, 0);
+    DigitalFilter *filter = filter_make(filter_length, 0);
     if (filter == NULL) {
-        return ALLOCATION_FAILURE;
+        return NULL;
     }
 
-    assert((*filter)->feedforward != NULL);
+    assert(filter->feedforward != NULL);
     for (size_t i = 0; i < filter_length; i++) {
-        (*filter)->feedforward[i] = savgol_weight(i, center, filter_length, polynomial_order, derivative);
+        filter->feedforward[i] = savgol_weight(i, center, filter_length, polynomial_order, derivative);
     }
     return FILTER_OK;
 }
 
-int filter_make_first_order_iir(
-    DigitalFilter **filter,
-    double cutoff_frequency
-) {
-    if (cutoff_frequency > 0.5 || cutoff_frequency < 0) {
-        return IMPROPER_PARAMS;
-    }
+DigitalFilter *filter_make_first_order_iir(double cutoff_frequency) {
+    assert(cutoff_frequency < 0.5);
+    assert(cutoff_frequency >= 0);
+
     double angular_frequency = cutoff_frequency * 2 * PI;
     double alpha = 
         cos(angular_frequency) -
@@ -127,12 +123,31 @@ int filter_make_first_order_iir(
         sqrt(
             pow(cos(angular_frequency), 2) - 4 * cos(angular_frequency) + 3
         );
-    *filter = filter_make(1, 1);
+
+    DigitalFilter *filter = filter_make(1, 1);
     if (filter == NULL) {
-        return ALLOCATION_FAILURE;
+        return NULL;
     }
-    (*filter)->feedforward[0] = alpha;
-    (*filter)->feedback[0] = 1 - alpha;
-    return FILTER_OK;
+    filter->feedforward[0] = alpha;
+    filter->feedback[0] = 1 - alpha;
+    return filter;
 }
 
+DigitalFilter *filter_make_sinc(double cutoff_frequency, size_t length) {
+    assert(cutoff_frequency >= 0);
+
+    DigitalFilter *filter = filter_make(length, 0);
+    if (filter == NULL) {
+        return NULL;
+    }
+
+    double kernel_shift = ((int) length - 1) / 2.0;
+    for (size_t i = 0; i < length; i++) {
+        filter->feedforward[i] = 2 * cutoff_frequency * sinc(2 * cutoff_frequency * ((double) i - kernel_shift));
+    }
+    return filter;
+}
+
+double sinc(double x) {
+    return x == 0.0 ? 1.0 : sin(PI * x) / (PI * x);
+}

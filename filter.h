@@ -1,4 +1,8 @@
+#ifndef SQLDSP_FILTER
+#define SQLDSP_FILTER
+
 #include "buffer.h"
+#include <complex.h>
 
 enum filter_errors {
     FILTER_OK,
@@ -7,23 +11,26 @@ enum filter_errors {
     IMPROPER_PARAMS
 };
 typedef struct {
-    double* feedforward;
+    double complex *feedforward;
     size_t n_feedforward;
     CircularBuffer *previous_inputs;
 
-    double* feedback;
+    double complex *feedback;
     size_t n_feedback;
     CircularBuffer *previous_outputs;
-    double current_output;
+    double complex current_output;
 
     int window_size;
 } DigitalFilter;
 
 
 
-double filter_evaluate(double input, DigitalFilter *filter);
+double complex filter_evaluate(double complex input, DigitalFilter *filter);
 DigitalFilter *filter_make(size_t n_feedforward, size_t n_feedback);
 void filter_free(DigitalFilter *filter);
-double filter_current_value(DigitalFilter *filter);
-int filter_make_savgol(DigitalFilter **filter, size_t window_length, int deriv, int polyorder);
-int filter_make_first_order_iir(DigitalFilter **filter, double cutoff_frequency);
+double complex filter_current_value(DigitalFilter *filter);
+DigitalFilter *filter_make_savgol(size_t window_length, int deriv, int polyorder);
+DigitalFilter *filter_make_first_order_iir(double cutoff_frequency);
+DigitalFilter *filter_make_sinc(double cutoff_frequency, size_t length);
+
+#endif

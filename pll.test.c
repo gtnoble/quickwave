@@ -3,43 +3,49 @@ SQLITE_EXTENSION_INIT3
 
 #include <stdio.h>
 #include <math.h>
+#include <complex.h>
+#include "sinusoid.h"
 #include "pll.h"
-#include "ext/munit/munit.h"
+#include "test.h"
 
 #define TEST_SIGNAL_LENGTH 10000
 #define PI 3.14159265358979323846
 
-static int setup_pll(PhaseLockedLoop **pll);
+PhaseLockedLoop *setup_pll();
 void test_pll();
 void test_vco();
 
-int main(int argc, char *argv[]) {
+int main(int , char **) {
     test_vco();
     test_pll();
     return 0;
 }
 
-static int setup_pll(PhaseLockedLoop **pll) {
-    *pll = sqlite3_malloc(sizeof(PhaseLockedLoop *));
-    return pll_make(pll, 0.0002, -1, 1.0 / TEST_SIGNAL_LENGTH);
+PhaseLockedLoop *setup_pll() {
+    return pll_make(0.001, -1, 1.0 / TEST_SIGNAL_LENGTH);
 }
 
 
 void test_vco() {
-    double phase_accumulator = 0.0;
-    update_vco(PI, &phase_accumulator, true);
-    munit_assert_double_equal(phase_accumulator, PI, 5);
-    update_vco(2 * PI, &phase_accumulator, true);
-    munit_assert_double_equal(phase_accumulator, PI, 5);
-    update_vco(-2 * PI, &phase_accumulator, true);
-    munit_assert_double_equal(phase_accumulator, PI, 5);
+    double complex complex_frequency = 1.0 * I;
+
+    Sinusoid vco = {
+        .complex_frequency = 1.0,
+        .phasor = 1.0
+    };
+
+    vco = update_vco(complex_frequency, vco);
+    munit_assert_complex_equal(vco.complex_frequency, complex_frequency, 5);
+    munit_assert_complex_equal(vco.phasor, complex_frequency, 5);
+    vco = update_vco(complex_frequency, vco);
+    munit_assert_complex_equal(vco.phasor, -1.0, 5);
+    vco = update_vco(complex_frequency, vco);
+    munit_assert_complex_equal(vco.phasor, -complex_frequency, 5);
 }
 
 void test_pll() {
 
-    PhaseLockedLoop *pll;
-    munit_assert_int(setup_pll(&pll), ==, FILTER_OK);
-
+    PhaseLockedLoop *pll = setup_pll();
     munit_assert_not_null(pll);
 
     FILE *const_freq_csv = fopen("tests/const_freq.csv", "w");
@@ -48,11 +54,11 @@ void test_pll() {
     fprintf(const_freq_csv, "index,test,pll,pll_freq\n");
 
     double test_signal[TEST_SIGNAL_LENGTH];
-    double pll_out[TEST_SIGNAL_LENGTH];
+    Sinusoid pll_out[TEST_SIGNAL_LENGTH];
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         test_signal[i] = sin(i / 3.0);
         pll_out[i] = pll_update(test_signal[i], pll);
-        fprintf(const_freq_csv, "%d,%f,%f,%f\n", i, test_signal[i], pll_out[i], pll->loop_filter->current_output);
+        fprintf(const_freq_csv, "%d,%f,%f,%f\n", i, test_signal[i], sinusoid_inphase(pll_out[i]), creal(pll->loop_filter->current_output));
     }
 
     fflush(const_freq_csv);
@@ -60,7 +66,7 @@ void test_pll() {
     fclose(const_freq_csv);
 
     pll_free(pll);
-    setup_pll(&pll);
+    pll = setup_pll();
 
     FILE *sweep_csv  = fopen("tests/sweep.csv", "w");
     munit_assert_not_null(sweep_csv);
@@ -71,14 +77,14 @@ void test_pll() {
         double frequency = ((double) i) / TEST_SIGNAL_LENGTH / 2;
         test_signal[i] = sin(i * frequency);
         pll_out[i] = pll_update(test_signal[i], pll);
-        fprintf(sweep_csv, "%d,%f,%f,%f\n", i, test_signal[i], pll_out[i], pll->loop_filter->current_output);
+        fprintf(sweep_csv, "%d,%f,%f,%f\n", i, test_signal[i], sinusoid_inphase(pll_out[i]), creal(pll->loop_filter->current_output));
     }
 
     fflush(sweep_csv);
 
     munit_assert_double_equal(
         test_signal[TEST_SIGNAL_LENGTH - 1], 
-        pll_out[TEST_SIGNAL_LENGTH - 1],
+        sinusoid_inphase(pll_out[TEST_SIGNAL_LENGTH - 1]),
         4
     );
     fclose(sweep_csv);

@@ -1,24 +1,25 @@
 #include <stdlib.h>
 #include <math.h>
+#include <complex.h>
 #include <sqlite3ext.h>
 #include <assert.h>
 SQLITE_EXTENSION_INIT3
 #include "buffer.h"
 
-double circbuf_shift(double element, CircularBuffer *buf) {
+double complex circbuf_shift(double complex element, CircularBuffer *buf) {
     assert(buf != NULL);
     assert(buf->buffer != NULL);
     buf->index = modular_add(buf->index, 1, buf->n_elements);
-    double last_element = buf->buffer[buf->index];
+    double complex last_element = buf->buffer[buf->index];
     buf->buffer[buf->index] = element;
     return last_element;
 }
 
-double *circbuf_element(int index, CircularBuffer *buf) {
+double complex *circbuf_element(int index, CircularBuffer *buf) {
     return &buf->buffer[modular_add(index, buf->index, buf->n_elements)];
 }
 
-double circbuf_interpolated_element(double index, CircularBuffer *buf) {
+double complex circbuf_interpolated_element(double index, CircularBuffer *buf) {
     double fraction_between_elements = index - floor(index);
     return 
         *circbuf_element((int) floor(index), buf) * fraction_between_elements +
@@ -30,7 +31,7 @@ CircularBuffer *circbuf_new(size_t size) {
     if (circbuf == NULL) 
         return NULL;
 
-    circbuf->buffer = sqlite3_malloc(sizeof(double) * size);
+    circbuf->buffer = sqlite3_malloc(sizeof(double complex) * size);
     if (circbuf->buffer == NULL) {
         sqlite3_free(circbuf);
         return NULL;
