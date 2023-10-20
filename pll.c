@@ -3,13 +3,11 @@
 #include <math.h>
 #include <stdbool.h>
 #include <complex.h>
-#include <sqlite3ext.h>
-SQLITE_EXTENSION_INIT3
 
 #define PI 3.14159265358979323846
 
 PhaseLockedLoop *pll_make(double loop_filter_cutoff, double initial_freq, double min_freq) {
-    PhaseLockedLoop *pll = sqlite3_malloc(sizeof(PhaseLockedLoop));
+    PhaseLockedLoop *pll = malloc(sizeof(PhaseLockedLoop));
     if (pll == NULL) {
         goto failure;
     }
@@ -38,7 +36,7 @@ PhaseLockedLoop *pll_make(double loop_filter_cutoff, double initial_freq, double
     cleanup_filter:
         filter_free(loop_filter);
     cleanup_pll:
-        sqlite3_free(pll);
+        free(pll);
     failure:
         return NULL;
 }
@@ -46,7 +44,7 @@ PhaseLockedLoop *pll_make(double loop_filter_cutoff, double initial_freq, double
 void pll_free(PhaseLockedLoop *pll) {
     filter_free(pll->loop_filter);
     circbuf_free(pll->lagged_input);
-    sqlite3_free(pll);
+    free(pll);
 }
 
 Sinusoid pll_update(double input, PhaseLockedLoop *pll) {

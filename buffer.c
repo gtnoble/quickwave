@@ -1,9 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
-#include <sqlite3ext.h>
 #include <assert.h>
-SQLITE_EXTENSION_INIT3
 #include "buffer.h"
 
 double complex circbuf_shift(double complex element, CircularBuffer *buf) {
@@ -27,13 +25,13 @@ double complex circbuf_interpolated_element(double index, CircularBuffer *buf) {
 }
 
 CircularBuffer *circbuf_new(size_t size) {
-    CircularBuffer *circbuf = sqlite3_malloc(sizeof(CircularBuffer));
+    CircularBuffer *circbuf = malloc(sizeof(CircularBuffer));
     if (circbuf == NULL) 
         return NULL;
 
-    circbuf->buffer = sqlite3_malloc(sizeof(double complex) * size);
+    circbuf->buffer = malloc(sizeof(double complex) * size);
     if (circbuf->buffer == NULL) {
-        sqlite3_free(circbuf);
+        free(circbuf);
         return NULL;
     }
 
@@ -49,8 +47,8 @@ CircularBuffer *circbuf_new(size_t size) {
 void circbuf_free(CircularBuffer *buf) {
     if (buf == NULL)
         return;
-    sqlite3_free(buf->buffer);
-    sqlite3_free(buf);
+    free(buf->buffer);
+    free(buf);
 }
 
 int modular_add(int a, int b, int max) {

@@ -1,6 +1,3 @@
-#include <sqlite3ext.h>
-SQLITE_EXTENSION_INIT3
-
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
@@ -35,12 +32,12 @@ void test_vco() {
     };
 
     vco = update_vco(complex_frequency, vco);
-    munit_assert_complex_equal(vco.complex_frequency, complex_frequency, 5);
-    munit_assert_complex_equal(vco.phasor, complex_frequency, 5);
+    assert_complex_equal(vco.complex_frequency, complex_frequency, 5);
+    assert_complex_equal(vco.phasor, complex_frequency, 5);
     vco = update_vco(complex_frequency, vco);
-    munit_assert_complex_equal(vco.phasor, -1.0, 5);
+    assert_complex_equal(vco.phasor, -1.0, 5);
     vco = update_vco(complex_frequency, vco);
-    munit_assert_complex_equal(vco.phasor, -complex_frequency, 5);
+    assert_complex_equal(vco.phasor, -complex_frequency, 5);
 }
 
 void test_pll() {

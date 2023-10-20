@@ -2,8 +2,6 @@
 #include <assert.h>
 #include <math.h>
 #include <complex.h>
-#include <sqlite3ext.h>
-SQLITE_EXTENSION_INIT3
 #include "savgol.h"
 #include "filter.h"
 
@@ -43,7 +41,7 @@ double complex filter_current_value(DigitalFilter *filter) {
 
 
 DigitalFilter *filter_make(size_t n_feedforward, size_t n_feedback) {
-    DigitalFilter *filter = sqlite3_malloc(sizeof(DigitalFilter));
+    DigitalFilter *filter = malloc(sizeof(DigitalFilter));
     if (filter == NULL)
         return NULL;
 
@@ -60,13 +58,13 @@ DigitalFilter *filter_make(size_t n_feedforward, size_t n_feedback) {
 
     if (n_feedback > 0)
         if (
-            (filter->feedback = sqlite3_malloc(sizeof(double complex) * n_feedback)) == NULL ||
+            (filter->feedback = malloc(sizeof(double complex) * n_feedback)) == NULL ||
             (filter->previous_outputs = circbuf_new(n_feedback)) == NULL
         )
             goto fail;
 
     if (
-        (filter->feedforward = sqlite3_malloc(sizeof(double complex) * n_feedforward)) == NULL ||
+        (filter->feedforward = malloc(sizeof(double complex) * n_feedforward)) == NULL ||
         (filter->previous_inputs = circbuf_new(n_feedforward)) == NULL
     ) {
         goto fail;
@@ -80,11 +78,11 @@ DigitalFilter *filter_make(size_t n_feedforward, size_t n_feedback) {
 }
 
 void filter_free(DigitalFilter *filter) {
-    sqlite3_free(filter->feedforward);
-    sqlite3_free(filter->feedback);
+    free(filter->feedforward);
+    free(filter->feedback);
     circbuf_free(filter->previous_outputs);
     circbuf_free(filter->previous_inputs);
-    sqlite3_free(filter);
+    free(filter);
 }
 
 DigitalFilter *filter_make_savgol(
