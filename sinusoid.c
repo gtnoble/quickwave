@@ -1,10 +1,22 @@
 #include <assert.h>
+#include <complex.h>
+
 #include "sinusoid.h"
 #include "buffer.h"
-
-#define PI 3.14159265358979323846
+#include "constants.h"
 
 const double complex zero_complex_frequency = 1.0;
+const double complex zero_phase_phasor = 1.0;
+
+Sinusoid sinusoid_make(double phase_degrees, double normalized_frequency) {
+    Sinusoid result = {
+        .complex_frequency = real_to_complex_frequency(
+            ordinary_frequency_to_angular(normalized_frequency)
+        ),
+        .phasor = rotate_phasor(zero_phase_phasor, degrees_to_radians(phase_degrees))
+    };
+    return result;
+}
 
 Sinusoid sinusoid_add(Sinusoid a, Sinusoid b) {
     assert(a.complex_frequency == b.complex_frequency);
@@ -60,12 +72,16 @@ Sinusoid sinusoid_negate_phase(Sinusoid x) {
     return result;
 }
 
-Sinusoid sinusoid_shift_phase(double angle, Sinusoid x) {
+Sinusoid sinusoid_shift_phase(double angle_radians, Sinusoid x) {
     Sinusoid result = {
         .complex_frequency = x.complex_frequency,
-        .phasor = x.phasor * cexp(I * angle)
+        .phasor = rotate_phasor(x.phasor, angle_radians)
     };
     return result;
+}
+
+double complex rotate_phasor(double complex phasor, double angle_radians) {
+    return phasor * cexp(I * angle_radians);
 }
 
 double _Complex real_to_complex_frequency(double angular_frequency) {
@@ -82,7 +98,9 @@ Sinusoid update_vco(double _Complex complex_freq, Sinusoid vco) {
 
 Sinusoid quadrature_demodulate(Sinusoid reference, CircularBuffer *lagged_input) {
     double in_phase_element_index;
-    double reference_normal_frequency = sinusoid_real_freq(reference) / (2 * PI);
+    double reference_normal_frequency = angular_frequency_to_ordinary(
+        sinusoid_real_freq(reference)
+    );
     if (reference_normal_frequency < 0)
         in_phase_element_index = 0;
     else {
