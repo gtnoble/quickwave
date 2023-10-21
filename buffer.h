@@ -14,6 +14,7 @@ double complex circbuf_shift(double complex element, CircularBuffer *buf);
 double complex *circbuf_element(int index, CircularBuffer *buf);
 double complex circbuf_interpolated_element(double index, CircularBuffer *buf);
 CircularBuffer *circbuf_new(size_t size);
+void circbuf_reset(CircularBuffer *buf);
 void circbuf_free(CircularBuffer *buf);
 
 int modular_add(int a, int b, int max);
