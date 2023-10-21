@@ -4,37 +4,33 @@
 #include <stdbool.h>
 #include <complex.h>
 
-#define PI 3.14159265358979323846
+PhaseLockedLoop *pll_make(
+    Sinusoid vco_initial,
+    double minimum_frequency,
+    double complex (*loop_filter)(double complex input, void *filter_context),
+    void *filter_context
+) {
 
-PhaseLockedLoop *pll_make(double loop_filter_cutoff, double initial_freq, double min_freq) {
+    assert(loop_filter != NULL);
+
     PhaseLockedLoop *pll = malloc(sizeof(PhaseLockedLoop));
     if (pll == NULL) {
         goto failure;
     }
 
-    DigitalFilter *loop_filter = filter_make_first_order_iir(loop_filter_cutoff);
-    if (loop_filter == NULL) {
+    CircularBuffer *lagged_input;
+    lagged_input = circbuf_new((int) ceil(1 / minimum_frequency));
+    if (lagged_input == NULL) {
         goto cleanup_pll;
     }
 
-    CircularBuffer *lagged_input;
-    lagged_input = circbuf_new((int) ceil(1 / min_freq));
-    if (lagged_input == NULL) {
-        goto cleanup_filter;
-    }
-
-    double complex complex_initial_freq = real_to_complex_frequency(initial_freq * 2 * PI);
-    loop_filter->previous_outputs->buffer[0] = complex_initial_freq;
     pll->loop_filter = loop_filter;
-
-    pll->vco.complex_frequency = complex_initial_freq;
-    pll->vco.phasor = 1.0 * I;
-
+    pll->filter_context = filter_context;
+    pll->vco = vco_initial;
     pll->lagged_input = lagged_input;
+
     return pll;
 
-    cleanup_filter:
-        filter_free(loop_filter);
     cleanup_pll:
         free(pll);
     failure:
@@ -42,7 +38,6 @@ PhaseLockedLoop *pll_make(double loop_filter_cutoff, double initial_freq, double
 }
 
 void pll_free(PhaseLockedLoop *pll) {
-    filter_free(pll->loop_filter);
     circbuf_free(pll->lagged_input);
     free(pll);
 }
@@ -55,16 +50,7 @@ Sinusoid pll_update(double input, PhaseLockedLoop *pll) {
             pll->lagged_input
         )
     );
-    double complex next_frequency = filter_evaluate(phase_error.phasor, pll->loop_filter);
+    double complex next_frequency = pll->loop_filter(phase_error.phasor, pll->filter_context);
     pll->vco = update_vco(next_frequency / cabs(next_frequency), pll->vco);
     return pll->vco;
-}
-
-double sign(double x) {
-    if (x > 0) 
-        return 1.0;
-    else if (x < 0)
-        return -1.0;
-    else
-        return 0.0;
 }

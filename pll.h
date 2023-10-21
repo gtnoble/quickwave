@@ -4,17 +4,22 @@
 #include "filter.h"
 #include "sinusoid.h"
 #include <stdbool.h>
+#include <complex.h>
 
 typedef struct {
-    DigitalFilter *loop_filter;
+    double complex (*loop_filter)(double complex input, void *filter_context);
+    void *filter_context;
     Sinusoid vco;
     CircularBuffer *lagged_input;
 } PhaseLockedLoop;
 
-PhaseLockedLoop *pll_make(double loop_filter_cutoff, double initial_freq, double min_freq);
+PhaseLockedLoop *pll_make(
+    Sinusoid vco_initial,
+    double minimum_frequency,
+    double complex (*loop_filter)(double complex input, void *filter_context),
+    void *filter_context
+);
 Sinusoid pll_update(double input, PhaseLockedLoop *pll);
 void pll_free(PhaseLockedLoop *pll);
-
-double sign(double x);
 
 #endif
