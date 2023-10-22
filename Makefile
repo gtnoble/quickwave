@@ -6,11 +6,11 @@ BUILDFLAGS=${CFLAGS} -fPIC
 tests/test_%: tests/%.o tests/%.test.o tests
 	${CC} ${TESTFLAGS} -c $^ -o $@
 
-tests/test_filter: tests/filter.test.o tests/filter.o tests/savgol.o tests/buffer.o ext/munit/munit.o tests
-	${CC} ${TESTFLAGS} tests/filter.test.o tests/filter.o tests/buffer.o tests/savgol.o ext/munit/munit.o -lm -o $@
+tests/test_filter: tests/filter.test.o tests/filter.o tests/savgol.o tests/buffer.o  tests/window.o ext/munit/munit.o tests
+	${CC} ${TESTFLAGS} tests/filter.test.o tests/filter.o tests/buffer.o tests/savgol.o tests/window.o ext/munit/munit.o -lm -o $@
 
-tests/test_pll: tests/pll.test.o tests/pll.o tests/buffer.o tests/sinusoid.o ext/munit/munit.o tests
-	${CC} ${TESTFLAGS} tests/pll.test.o tests/pll.o tests/filter.o tests/buffer.o tests/savgol.o tests/sinusoid.o ext/munit/munit.o -lm -o $@
+tests/test_pll: tests/pll.test.o tests/pll.o tests/buffer.o tests/sinusoid.o tests/window.o ext/munit/munit.o tests
+	${CC} ${TESTFLAGS} tests/pll.test.o tests/pll.o tests/filter.o tests/buffer.o tests/savgol.o tests/sinusoid.o tests/window.o ext/munit/munit.o -lm -o $@
 
 tests/%.o: %.c
 	${CC} ${TESTFLAGS} -c $< -o $@

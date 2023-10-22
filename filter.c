@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <math.h>
 #include <complex.h>
+#include <string.h>
 #include "savgol.h"
 #include "filter.h"
 #include "constants.h"

@@ -8,20 +8,15 @@
 #define TEST_SIGNAL_LENGTH 10000
 #define PI 3.14159265358979323846
 
-PhaseLockedLoop *setup_pll();
 void test_pll();
 void test_vco();
+double complex pll_filter(double complex input, void *filter);
 
 int main(int , char **) {
     test_vco();
     test_pll();
     return 0;
 }
-
-PhaseLockedLoop *setup_pll() {
-    return pll_make(0.001, -1, 1.0 / TEST_SIGNAL_LENGTH);
-}
-
 
 void test_vco() {
     double complex complex_frequency = 1.0 * I;
@@ -42,7 +37,17 @@ void test_vco() {
 
 void test_pll() {
 
-    PhaseLockedLoop *pll = setup_pll();
+    DigitalFilter *filter = filter_make_ewma(0.001);
+    
+    Sinusoid initial_vco = sinusoid_make(0, 0.1);
+
+    PhaseLockedLoop *pll = pll_make(
+        initial_vco, 
+        1.0 / TEST_SIGNAL_LENGTH, 
+        pll_filter,
+        filter
+    );
+
     munit_assert_not_null(pll);
 
     FILE *const_freq_csv = fopen("tests/const_freq.csv", "w");
@@ -55,15 +60,22 @@ void test_pll() {
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         test_signal[i] = sin(i / 3.0);
         pll_out[i] = pll_update(test_signal[i], pll);
-        fprintf(const_freq_csv, "%d,%f,%f,%f\n", i, test_signal[i], sinusoid_inphase(pll_out[i]), creal(pll->loop_filter->current_output));
+        fprintf(
+            const_freq_csv, 
+            "%d,%f,%f,%f\n", 
+            i, 
+            test_signal[i], 
+            sinusoid_inphase(pll_out[i]),
+            complex_frequency_to_ordinary(pll->vco.complex_frequency)
+        );
     }
 
     fflush(const_freq_csv);
 
     fclose(const_freq_csv);
 
-    pll_free(pll);
-    pll = setup_pll();
+    pll_reset(initial_vco, pll);
+    filter_reset_digital_filter(filter);
 
     FILE *sweep_csv  = fopen("tests/sweep.csv", "w");
     munit_assert_not_null(sweep_csv);
@@ -74,7 +86,13 @@ void test_pll() {
         double frequency = ((double) i) / TEST_SIGNAL_LENGTH / 2;
         test_signal[i] = sin(i * frequency);
         pll_out[i] = pll_update(test_signal[i], pll);
-        fprintf(sweep_csv, "%d,%f,%f,%f\n", i, test_signal[i], sinusoid_inphase(pll_out[i]), creal(pll->loop_filter->current_output));
+        fprintf(
+            sweep_csv, 
+            "%d,%f,%f\n", 
+            i, 
+            test_signal[i], 
+            sinusoid_inphase(pll_out[i]) 
+        );
     }
 
     fflush(sweep_csv);
@@ -86,4 +104,8 @@ void test_pll() {
     );
     fclose(sweep_csv);
 
+}
+
+double complex pll_filter(double complex input, void *filter) {
+    return filter_evaluate(input, filter);
 }

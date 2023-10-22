@@ -3,10 +3,10 @@
 #include <complex.h>
 #include "filter.h"
 #include "test.h"
+#include "window.h"
+#include "constants.h"
 
 #define TEST_SIGNAL_LENGTH 10000
-#define PI 3.14159265358979323846
-
 
 void test_iir();
 void test_sinc();
@@ -41,18 +41,22 @@ void test_iir() {
     }
     assert_complex_equal(filtered[TEST_SIGNAL_LENGTH - 1], 1.0, 2);
     fclose(iir_response_csv);
+
+    filter_free_digital_filter(iir);
 }
 
 void test_sinc() {
-    DigitalFilter *sinc_filter = filter_make_sinc(0.25, 101);
+    DigitalFilter *sinc_filter = filter_make_sinc(0.25, 101, window_hamming);
     double complex filtered[TEST_SIGNAL_LENGTH];
     double complex input[TEST_SIGNAL_LENGTH];
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
-        input[i] = sin(2 * PI * 0.2 * i) + cos(2 * PI * 0.3 * i);
+        input[i] = sin(2 * M_PI * 0.2 * i) + cos(2 * M_PI * 0.3 * i);
     }
 
     test_filter("tests/test_sinc.csv", input, filtered, sinc_filter);
+
+    filter_free_digital_filter(sinc_filter);
 }
 
 int test_filter(

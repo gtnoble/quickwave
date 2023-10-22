@@ -1,7 +1,8 @@
 #include "pll.h"
 #include "sinusoid.h"
+#include "constants.h"
 #include <math.h>
-#include <stdbool.h>
+#include <assert.h>
 #include <complex.h>
 
 PhaseLockedLoop *pll_make(
@@ -10,8 +11,13 @@ PhaseLockedLoop *pll_make(
     double complex (*loop_filter)(double complex input, void *filter_context),
     void *filter_context
 ) {
-
     assert(loop_filter != NULL);
+    assert(minimum_frequency > 0);
+    assert(minimum_frequency < 0.5);
+    assert(
+        complex_frequency_to_ordinary(vco_initial.complex_frequency) > 
+        minimum_frequency
+    );
 
     PhaseLockedLoop *pll = malloc(sizeof(PhaseLockedLoop));
     if (pll == NULL) {
@@ -37,6 +43,11 @@ PhaseLockedLoop *pll_make(
         return NULL;
 }
 
+void pll_reset(Sinusoid vco_initial, PhaseLockedLoop *pll) {
+    pll->vco = vco_initial;
+    circbuf_reset(pll->lagged_input);
+}
+
 void pll_free(PhaseLockedLoop *pll) {
     circbuf_free(pll->lagged_input);
     free(pll);
@@ -51,6 +62,6 @@ Sinusoid pll_update(double input, PhaseLockedLoop *pll) {
         )
     );
     double complex next_frequency = pll->loop_filter(phase_error.phasor, pll->filter_context);
-    pll->vco = update_vco(next_frequency / cabs(next_frequency), pll->vco);
+    pll->vco = update_vco(next_frequency, pll->vco);
     return pll->vco;
 }

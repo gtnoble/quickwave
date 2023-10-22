@@ -30,6 +30,7 @@ DigitalFilter *filter_make_digital_filter(
     size_t n_feedback,
     const double complex feedback[]
 );
+void filter_reset_digital_filter(DigitalFilter *filter);
 void filter_free_digital_filter(DigitalFilter *filter);
 DigitalFilter *filter_make_savgol(size_t window_length, int deriv, int polyorder);
 DigitalFilter *filter_make_ewma(double alpha);

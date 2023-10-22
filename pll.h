@@ -20,6 +20,7 @@ PhaseLockedLoop *pll_make(
     void *filter_context
 );
 Sinusoid pll_update(double input, PhaseLockedLoop *pll);
+void pll_reset(Sinusoid vco_initial, PhaseLockedLoop *pll);
 void pll_free(PhaseLockedLoop *pll);
 
 #endif
