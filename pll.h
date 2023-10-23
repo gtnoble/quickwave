@@ -22,5 +22,7 @@ PhaseLockedLoop *pll_make(
 Sinusoid pll_update(double input, PhaseLockedLoop *pll);
 void pll_reset(Sinusoid vco_initial, PhaseLockedLoop *pll);
 void pll_free(PhaseLockedLoop *pll);
+Sinusoid update_vco(double _Complex complex_freq, Sinusoid vco);
+Sinusoid quadrature_demodulate(Sinusoid reference, CircularBuffer *lagged_input);
 
 #endif

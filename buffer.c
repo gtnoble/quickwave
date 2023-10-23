@@ -20,8 +20,8 @@ double complex *circbuf_element(int index, CircularBuffer *buf) {
 double complex circbuf_interpolated_element(double index, CircularBuffer *buf) {
     double fraction_between_elements = index - floor(index);
     return 
-        *circbuf_element((int) floor(index), buf) * fraction_between_elements +
-        *circbuf_element((int) ceil(index), buf) * (1 - fraction_between_elements);
+        *circbuf_element((int) floor(index), buf) * (1 - fraction_between_elements) +
+        *circbuf_element((int) ceil(index), buf) * fraction_between_elements;
 }
 
 CircularBuffer *circbuf_new(size_t size) {

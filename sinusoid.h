@@ -17,14 +17,13 @@ double sinusoid_inphase(Sinusoid x);
 double sinusoid_quadrature(Sinusoid x);
 double sinusoid_amplitude(Sinusoid x);
 double sinusoid_phase(Sinusoid x);
+double sinusoid_angular_freq(Sinusoid x);
 double _Complex angular_to_complex_frequency(double angular_frequency);
 double complex_frequency_to_angular(double complex complex_frequency);
 double complex_frequency_to_ordinary(double complex complex_frequency);
 Sinusoid sinusoid_normalize(Sinusoid x);
 Sinusoid sinusoid_negate_phase(Sinusoid x);
 Sinusoid sinusoid_shift_phase(double angle, Sinusoid x);
-Sinusoid update_vco(double _Complex complex_freq, Sinusoid vco);
-Sinusoid quadrature_demodulate(Sinusoid reference, CircularBuffer *lagged_input);
 
 #endif
 

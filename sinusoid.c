@@ -63,7 +63,7 @@ double sinusoid_phase(Sinusoid x) {
     return carg(x.phasor);
 }
 
-double sinusoid_real_freq(Sinusoid x) {
+double sinusoid_angular_freq(Sinusoid x) {
     return carg(x.complex_frequency);
 }
 
@@ -107,41 +107,4 @@ double complex_frequency_to_ordinary(double complex complex_frequency) {
     return angular_frequency_to_ordinary(
         complex_frequency_to_angular(complex_frequency)
     );
-}
-
-Sinusoid update_vco(double _Complex update_frequency, Sinusoid vco) {
-    double complex next_frequency =
-        update_frequency == 0.0 ? 
-        vco.complex_frequency : 
-        update_frequency / cabs(update_frequency);
-
-    Sinusoid updated_vco = {
-        .complex_frequency = next_frequency,
-        .phasor = vco.phasor * next_frequency
-    };
-    return updated_vco;
-}
-
-Sinusoid quadrature_demodulate(Sinusoid reference, CircularBuffer *lagged_input) {
-    double in_phase_element_index;
-    double reference_normal_frequency = angular_frequency_to_ordinary(
-        sinusoid_real_freq(reference)
-    );
-    if (reference_normal_frequency < 0)
-        in_phase_element_index = 0;
-    else {
-        int last_element_index = -(lagged_input->n_elements) + 1;
-        double quadrature_lag = -(1 / reference_normal_frequency);
-        in_phase_element_index = 
-            quadrature_lag > last_element_index ? quadrature_lag : last_element_index;
-    }
-
-    int quadrature_element_index = 0;
-    Sinusoid input_sinusoid = {
-        .complex_frequency = reference.complex_frequency,
-        .phasor = 
-            circbuf_interpolated_element(in_phase_element_index, lagged_input) +
-            *circbuf_element(quadrature_element_index, lagged_input) * I
-    };
-    return sinusoid_mult(reference, input_sinusoid);
 }

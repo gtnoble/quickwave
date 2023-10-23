@@ -37,7 +37,7 @@ void test_vco() {
 
 void test_pll() {
 
-    DigitalFilter *filter = filter_make_ewma(0.001);
+    DigitalFilter *filter = filter_make_integrator();
     
     Sinusoid initial_vco = sinusoid_make(0, 0.1);
 
@@ -65,7 +65,7 @@ void test_pll() {
             "%d,%f,%f,%f\n", 
             i, 
             test_signal[i], 
-            sinusoid_inphase(pll_out[i]),
+            -sinusoid_quadrature(pll_out[i]),
             complex_frequency_to_ordinary(pll->vco.complex_frequency)
         );
     }
@@ -91,7 +91,7 @@ void test_pll() {
             "%d,%f,%f\n", 
             i, 
             test_signal[i], 
-            sinusoid_inphase(pll_out[i]) 
+            -sinusoid_quadrature(pll_out[i]) 
         );
     }
 
@@ -107,5 +107,5 @@ void test_pll() {
 }
 
 double complex pll_filter(double complex input, void *filter) {
-    return filter_evaluate(input, filter);
+    return filter_evaluate(input, filter) * 0.0005 + input * 0.01;
 }

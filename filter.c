@@ -125,6 +125,12 @@ DigitalFilter *filter_make_savgol(
     return filter_make_digital_filter(filter_length, feedforward, 0, NULL);
 }
 
+DigitalFilter *filter_make_integrator() {
+    complex double feedforward[] = {1.0};
+    complex double feedback[] = {1.0};
+    return filter_make_digital_filter(1, feedforward, 1, feedback);
+}
+
 DigitalFilter *filter_make_ewma(double alpha) {
     assert(alpha >= 0.0);
     assert(alpha <= 1.0);

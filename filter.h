@@ -33,6 +33,7 @@ DigitalFilter *filter_make_digital_filter(
 void filter_reset_digital_filter(DigitalFilter *filter);
 void filter_free_digital_filter(DigitalFilter *filter);
 DigitalFilter *filter_make_savgol(size_t window_length, int deriv, int polyorder);
+DigitalFilter *filter_make_integrator();
 DigitalFilter *filter_make_ewma(double alpha);
 DigitalFilter *filter_make_first_order_iir(double cutoff_frequency);
 DigitalFilter *filter_make_sinc(

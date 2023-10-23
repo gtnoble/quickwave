@@ -65,3 +65,41 @@ Sinusoid pll_update(double input, PhaseLockedLoop *pll) {
     pll->vco = update_vco(next_frequency, pll->vco);
     return pll->vco;
 }
+
+
+Sinusoid update_vco(double _Complex update_frequency, Sinusoid vco) {
+    double complex next_frequency =
+        update_frequency == 0.0 ? 
+        vco.complex_frequency : 
+        update_frequency / cabs(update_frequency);
+
+    Sinusoid updated_vco = {
+        .complex_frequency = next_frequency,
+        .phasor = vco.phasor * next_frequency
+    };
+    return updated_vco;
+}
+
+Sinusoid quadrature_demodulate(Sinusoid reference, CircularBuffer *lagged_input) {
+    double in_phase_element_index;
+    double reference_normal_frequency = angular_frequency_to_ordinary(
+        sinusoid_angular_freq(reference)
+    );
+    if (reference_normal_frequency < 0)
+        in_phase_element_index = 0;
+    else {
+        int last_element_index = -(lagged_input->n_elements) + 1;
+        double quadrature_lag = -(1 / reference_normal_frequency) / 4.0;
+        in_phase_element_index = 
+            quadrature_lag > last_element_index ? quadrature_lag : last_element_index;
+    }
+
+    int quadrature_element_index = 0;
+    Sinusoid input_sinusoid = {
+        .complex_frequency = reference.complex_frequency,
+        .phasor = 
+            circbuf_interpolated_element(in_phase_element_index, lagged_input) +
+            *circbuf_element(quadrature_element_index, lagged_input) * I
+    };
+    return sinusoid_mult(reference, input_sinusoid);
+}
