@@ -61,7 +61,17 @@ Sinusoid pll_update(double input, PhaseLockedLoop *pll) {
             sinusoid_negate_phase(pll->vco),
             pll->input_iq
         );
-    double complex next_frequency = pll->loop_filter(phase_error.phasor, pll->filter_context);
+
+    double complex next_frequency = 
+        angular_to_complex_frequency(
+            creal(
+                pll->loop_filter(
+                    complex_frequency_to_angular(phase_error.phasor), 
+                    pll->filter_context
+                )
+            )
+        );
+
     pll->vco = update_vco(next_frequency, pll->vco);
     return pll->vco;
 }
