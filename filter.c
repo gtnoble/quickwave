@@ -125,10 +125,32 @@ DigitalFilter *filter_make_savgol(
     return filter_make_digital_filter(filter_length, feedforward, 0, NULL);
 }
 
-DigitalFilter *filter_make_integrator() {
-    complex double feedforward[] = {1.0};
-    complex double feedback[] = {1.0};
-    return filter_make_digital_filter(1, feedforward, 1, feedback);
+Pid filter_make_pid(
+    double complex proportional_gain, 
+    double complex integral_gain, 
+    double complex derivative_gain
+) {
+    Pid pid = {
+        .previous_input = 0.0,
+        .accumulated_input = 0.0,
+        .proportional_gain = proportional_gain,
+        .integral_gain = integral_gain,
+        .derivative_gain = derivative_gain
+    };
+    return pid;
+}
+
+double complex filter_update_pid(double complex input, Pid *pid) {
+    double complex proportional = input * pid->proportional_gain;
+    double complex integral = pid->integral_gain * (pid->accumulated_input += input);
+    double complex derivative = pid->derivative_gain * (input - pid->previous_input);
+    pid->previous_input = input;
+    return proportional + integral + derivative;
+}
+
+void filter_reset_pid(Pid *pid) {
+    pid->accumulated_input = 0.0;
+    pid->previous_input = 0.0;
 }
 
 DigitalFilter *filter_make_ewma(double alpha) {
@@ -201,6 +223,16 @@ double complex filter_evaluate_moving_average(
     filter->moving_sum += input;
     filter->moving_sum -= circbuf_shift(input, filter->previous_input);
     return filter->moving_sum / filter->previous_input->n_elements;
+}
+
+void filter_reset_moving_average(MovingAverage *filter) {
+    circbuf_reset(filter->previous_input);
+    filter->moving_sum = 0;
+}
+
+void filter_free_moving_average(MovingAverage *filter) {
+    free(filter->previous_input);
+    free(filter);
 }
 
 double sinc(double x) {

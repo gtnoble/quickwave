@@ -42,6 +42,8 @@ CircularBuffer *circbuf_new(size_t size) {
 }
 
 void circbuf_reset(CircularBuffer *buf) {
+    if (buf == NULL)
+        return;
     for (size_t ii = 0; ii < buf->n_elements; ii++) {
         buf->buffer[ii] = 0.0;
     }

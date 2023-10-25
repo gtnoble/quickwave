@@ -23,6 +23,14 @@ typedef struct {
     CircularBuffer *previous_input;
 } MovingAverage;
 
+typedef struct {
+    double complex previous_input;
+    double complex accumulated_input;
+    double complex proportional_gain;
+    double complex integral_gain;
+    double complex derivative_gain;
+} Pid;
+
 double complex filter_evaluate(double complex input, DigitalFilter *filter);
 DigitalFilter *filter_make_digital_filter(
     size_t n_feedforward, 
@@ -30,10 +38,6 @@ DigitalFilter *filter_make_digital_filter(
     size_t n_feedback,
     const double complex feedback[]
 );
-void filter_reset_digital_filter(DigitalFilter *filter);
-void filter_free_digital_filter(DigitalFilter *filter);
-DigitalFilter *filter_make_savgol(size_t window_length, int deriv, int polyorder);
-DigitalFilter *filter_make_integrator();
 DigitalFilter *filter_make_ewma(double alpha);
 DigitalFilter *filter_make_first_order_iir(double cutoff_frequency);
 DigitalFilter *filter_make_sinc(
@@ -41,5 +45,24 @@ DigitalFilter *filter_make_sinc(
     size_t length, 
     WindowFunction window
 );
+DigitalFilter *filter_make_savgol(size_t window_length, int deriv, int polyorder);
+void filter_reset_digital_filter(DigitalFilter *filter);
+void filter_free_digital_filter(DigitalFilter *filter);
+
+Pid filter_make_pid(
+    double complex proportional_gain, 
+    double complex integral_gain, 
+    double complex derivative_gain
+);
+void filter_reset_pid(Pid *pid);
+double complex filter_update_pid(double complex input, Pid *pid);
+
+MovingAverage *filter_make_moving_average(size_t length);
+double complex filter_evaluate_moving_average(
+    double complex input, 
+    MovingAverage *filter
+);
+void filter_reset_moving_average(MovingAverage *filter);
+void filter_free_moving_average(MovingAverage *filter);
 
 #endif

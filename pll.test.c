@@ -11,11 +11,13 @@
 
 void test_pll();
 void test_vco();
+void test_detect_iq();
 double complex pll_filter(double complex input, void *filter);
 double complex detected_phase;
 
 int main(int , char **) {
     //test_vco();
+    test_detect_iq();
     test_pll();
     return 0;
 }
@@ -37,11 +39,42 @@ void test_vco() {
     assert_complex_equal(vco.phasor, -complex_frequency, 5);
 }
 
+void test_detect_iq() {
+    FILE *iq_csv = fopen("tests/iq.csv", "w");
+
+    fprintf(iq_csv, "reference_i,reference_q,detected_i,detected_q,reference_phase,detected_phase,phase_error\n");
+
+    Sinusoid reference = sinusoid_make(0.0, 0.1);
+    CircularBuffer *lagged_input = circbuf_new(TEST_SIGNAL_LENGTH);
+    for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
+        reference = update_vco(0, reference);
+        circbuf_shift(sinusoid_inphase(reference), lagged_input);
+        Sinusoid detected = detect_iq(reference, lagged_input);
+        double phase_error = sinusoid_phase(detected) - sinusoid_phase(reference);
+        fprintf(
+            iq_csv, 
+            "%f,%f,%f,%f,%f,%f,%f\n", 
+            sinusoid_inphase(reference), 
+            sinusoid_quadrature(reference), 
+            sinusoid_inphase(detected), 
+            sinusoid_quadrature(detected),
+            sinusoid_phase(reference),
+            sinusoid_phase(detected),
+            phase_error
+        );
+        fflush(iq_csv);
+        if (i > 100) {
+            munit_assert_double(fabs(phase_error), <, 0.1);
+        }
+    }
+}
+
 void test_pll() {
 
-    DigitalFilter *filter = filter_make_integrator();
+    DigitalFilter *filter = filter_make_ewma(0.1);
+    munit_assert_not_null(filter);
     
-    Sinusoid initial_vco = sinusoid_make(0, 0.1);
+    Sinusoid initial_vco = sinusoid_make(0.0, 0.2);
 
     PhaseLockedLoop *pll = pll_make(
         initial_vco, 
@@ -58,18 +91,21 @@ void test_pll() {
     FILE *const_freq_csv = fopen("tests/const_freq.csv", "w");
     munit_assert_not_null(const_freq_csv);
 
-    fprintf(const_freq_csv, "index,test,pll,pll_freq,detected_phase\n");
+    fprintf(const_freq_csv, "index,test,pll,measured_demod_inphase,measured_demod_quad,pll_freq,detected_phase\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         test_signal[i] = sin(i / 4.0);
         pll_out[i] = pll_update(test_signal[i], pll);
+        double vco_frequency = complex_frequency_to_ordinary(pll->vco.complex_frequency);
         fprintf(
             const_freq_csv, 
-            "%d,%f,%f,%f,%f\n", 
+            "%d,%f,%f,%f,%f,%f,%f\n", 
             i, 
             test_signal[i], 
-            -sinusoid_quadrature(pll_out[i]),
-            complex_frequency_to_ordinary(pll->vco.complex_frequency),
+            sinusoid_inphase(pll_out[i]),
+            sinusoid_inphase(pll->input_iq),
+            sinusoid_quadrature(pll->input_iq),
+            vco_frequency,
             carg(detected_phase)
         );
     }
@@ -84,7 +120,7 @@ void test_pll() {
     FILE *sweep_csv  = fopen("tests/sweep.csv", "w");
     munit_assert_not_null(sweep_csv);
 
-    Sinusoid vco = sinusoid_make(0, 0.5);
+    Sinusoid vco = sinusoid_make(0, 0.0);
 
     fprintf(sweep_csv, "index,test,pll,pll_freq,detected_phase,test_frequency\n");
 
@@ -93,13 +129,14 @@ void test_pll() {
         vco = update_vco(angular_to_complex_frequency(ordinary_frequency_to_angular(frequency)), vco);
         test_signal[i] = sinusoid_inphase(vco);
         pll_out[i] = pll_update(test_signal[i], pll);
+        double vco_frequency = complex_frequency_to_ordinary(pll->vco.complex_frequency);
         fprintf(
             sweep_csv, 
             "%d,%f,%f,%f,%f,%f\n", 
             i, 
             test_signal[i], 
             -sinusoid_quadrature(pll_out[i]),
-            complex_frequency_to_ordinary(pll->vco.complex_frequency),
+            vco_frequency,
             carg(detected_phase),
             complex_frequency_to_ordinary(vco.complex_frequency)
         );
@@ -113,5 +150,6 @@ void test_pll() {
 
 double complex pll_filter(double complex input, void *filter) {
     detected_phase = input;
-    return filter_evaluate(input, filter) * 1 + input * 200;
+    double complex filtered = filter_evaluate(input, filter);
+    return filtered;
 }

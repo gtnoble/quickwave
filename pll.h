@@ -9,6 +9,7 @@
 typedef struct {
     double complex (*loop_filter)(double complex input, void *filter_context);
     void *filter_context;
+    Sinusoid input_iq;
     Sinusoid vco;
     CircularBuffer *lagged_input;
 } PhaseLockedLoop;
@@ -23,6 +24,6 @@ Sinusoid pll_update(double input, PhaseLockedLoop *pll);
 void pll_reset(Sinusoid vco_initial, PhaseLockedLoop *pll);
 void pll_free(PhaseLockedLoop *pll);
 Sinusoid update_vco(double _Complex complex_freq, Sinusoid vco);
-Sinusoid quadrature_demodulate(Sinusoid reference, CircularBuffer *lagged_input);
+Sinusoid detect_iq(Sinusoid reference, CircularBuffer *lagged_input);
 
 #endif

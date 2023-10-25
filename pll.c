@@ -55,12 +55,12 @@ void pll_free(PhaseLockedLoop *pll) {
 
 Sinusoid pll_update(double input, PhaseLockedLoop *pll) {
     circbuf_shift(input, pll->lagged_input);
-    Sinusoid phase_error = sinusoid_negate_phase(
-        quadrature_demodulate(
-            pll->vco, 
-            pll->lagged_input
-        )
-    );
+    pll->input_iq = detect_iq(pll->vco, pll->lagged_input);
+    Sinusoid phase_error = 
+        sinusoid_mult(
+            sinusoid_negate_phase(pll->vco),
+            pll->input_iq
+        );
     double complex next_frequency = pll->loop_filter(phase_error.phasor, pll->filter_context);
     pll->vco = update_vco(next_frequency, pll->vco);
     return pll->vco;
@@ -80,22 +80,22 @@ Sinusoid update_vco(double _Complex update_frequency, Sinusoid vco) {
     return updated_vco;
 }
 
-Sinusoid quadrature_demodulate(Sinusoid reference, CircularBuffer *lagged_input) {
+Sinusoid detect_iq(Sinusoid reference, CircularBuffer *lagged_input) {
     double reference_normal_frequency = angular_frequency_to_ordinary(
         sinusoid_angular_freq(reference)
     );
     assert(reference_normal_frequency > 0);
     int last_element_index = -(lagged_input->n_elements) + 1;
     double quadrature_lag = -(1 / reference_normal_frequency) / 4.0;
-    double in_phase_element_index = 
+    double quadrature_measurement_lag = 
         quadrature_lag > last_element_index ? quadrature_lag : last_element_index;
 
-    int quadrature_element_index = 0;
+    int in_phase_element_index = 0;
     Sinusoid input_sinusoid = {
         .complex_frequency = reference.complex_frequency,
         .phasor = 
-            circbuf_interpolated_element(in_phase_element_index, lagged_input) +
-            *circbuf_element(quadrature_element_index, lagged_input) * I
+            circbuf_interpolated_element(quadrature_measurement_lag, lagged_input) * I +
+            *circbuf_element(in_phase_element_index, lagged_input) 
     };
-    return sinusoid_mult(reference, input_sinusoid);
+    return input_sinusoid;
 }
