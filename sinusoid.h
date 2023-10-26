@@ -13,6 +13,7 @@ Sinusoid sinusoid_make(double phase_degrees, double normalized_frequency);
 Sinusoid sinusoid_add(Sinusoid a, Sinusoid b);
 Sinusoid sinusoid_mult(Sinusoid a, Sinusoid b);
 Sinusoid sinusoid_div(Sinusoid a, Sinusoid b);
+double sinusoid_evaluate(Sinusoid x);
 double sinusoid_inphase(Sinusoid x);
 double sinusoid_quadrature(Sinusoid x);
 double sinusoid_amplitude(Sinusoid x);

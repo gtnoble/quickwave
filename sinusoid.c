@@ -47,6 +47,10 @@ Sinusoid sinusoid_div(Sinusoid a, Sinusoid b) {
     return result;
 }
 
+double sinusoid_evaluate(Sinusoid x) {
+    return sinusoid_inphase(x) + sinusoid_quadrature(x);
+}
+
 double sinusoid_inphase(Sinusoid x) {
     return creal(x.phasor);
 }
