@@ -1,45 +1,34 @@
 CC=gcc
 CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c2x
-TESTFLAGS=${CFLAGS} 
-BUILDFLAGS=${CFLAGS} -fPIC
 
-tests/test_%: tests/%.o tests/%.test.o tests
-	${CC} ${TESTFLAGS} -c $^ -o $@
+LIB_SOURCE_DIR=src/lib
+LIB_SOURCE=${wildcard ${LIB_SOURCE_DIR}/*.c}
+LIB_OBJECTS=$(patsubst %.c,%.o,${LIB_SOURCE})
 
-tests/test_buffer: tests/buffer.test.o tests/buffer.o ext/munit/munit.o
-	${CC} ${TESTFLAGS} $^ -lm -o $@
+TEST_SOURCE_DIR=src/test
 
-tests/test_filter: tests/filter.test.o tests/filter.o tests/savgol.o tests/buffer.o  tests/window.o ext/munit/munit.o
-	${CC} ${TESTFLAGS} $^ -lm -o $@
+tests/test_%: ${TEST_SOURCE_DIR}/%.test.o lib/libquickwave.a ext/munit/munit.o
+	$(CC) ${CFLAGS} $^ -lm -o $@
 
-tests/test_pll: tests/pll.test.o tests/filter.o tests/pll.o tests/buffer.o tests/sinusoid.o tests/window.o tests/savgol.o ext/munit/munit.o
-	${CC} ${TESTFLAGS} $^ -lm -o $@
+${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
+	$(CC) ${CFLAGS} -c -Iext/munit -Isrc/lib $< -o $@
 
-tests/%.o: %.c tests
-	${CC} ${TESTFLAGS} -c $< -o $@
+lib/libquickwave.a: ${LIB_OBJECTS}
+	ar rcs $@ $^
 
-tests/%.test.o: tests/%.test.c ext/munit/munit.h tests
-	${CC} ${TESTFLAGS} -c $< -o $@
-
-tests/%.test.c: %.h
-
-lib/%.o: %.c
-	${CC} ${BUILDFLAGS} -c $< -o $@
-
-%.c: %.h
+${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${LIB_SOURCE_DIR}/%.h
+	cc ${CFLAGS} -c $< -o $@
 
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
-	${CC} -c $< -o $@
-
-tests:
-	mkdir -p tests
+	cc -c $< -o $@
 
 test: tests/test_filter tests/test_pll tests/test_buffer
 
 clean:
-	rm -rf tests/*.o
+	rm -rf tests/*
 	rm -rf bin/*
 	rm -rf lib/*
-	rm -f *.so
+	rm -rf src/lib/*.o
+	rm -rf src/test/*.o
 
-.PHONY: clean tests test
+.PHONY: clean test

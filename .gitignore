@@ -3,6 +3,7 @@
 *.sqlite
 *.log
 *.swp
+*.a
 .vscode
 *.csv
 tests/*
