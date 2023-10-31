@@ -42,8 +42,8 @@ Sinusoid pll_update(double input, PhaseLockedLoop *pll) {
             pll->filter_context
         );
 
-    Sinusoid output = pll->vco;
     pll->vco = update_vco(next_frequency, pll->vco);
+    Sinusoid output = pll->vco;
     return output;
 }
 
@@ -66,8 +66,8 @@ Sinusoid quadrature_mix(Sinusoid reference, double complex input) {
     Sinusoid input_sinusoid = {
         .complex_frequency = reference.complex_frequency,
         .phasor = 
-            sinusoid_quadrature(reference) * input * I +
-            sinusoid_inphase(reference) * input
+            reference.phasor * input / I +
+            reference.phasor * input
     };
     return input_sinusoid;
 }
