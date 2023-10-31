@@ -6,22 +6,27 @@
 #include <stdbool.h>
 #include <complex.h>
 
+/**
+ * @brief 
+ * Phase-locked loop.
+ * A numerically controlled oscillator is iteratively adjusted until its phase and frequency are aligned with an input signal.
+ * Can be used as a sort of continuous sinusoid fit.
+ */
 typedef struct {
     double complex (*loop_filter)(double complex input, void *filter_context);
     void *filter_context;
     Sinusoid input_iq;
-    Sinusoid vco;
+    Sinusoid nco;
 } PhaseLockedLoop;
 
-PhaseLockedLoop *pll_make(
+PhaseLockedLoop pll_make(
     Sinusoid vco_initial,
     double complex (*loop_filter)(double complex input, void *filter_context),
     void *filter_context
 );
-Sinusoid pll_update(double input, PhaseLockedLoop *pll);
+Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll);
 void pll_reset(Sinusoid vco_initial, PhaseLockedLoop *pll);
-void pll_free(PhaseLockedLoop *pll);
-Sinusoid update_vco(double _Complex complex_freq, Sinusoid vco);
+Sinusoid nco_update(double complex complex_freq, Sinusoid nco);
 Sinusoid quadrature_mix(Sinusoid reference, double complex input);
 
 #endif

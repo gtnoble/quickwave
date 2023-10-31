@@ -4,6 +4,10 @@
 #include <complex.h>
 #include "buffer.h"
 
+/**
+ * @brief 
+ * A sinusoid with a specified phase and frequency
+ */
 typedef struct {
     double _Complex complex_frequency;
     double _Complex phasor;

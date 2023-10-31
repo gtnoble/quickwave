@@ -30,11 +30,27 @@ static double genfact(int a, int b) {
 // calculate the weight of the ith dat point for the tth
 // lease-square point of the sth derivative, over 2m+1 points
 // order n
+
+/**
+ * @brief 
+ * Calucluates the coefficients of a Savitzky-Golay (savgol) filter
+ * @param i Index of coefficient. Must be greater than or equal to zero
+ * @param center Where to center the estimated value. Zero means that it is centered at the middle of the filter
+ * @param window Number of filter coefficients. Must be odd
+ * @param polyorder Order of polynomial used to perform the smoothing
+ * @param derivative Order of the derivative of the estimated value
+ * @return double Filter coefficient
+ */
 double savgol_weight(int i, int center, int window, int polyorder, int derivative) {
     assert(i >= 0);
     assert(window > 0);
-    // Window length must be odd
+
+    /**
+     * @brief 
+     * Window length must be odd
+     */
     assert((window & 0x1) == 1);
+
     assert(polyorder >= 0);
     assert(derivative >= 0);
 

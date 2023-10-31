@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <complex.h>
 
+/**
+ * @brief 
+ * Circular buffer. Stores the n_elements most recently inserted elements.
+ * Older elements are overwritten
+ */
 typedef struct {
     double complex *buffer;
     size_t n_elements;
@@ -18,6 +23,6 @@ void circbuf_reset(CircularBuffer *buf);
 void circbuf_free(CircularBuffer *buf);
 
 int modular_add(int a, int b, int max);
-int modulo_Euclidean(int a, int b);
+int modulo_euclidean(int a, int b);
 
 #endif

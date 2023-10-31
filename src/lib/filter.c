@@ -9,7 +9,14 @@
 
 double sinc(double x);
 
-double complex filter_evaluate(double complex input, DigitalFilter *filter) {
+/**
+ * @brief 
+ * Evaluates a linear digital filter
+ * @param input Next input signal value
+ * @param filter Filter to apply
+ * @return double Filtered value
+ */
+double complex filter_evaluate_digital_filter(double complex input, DigitalFilter *filter) {
     assert(filter != NULL);
 
     double _Complex accumulate = 0;
@@ -32,6 +39,15 @@ double complex filter_evaluate(double complex input, DigitalFilter *filter) {
     return accumulate;
 }
 
+/**
+ * @brief 
+ * Makes and allocates a linear digital filter.
+ * @param n_feedforward Number of filter feedforward coefficients
+ * @param feedforward Feedforward coefficient values
+ * @param n_feedback Number of filter feedback coefficients
+ * @param feedback Feedback coefficient values
+ * @return DigitalFilter* Constucted filter
+ */
 DigitalFilter *filter_make_digital_filter(
     size_t n_feedforward, 
     const double complex feedforward[],
@@ -85,11 +101,21 @@ DigitalFilter *filter_make_digital_filter(
         return NULL;
 }
 
+/**
+ * @brief 
+ * Resets a linear filter to its initial state
+ * @param filter Filter to be reset
+ */
 void filter_reset_digital_filter(DigitalFilter *filter) {
     circbuf_reset(filter->previous_inputs);
     circbuf_reset(filter->previous_outputs);
 }
 
+/**
+ * @brief 
+ * Frees memory associated with a linear filter
+ * @param filter Filter to be freed
+ */
 void filter_free_digital_filter(DigitalFilter *filter) {
     free(filter->feedforward);
     free(filter->feedback);
@@ -98,6 +124,14 @@ void filter_free_digital_filter(DigitalFilter *filter) {
     free(filter);
 }
 
+/**
+ * @brief 
+ * Makes and allocates Savitzky-Golay (savgol) filter
+ * @param filter_length Number of filter coefficients
+ * @param derivative Order of the derivative for the returned value. 0 means no derivative. 
+ * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
+ * @return DigitalFilter* Constructed filter
+ */
 DigitalFilter *filter_make_savgol(
     size_t filter_length, 
     int derivative, 
@@ -125,6 +159,14 @@ DigitalFilter *filter_make_savgol(
     return filter_make_digital_filter(filter_length, feedforward, 0, NULL);
 }
 
+/**
+ * @brief 
+ * Makes a proportional-integral-derivative (PID) filter. Useful for control applications.
+ * @param proportional_gain Proportional gain
+ * @param integral_gain Integral gain
+ * @param derivative_gain Derivative gain
+ * @return Pid Constructed filter
+ */
 Pid filter_make_pid(
     double complex proportional_gain, 
     double complex integral_gain, 
@@ -140,7 +182,14 @@ Pid filter_make_pid(
     return pid;
 }
 
-double complex filter_update_pid(double complex input, Pid *pid) {
+/**
+ * @brief 
+ * Evaluates a PID filter
+ * @param input Next input signal value 
+ * @param pid PID filter
+ * @return double Filtered value
+ */
+double complex filter_evaluate_pid(double complex input, Pid *pid) {
     double complex proportional = input * pid->proportional_gain;
     double complex integral = pid->integral_gain * (pid->accumulated_input += input);
     double complex derivative = pid->derivative_gain * (input - pid->previous_input);
@@ -148,11 +197,22 @@ double complex filter_update_pid(double complex input, Pid *pid) {
     return proportional + integral + derivative;
 }
 
+/**
+ * @brief 
+ * Resets a PID filter to its initial values
+ * @param pid PID filter to reset
+ */
 void filter_reset_pid(Pid *pid) {
     pid->accumulated_input = 0.0;
     pid->previous_input = 0.0;
 }
 
+/**
+ * @brief 
+ * Makes an exponentially weighted moving average (EWMA) filter
+ * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
+ * @return DigitalFilter* EWMA filter 
+ */
 DigitalFilter *filter_make_ewma(double alpha) {
     assert(alpha >= 0.0);
     assert(alpha <= 1.0);
@@ -162,6 +222,12 @@ DigitalFilter *filter_make_ewma(double alpha) {
     return filter_make_digital_filter(1, feedforward, 1, feedback);
 }
 
+/**
+ * @brief 
+ * Makes a first order IIR low-pass filter. This is a variant of the EWMA filter.
+ * @param cutoff_frequency Normalized cutoff frequency
+ * @return DigitalFilter* Constructed filter
+ */
 DigitalFilter *filter_make_first_order_iir(double cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
@@ -175,6 +241,14 @@ DigitalFilter *filter_make_first_order_iir(double cutoff_frequency) {
     );
 }
 
+/**
+ * @brief 
+ * Makes and allocates a windowed-sinc low-pass filter
+ * @param cutoff_frequency Normalized cutoff frequency
+ * @param length Number of filter coefficients
+ * @param window Windowing function
+ * @return DigitalFilter* Constructed filter
+ */
 DigitalFilter *filter_make_sinc(
     double cutoff_frequency, 
     size_t length, 
@@ -198,6 +272,12 @@ DigitalFilter *filter_make_sinc(
     return filter_make_digital_filter(length, feedforward, 0, NULL);
 }
 
+/**
+ * @brief 
+ * Makes and allocates a simple moving average filter
+ * @param length Number of sequential elements to average
+ * @return MovingAverage* Constructed filter
+ */
 MovingAverage *filter_make_moving_average(size_t length) {
     MovingAverage *filter = malloc(sizeof(MovingAverage));
     
@@ -216,6 +296,13 @@ MovingAverage *filter_make_moving_average(size_t length) {
     return filter;
 }
 
+/**
+ * @brief 
+ * Evaluates a moving average filter
+ * @param input Next input signal value
+ * @param filter Moving average filter
+ * @return double Filtered value
+ */
 double complex filter_evaluate_moving_average(
     double complex input, 
     MovingAverage *filter
@@ -225,16 +312,32 @@ double complex filter_evaluate_moving_average(
     return filter->moving_sum / filter->previous_input->n_elements;
 }
 
+/**
+ * @brief 
+ * Resets moving average filter to initial state
+ * @param filter Filter to reset
+ */
 void filter_reset_moving_average(MovingAverage *filter) {
     circbuf_reset(filter->previous_input);
     filter->moving_sum = 0;
 }
 
+/**
+ * @brief 
+ * Frees the memory assicated with a moving average filter
+ * @param filter Filter to be freed
+ */
 void filter_free_moving_average(MovingAverage *filter) {
     free(filter->previous_input);
     free(filter);
 }
 
+/**
+ * @brief 
+ * Normalized sinc function
+ * @param x Operand
+ * @return Output
+ */
 double sinc(double x) {
     return x == 0.0 ? 1.0 : sin(M_PI * x) / (M_PI * x);
 }

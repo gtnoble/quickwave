@@ -25,18 +25,18 @@ int main(int , char **) {
 void test_vco() {
     double complex complex_frequency = 1.0 * I;
 
-    Sinusoid vco = {
+    Sinusoid nco = {
         .complex_frequency = 1.0,
         .phasor = 1.0
     };
 
-    vco = update_vco(complex_frequency, vco);
-    assert_complex_equal(vco.complex_frequency, complex_frequency, 5);
-    assert_complex_equal(vco.phasor, complex_frequency, 5);
-    vco = update_vco(complex_frequency, vco);
-    assert_complex_equal(vco.phasor, -1.0, 5);
-    vco = update_vco(complex_frequency, vco);
-    assert_complex_equal(vco.phasor, -complex_frequency, 5);
+    nco = nco_update(complex_frequency, nco);
+    assert_complex_equal(nco.complex_frequency, complex_frequency, 5);
+    assert_complex_equal(nco.phasor, complex_frequency, 5);
+    nco = nco_update(complex_frequency, nco);
+    assert_complex_equal(nco.phasor, -1.0, 5);
+    nco = nco_update(complex_frequency, nco);
+    assert_complex_equal(nco.phasor, -complex_frequency, 5);
 }
 
 void test_quadrature_mix() {
@@ -62,7 +62,7 @@ void test_quadrature_mix() {
 
     Sinusoid reference = sinusoid_make(0.0, 0.02);
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
-        reference = update_vco(0, reference);
+        reference = nco_update(0, reference);
         Sinusoid mixed = quadrature_mix(reference, sinusoid_evaluate(reference));
         fprintf(
             iq_csv, 
@@ -92,13 +92,11 @@ void test_pll() {
     
     Sinusoid initial_vco = sinusoid_make(0.0, 0.01);
 
-    PhaseLockedLoop *pll = pll_make(
+    PhaseLockedLoop pll = pll_make(
         initial_vco, 
         pll_filter,
         &filter
     );
-
-    munit_assert_not_null(pll);
 
     double test_signal[TEST_SIGNAL_LENGTH];
     Sinusoid pll_out[TEST_SIGNAL_LENGTH];
@@ -110,8 +108,8 @@ void test_pll() {
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         test_signal[i] = sin(i / 4.0);
-        pll_out[i] = pll_update(test_signal[i], pll);
-        double vco_frequency = complex_frequency_to_ordinary(pll->vco.complex_frequency);
+        pll_out[i] = pll_evaluate(test_signal[i], &pll);
+        double vco_frequency = complex_frequency_to_ordinary(pll.nco.complex_frequency);
         fprintf(
             const_freq_csv, 
             "%d,%f,%f,%f,%f,%f,%f\n", 
@@ -129,22 +127,22 @@ void test_pll() {
 
     fclose(const_freq_csv);
 
-    pll_reset(initial_vco, pll);
+    pll_reset(initial_vco, &pll);
     filter_reset_pid(&filter);
 
     FILE *sweep_csv  = fopen("tests/sweep.csv", "w");
     munit_assert_not_null(sweep_csv);
 
-    Sinusoid vco = sinusoid_make(0, 0.0);
+    Sinusoid nco = sinusoid_make(0, 0.0);
 
     fprintf(sweep_csv, "index,test,pll,pll_freq,detected_phase,test_frequency\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         double frequency = (((double) TEST_SIGNAL_LENGTH - i) / TEST_SIGNAL_LENGTH) / 2 / 2;
-        vco = update_vco(angular_to_complex_frequency(ordinary_frequency_to_angular(frequency)), vco);
-        test_signal[i] = sinusoid_inphase(vco);
-        pll_out[i] = pll_update(test_signal[i], pll);
-        double vco_frequency = complex_frequency_to_ordinary(pll->vco.complex_frequency);
+        nco = nco_update(angular_to_complex_frequency(ordinary_frequency_to_angular(frequency)), nco);
+        test_signal[i] = sinusoid_inphase(nco);
+        pll_out[i] = pll_evaluate(test_signal[i], &pll);
+        double vco_frequency = complex_frequency_to_ordinary(pll.nco.complex_frequency);
         fprintf(
             sweep_csv, 
             "%d,%f,%f,%f,%f,%f\n", 
@@ -153,7 +151,7 @@ void test_pll() {
             sinusoid_inphase(pll_out[i]),
             vco_frequency,
             creal(detected_phase) + cimag(detected_phase),
-            complex_frequency_to_ordinary(vco.complex_frequency)
+            complex_frequency_to_ordinary(nco.complex_frequency)
         );
     }
 
@@ -168,6 +166,6 @@ double complex pll_filter(double complex input, void *context) {
     double complex filtered = 
         angular_to_complex_frequency(
             creal(
-                filter_update_pid(carg(input), context))); 
+                filter_evaluate_pid(carg(input), context))); 
     return filtered; 
 }

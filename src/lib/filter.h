@@ -5,6 +5,10 @@
 #include "window.h"
 #include <complex.h>
 
+/**
+ * @brief 
+ * Linear filter. Can be IIR or FIR
+ */
 typedef struct {
     double complex *feedforward;
     size_t n_feedforward;
@@ -18,11 +22,22 @@ typedef struct {
     int window_size;
 } DigitalFilter;
 
+/**
+ * @brief 
+ * Simple moving average.
+ * While the simple moving average is a linear filter,
+ * this is a more optimized O(1) implementation than a naive linear filter.
+ */
 typedef struct {
     double complex moving_sum;
     CircularBuffer *previous_input;
 } MovingAverage;
 
+/**
+ * @brief 
+ * Proportional-integral-derivative filter.
+ * Useful for control applications.
+ */
 typedef struct {
     double complex previous_input;
     double complex accumulated_input;
@@ -31,7 +46,7 @@ typedef struct {
     double complex derivative_gain;
 } Pid;
 
-double complex filter_evaluate(double complex input, DigitalFilter *filter);
+double complex filter_evaluate_digital_filter(double complex input, DigitalFilter *filter);
 DigitalFilter *filter_make_digital_filter(
     size_t n_feedforward, 
     const double complex feedforward[],
@@ -55,7 +70,7 @@ Pid filter_make_pid(
     double complex derivative_gain
 );
 void filter_reset_pid(Pid *pid);
-double complex filter_update_pid(double complex input, Pid *pid);
+double complex filter_evaluate_pid(double complex input, Pid *pid);
 
 MovingAverage *filter_make_moving_average(size_t length);
 double complex filter_evaluate_moving_average(
