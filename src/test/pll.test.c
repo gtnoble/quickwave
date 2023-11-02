@@ -2,6 +2,7 @@
 #include <math.h>
 #include <complex.h>
 #include "sinusoid.h"
+#include "phasor.h"
 #include "pll.h"
 #include "test.h"
 #include "constants.h"
@@ -110,10 +111,9 @@ void test_pll() {
         double vco_frequency = complex_frequency_to_ordinary(pll.nco.complex_frequency);
         fprintf(
             const_freq_csv, 
-            "%d,%f,%f,%f,%f,%f,%f\n", 
+            "%d,%f,%f,%f,%f,%f\n", 
             i, 
             test_signal[i], 
-            sinusoid_evaluate(pll_out[i]),
             sinusoid_inphase(pll_out[i]),
             sinusoid_quadrature(pll_out[i]),
             vco_frequency,

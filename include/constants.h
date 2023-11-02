@@ -1,3 +1,6 @@
+#ifndef QUICKWAVE_CONSTANTS
+#define QUICKWAVE_CONSTANTS
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -17,3 +20,5 @@ static inline double degrees_to_radians(double degrees) {
 static inline double radians_to_degrees(double radians) {
     return radians * 180 / M_PI;
 }
+
+#endif
