@@ -22,6 +22,14 @@ ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${LIB_SOURCE_DIR}/%.h
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 	cc -c $< -o $@
 
+tests/iq.csv: tests/test_pll
+	./tests/test_pll
+
+tests/%.pdf: ${TEST_SOURCE_DIR}/plot.plt ${TEST_SOURCE_DIR}/%.plt tests/%.csv 
+	gnuplot -c  $^ $@
+
+.PHONY: clean test
+
 test: tests/test_filter tests/test_pll tests/test_buffer
 
 clean:
@@ -30,5 +38,3 @@ clean:
 	rm -rf lib/*
 	rm -rf src/lib/*.o
 	rm -rf src/test/*.o
-
-.PHONY: clean test

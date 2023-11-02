@@ -39,7 +39,7 @@ static double genfact(int a, int b) {
  * @param window Number of filter coefficients. Must be odd
  * @param polyorder Order of polynomial used to perform the smoothing
  * @param derivative Order of the derivative of the estimated value
- * @return double Filter coefficient
+ * @return Filter coefficient
  */
 double savgol_weight(int i, int center, int window, int polyorder, int derivative) {
     assert(i >= 0);

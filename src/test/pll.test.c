@@ -44,16 +44,13 @@ void test_quadrature_mix() {
 
     const char output_column_headers[] =
         "reference,"
-        "reference_i,"
-        "reference_q,"
-        "mixed,"
         "mixed_i,"
         "mixed_q,"
         "reference_phase,"
         "mixed_phase,"
         "\n";
     
-    const char output_column_format[] = "%f,%f,%f,%f,%f,%f,%f,%f\n";
+    const char output_column_format[] = "%f,%f,%f,%f,%f\n";
 
     fprintf(
         iq_csv, 
@@ -63,14 +60,11 @@ void test_quadrature_mix() {
     Sinusoid reference = sinusoid_make(0.0, 0.02);
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         reference = nco_update(0, reference);
-        Sinusoid mixed = quadrature_mix(reference, sinusoid_evaluate(reference));
+        Sinusoid mixed = quadrature_mix(reference, sinusoid_inphase(reference));
         fprintf(
             iq_csv, 
             output_column_format, 
-            sinusoid_evaluate(reference),
             sinusoid_inphase(reference), 
-            sinusoid_quadrature(reference), 
-            sinusoid_evaluate(mixed),
             sinusoid_inphase(mixed), 
             sinusoid_quadrature(mixed),
             sinusoid_phase(reference),
@@ -78,7 +72,11 @@ void test_quadrature_mix() {
         );
 
         //munit_assert_double_equal(sinusoid_evaluate(mixed), sinusoid_evaluate(reference), 4);
-        //munit_assert_double(sinusoid_quadrature(mixed), >=, 0);
+        //munit_assert_double(sinusoid_quadrature(mixed), >=, -1);
+        //munit_assert_double(sinusoid_quadrature(mixed), <=, 1);
+
+        //munit_assert_double(sinusoid_inphase(mixed), >=, 0);
+        //munit_assert_double(sinusoid_inphase(mixed), <=, 1);
 
         fflush(iq_csv);
     }

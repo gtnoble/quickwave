@@ -14,7 +14,7 @@ double sinc(double x);
  * Evaluates a linear digital filter
  * @param input Next input signal value
  * @param filter Filter to apply
- * @return double Filtered value
+ * @return Filtered value
  */
 double complex filter_evaluate_digital_filter(double complex input, DigitalFilter *filter) {
     assert(filter != NULL);
@@ -46,7 +46,7 @@ double complex filter_evaluate_digital_filter(double complex input, DigitalFilte
  * @param feedforward Feedforward coefficient values
  * @param n_feedback Number of filter feedback coefficients
  * @param feedback Feedback coefficient values
- * @return DigitalFilter* Constucted filter
+ * @return Constucted filter
  */
 DigitalFilter *filter_make_digital_filter(
     size_t n_feedforward, 
@@ -130,7 +130,7 @@ void filter_free_digital_filter(DigitalFilter *filter) {
  * @param filter_length Number of filter coefficients
  * @param derivative Order of the derivative for the returned value. 0 means no derivative. 
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
- * @return DigitalFilter* Constructed filter
+ * @return Constructed filter
  */
 DigitalFilter *filter_make_savgol(
     size_t filter_length, 
@@ -165,7 +165,7 @@ DigitalFilter *filter_make_savgol(
  * @param proportional_gain Proportional gain
  * @param integral_gain Integral gain
  * @param derivative_gain Derivative gain
- * @return Pid Constructed filter
+ * @return Constructed filter
  */
 Pid filter_make_pid(
     double complex proportional_gain, 
@@ -187,7 +187,7 @@ Pid filter_make_pid(
  * Evaluates a PID filter
  * @param input Next input signal value 
  * @param pid PID filter
- * @return double Filtered value
+ * @return Filtered value
  */
 double complex filter_evaluate_pid(double complex input, Pid *pid) {
     double complex proportional = input * pid->proportional_gain;
@@ -211,7 +211,7 @@ void filter_reset_pid(Pid *pid) {
  * @brief 
  * Makes an exponentially weighted moving average (EWMA) filter
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
- * @return DigitalFilter* EWMA filter 
+ * @return EWMA filter 
  */
 DigitalFilter *filter_make_ewma(double alpha) {
     assert(alpha >= 0.0);
@@ -226,7 +226,7 @@ DigitalFilter *filter_make_ewma(double alpha) {
  * @brief 
  * Makes a first order IIR low-pass filter. This is a variant of the EWMA filter.
  * @param cutoff_frequency Normalized cutoff frequency
- * @return DigitalFilter* Constructed filter
+ * @return Constructed filter
  */
 DigitalFilter *filter_make_first_order_iir(double cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
@@ -247,7 +247,7 @@ DigitalFilter *filter_make_first_order_iir(double cutoff_frequency) {
  * @param cutoff_frequency Normalized cutoff frequency
  * @param length Number of filter coefficients
  * @param window Windowing function
- * @return DigitalFilter* Constructed filter
+ * @return Constructed filter
  */
 DigitalFilter *filter_make_sinc(
     double cutoff_frequency, 
@@ -276,7 +276,7 @@ DigitalFilter *filter_make_sinc(
  * @brief 
  * Makes and allocates a simple moving average filter
  * @param length Number of sequential elements to average
- * @return MovingAverage* Constructed filter
+ * @return Constructed filter
  */
 MovingAverage *filter_make_moving_average(size_t length) {
     MovingAverage *filter = malloc(sizeof(MovingAverage));
@@ -301,7 +301,7 @@ MovingAverage *filter_make_moving_average(size_t length) {
  * Evaluates a moving average filter
  * @param input Next input signal value
  * @param filter Moving average filter
- * @return double Filtered value
+ * @return Filtered value
  */
 double complex filter_evaluate_moving_average(
     double complex input, 

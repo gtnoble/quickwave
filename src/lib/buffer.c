@@ -10,7 +10,7 @@
  * Inserts an element into the beginning of the buffer and returns the last element
  * @param element Element to be inserted into the beginning of the buffer
  * @param buf Buffer to be operated on
- * @return double Last element in the buffer, before being overwritten
+ * @return Last element in the buffer, before being overwritten
  */
 double complex circbuf_shift(double complex element, CircularBuffer *buf) {
     assert(buf != NULL);
@@ -26,7 +26,7 @@ double complex circbuf_shift(double complex element, CircularBuffer *buf) {
  * Returns element at index. Negative indices represent previously inserted elements.
  * @param index Index of element to be returned
  * @param buf Buffer to be accessed
- * @return double* Indexed element
+ * @return Indexed element
  */
 double complex *circbuf_element(int index, CircularBuffer *buf) {
     return &buf->buffer[modular_add(index, buf->index, buf->n_elements)];
@@ -37,7 +37,7 @@ double complex *circbuf_element(int index, CircularBuffer *buf) {
  * Interpolates values of a circular buffer
  * @param index Generalized index to interpolate at. Can be between integer indices.
  * @param buf Buffer to be accessed
- * @return double Interpolated element
+ * @return Interpolated element
  */
 double complex circbuf_interpolated_element(double index, CircularBuffer *buf) {
     double fraction_between_elements = index - floor(index);
@@ -50,7 +50,7 @@ double complex circbuf_interpolated_element(double index, CircularBuffer *buf) {
  * @brief 
  * Makes and allocates a new circular buffer
  * @param size Number of elements in the circular buffer
- * @return CircularBuffer* 
+ * @return Circular buffer 
  */
 CircularBuffer *circbuf_new(size_t size) {
     CircularBuffer *circbuf = malloc(sizeof(CircularBuffer));
@@ -101,7 +101,7 @@ void circbuf_free(CircularBuffer *buf) {
  * @param a Summand
  * @param b Summand
  * @param max Divisor
- * @return int 
+ * @return Result
  */
 int modular_add(int a, int b, int max) {
     int sum = a + b;
@@ -113,7 +113,7 @@ int modular_add(int a, int b, int max) {
  * Performs Euclidean modulus
  * @param a Dividend
  * @param b Divisor
- * @return int Remainder
+ * @return Remainder
  */
 int modulo_euclidean(int a, int b) {
   int m = a % b;

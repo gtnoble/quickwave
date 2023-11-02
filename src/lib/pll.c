@@ -11,7 +11,7 @@
  * @param nco_initial Initial numerically controlled oscillator (NCO) state
  * @param loop_filter Loop filter function
  * @param filter_context Context data to pass to loop filter when it is called. Can store filter state objects, etc.
- * @return PhaseLockedLoop Phase-locked loop
+ * @return Phase-locked loop
  */
 PhaseLockedLoop pll_make(
     Sinusoid nco_initial,
@@ -43,11 +43,11 @@ void pll_reset(Sinusoid nco_initial, PhaseLockedLoop *pll) {
  * Evaluates a phase-locked loop (PLL)
  * @param input Next input signal value
  * @param pll PLL to evaluate
- * @return Sinusoid Numerically-controlled oscillator (NCO) state
+ * @return Numerically-controlled oscillator (NCO) state
  */
 Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll) {
-    pll->input_iq = quadrature_mix(pll->nco, input);
-    Sinusoid phase_error = sinusoid_negate_phase(pll->input_iq);
+    pll->input_iq = quadrature_mix(sinusoid_negate_phase(pll->nco), input);
+    Sinusoid phase_error = pll->input_iq;
 
     double complex next_frequency = 
         pll->loop_filter(
@@ -65,7 +65,7 @@ Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll) {
  * Updates frequency and phase of a Numerically-controlled osciallator (NCO) for the next time step.
  * @param update_frequency Next frequency
  * @param nco NCO to update
- * @return Sinusoid Updated NCO
+ * @return Updated NCO
  */
 Sinusoid nco_update(double complex update_frequency, Sinusoid nco) {
     double complex next_frequency =
@@ -85,15 +85,14 @@ Sinusoid nco_update(double complex update_frequency, Sinusoid nco) {
  * Performs quadrature mixing. Converts a baseband signal to and from an I/Q (inphase and quadrature) signal.
  * @param reference Oscillator used as the reference for the mixing.
  * @param input Next input signal value to mix
- * @return Sinusoid Mixed value
+ * @return Mixed value
  */
 Sinusoid quadrature_mix(Sinusoid reference, double complex input) {
 
     Sinusoid input_sinusoid = {
         .complex_frequency = reference.complex_frequency,
         .phasor = 
-            reference.phasor * input / I +
-            reference.phasor * input
+            input * reference.phasor
     };
     return input_sinusoid;
 }
