@@ -1,9 +1,10 @@
 CC=gcc
-CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c2x
+CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c2x -I${INCLUDE} 
 
 LIB_SOURCE_DIR=src/lib
 LIB_SOURCE=${wildcard ${LIB_SOURCE_DIR}/*.c}
 LIB_OBJECTS=$(patsubst %.c,%.o,${LIB_SOURCE})
+INCLUDE=include
 
 TEST_SOURCE_DIR=src/test
 
@@ -11,7 +12,7 @@ tests/test_%: ${TEST_SOURCE_DIR}/%.test.o lib/libquickwave.a ext/munit/munit.o
 	$(CC) ${CFLAGS} $^ -lm -o $@
 
 ${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
-	$(CC) ${CFLAGS} -c -Iext/munit -Isrc/lib $< -o $@
+	$(CC) ${CFLAGS} -c -Iext/munit $< -o $@
 
 lib/libquickwave.a: ${LIB_OBJECTS}
 	ar rcs $@ $^
