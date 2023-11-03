@@ -37,7 +37,7 @@ void test_iir() {
     for (int i = 1; i < TEST_SIGNAL_LENGTH; i++) {
         filtered[i] = filter_evaluate_digital_filter_complex(1.0, iir);
         munit_assert_double(creal(filtered[i]), >=, creal(filtered[i-1]));
-        fprintf(iir_response_csv, "%d,%f\n", i, creal(filtered[i]));
+        fprintf(iir_response_csv, "%f\n", creal(filtered[i]));
     }
     assert_complex_equal(filtered[TEST_SIGNAL_LENGTH - 1], 1.0, 2);
     fclose(iir_response_csv);
@@ -73,7 +73,7 @@ int test_filter(
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         output[i] = filter_evaluate_digital_filter_complex(input[i], filter);
-        fprintf(output_file, "%d,%f,%f\n", i, creal(input[i]), creal(output[i]));
+        fprintf(output_file, "%f,%f\n", creal(input[i]), creal(output[i]));
     }
 
     fclose(output_file);

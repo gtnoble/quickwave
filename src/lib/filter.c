@@ -1,11 +1,11 @@
 #include <stdlib.h>
-#include <assert.h>
 #include <math.h>
 #include <complex.h>
 #include <string.h>
 #include "savgol.h"
 #include "filter.h"
 #include "constants.h"
+#include "assertions.h"
 
 double sinc(double x);
 
@@ -39,12 +39,55 @@ ConvolutionComplex *filter_make_convolution_complex(
     return convolution;
 }
 
+ConvolutionReal *filter_make_convolution_real(
+    size_t n_stationary_elements, 
+    const double stationary_elements[]
+) {
+    CircularBufferReal *sliding_elements = circbuf_real_new(n_stationary_elements);
+    if (sliding_elements == NULL) {
+        return NULL;
+    }
+
+    size_t stationary_elements_size = sizeof(double) * n_stationary_elements;
+    ConvolutionReal *convolution = malloc(
+        sizeof(ConvolutionReal) + stationary_elements_size
+    );
+
+    if (convolution == NULL) {
+        circbuf_real_free(sliding_elements);
+        return NULL;
+    }
+
+    convolution->n_stationary_elements = n_stationary_elements;
+    convolution->sliding_elements = sliding_elements;
+    memcpy(
+        convolution->stationary_elements, 
+        stationary_elements, 
+        stationary_elements_size
+    );
+
+    return convolution;
+}
+
 void filter_reset_convolution_complex(ConvolutionComplex *convolution) {
+    assert_not_null(convolution);
     circbuf_complex_reset(convolution->sliding_elements);
 }
 
+void filter_reset_convolution_real(ConvolutionReal *convolution) {
+    assert_not_null(convolution);
+    circbuf_real_reset(convolution->sliding_elements);
+}
+
 void filter_free_convolution_complex(ConvolutionComplex *convolution) {
+    assert_not_null(convolution);
     circbuf_complex_free(convolution->sliding_elements);
+    free(convolution);
+}
+
+void filter_free_convolution_real(ConvolutionReal *convolution) {
+    assert_not_null(convolution);
+    circbuf_real_free(convolution->sliding_elements);
     free(convolution);
 }
 
@@ -52,6 +95,8 @@ double complex filter_convolve_complex(
     double complex input, 
     ConvolutionComplex *convolution
 ) {
+    assert_not_null(convolution);
+
     double complex accumulate = 0;
     assert(convolution->sliding_elements != NULL);
     circbuf_complex_shift(input, convolution->sliding_elements);
@@ -67,6 +112,8 @@ double filter_convolve_real(
     double input, 
     ConvolutionReal *convolution
 ) {
+    assert_not_null(convolution);
+
     double accumulate = 0;
     assert(convolution->sliding_elements != NULL);
     circbuf_real_shift(input, convolution->sliding_elements);
@@ -86,12 +133,14 @@ double filter_convolve_real(
  * @return Filtered value
  */
 double complex filter_evaluate_digital_filter_complex(double complex input, DigitalFilterComplex *filter) {
-    assert(filter != NULL);
+    assert_not_null(filter);
 
     double complex accumulate = 0;
     accumulate += filter_convolve_complex(input, filter->feedforward);
-    accumulate += filter_convolve_complex(filter->previous_output, filter->feedback);
-    filter->previous_output = accumulate;
+    if (filter->feedback != NULL) {
+        accumulate += filter_convolve_complex(filter->previous_output, filter->feedback);
+        filter->previous_output = accumulate;
+    }
 
     return accumulate;
 }
@@ -104,12 +153,14 @@ double complex filter_evaluate_digital_filter_complex(double complex input, Digi
  * @return Filtered value
  */
 double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filter) {
-    assert(filter != NULL);
+    assert_not_null(filter);
 
     double accumulate = 0;
     accumulate += filter_convolve_real(input, filter->feedforward);
-    accumulate += filter_convolve_real(filter->previous_output, filter->feedback);
-    filter->previous_output = accumulate;
+    if (filter->feedback != NULL) {
+        accumulate += filter_convolve_real(filter->previous_output, filter->feedback);
+        filter->previous_output = accumulate;
+    }
 
     return accumulate;
 }
@@ -147,6 +198,9 @@ DigitalFilterComplex *filter_make_digital_filter_complex(
             goto fail_allocate_feedback;
         }
     }
+    else {
+        filter->feedback = NULL;
+    }
 
     filter->previous_output = 0;
 
@@ -161,12 +215,75 @@ DigitalFilterComplex *filter_make_digital_filter_complex(
 
 /**
  * @brief 
+ * Makes and allocates a linear digital filter.
+ * @param n_feedforward Number of filter feedforward coefficients
+ * @param feedforward Feedforward coefficient values
+ * @param n_feedback Number of filter feedback coefficients
+ * @param feedback Feedback coefficient values
+ * @return Constucted filter
+ */
+DigitalFilterReal *filter_make_digital_filter_real(
+    size_t n_feedforward, 
+    const double feedforward[],
+    size_t n_feedback,
+    const double feedback[]
+    ) {
+    DigitalFilterReal *filter = malloc(sizeof(DigitalFilterReal));
+    if (filter == NULL)
+        return NULL;
+
+    assert(n_feedforward > 0);
+    assert(feedforward != NULL);
+    filter->feedforward = filter_make_convolution_real(n_feedforward, feedforward);
+    if (filter->feedforward == NULL) {
+        goto fail_allocate_feedforward;
+    }
+
+    if (n_feedback > 0) {
+        assert(feedback != NULL);
+        filter->feedback = filter_make_convolution_real(n_feedback, feedback);
+        if (filter->feedback == NULL) {
+            goto fail_allocate_feedback;
+        }
+    }
+    else {
+        filter->feedback = NULL;
+    }
+
+    filter->previous_output = 0;
+
+    return filter;
+
+    fail_allocate_feedback: 
+        filter_free_convolution_real(filter->feedforward);
+    fail_allocate_feedforward:
+        free(filter);
+        return NULL;
+}
+
+/**
+ * @brief 
  * Resets a linear filter to its initial state
  * @param filter Filter to be reset
  */
 void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
+    assert_not_null(filter);
+
     filter_reset_convolution_complex(filter->feedforward);
     filter_reset_convolution_complex(filter->feedback);
+    filter->previous_output = 0;
+}
+
+/**
+ * @brief 
+ * Resets a linear filter to its initial state
+ * @param filter Filter to be reset
+ */
+void filter_reset_digital_filter_real(DigitalFilterReal *filter) {
+    assert_not_null(filter); 
+
+    filter_reset_convolution_real(filter->feedforward);
+    filter_reset_convolution_real(filter->feedback);
     filter->previous_output = 0;
 }
 
@@ -176,8 +293,27 @@ void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
  * @param filter Filter to be freed
  */
 void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
+    assert_not_null(filter);
+
     filter_free_convolution_complex(filter->feedforward);
-    filter_free_convolution_complex(filter->feedback);
+    if (filter->feedback != NULL) {
+        filter_free_convolution_complex(filter->feedback);
+    }
+    free(filter);
+}
+
+/**
+ * @brief 
+ * Frees memory associated with a linear filter
+ * @param filter Filter to be freed
+ */
+void filter_free_digital_filter_real(DigitalFilterReal *filter) {
+    assert_not_null(filter);
+
+    filter_free_convolution_real(filter->feedforward);
+    if (filter->feedback != NULL) {
+        filter_free_convolution_real(filter->feedback);
+    }
     free(filter);
 }
 
@@ -189,7 +325,7 @@ void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-DigitalFilterComplex *filter_make_savgol(
+DigitalFilterReal *filter_make_savgol(
     size_t filter_length, 
     int derivative, 
     int polynomial_order
@@ -201,7 +337,7 @@ DigitalFilterComplex *filter_make_savgol(
     assert(derivative <= polynomial_order);
 
     int center = 0;
-    complex double feedforward[filter_length];
+    double feedforward[filter_length];
 
     for (size_t i = 0; i < filter_length; i++) {
         feedforward[i] = savgol_weight(
@@ -213,7 +349,7 @@ DigitalFilterComplex *filter_make_savgol(
         );
     }
 
-    return filter_make_digital_filter_complex(filter_length, feedforward, 0, NULL);
+    return filter_make_digital_filter_real(filter_length, feedforward, 0, NULL);
 }
 
 /**
@@ -246,7 +382,7 @@ Pid filter_make_pid(
  * @param pid PID filter
  * @return Filtered value
  */
-double complex filter_evaluate_pid(double input, Pid *pid) {
+double filter_evaluate_pid(double input, Pid *pid) {
     double proportional = input * pid->proportional_gain;
     double integral = pid->integral_gain * (pid->accumulated_input += input);
     double derivative = pid->derivative_gain * (input - pid->previous_input);
@@ -364,6 +500,8 @@ double complex filter_evaluate_moving_average(
     double complex input, 
     MovingAverage *filter
 ) {
+    assert_not_null(filter);
+
     filter->moving_sum += input;
     filter->moving_sum -= circbuf_complex_shift(input, filter->previous_input);
     return filter->moving_sum / filter->previous_input->n_elements;
@@ -375,6 +513,8 @@ double complex filter_evaluate_moving_average(
  * @param filter Filter to reset
  */
 void filter_reset_moving_average(MovingAverage *filter) {
+    assert_not_null(filter);
+
     circbuf_complex_reset(filter->previous_input);
     filter->moving_sum = 0;
 }
@@ -385,6 +525,8 @@ void filter_reset_moving_average(MovingAverage *filter) {
  * @param filter Filter to be freed
  */
 void filter_free_moving_average(MovingAverage *filter) {
+    assert_not_null(filter);
+
     free(filter->previous_input);
     free(filter);
 }

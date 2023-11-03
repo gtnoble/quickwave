@@ -64,8 +64,14 @@ ConvolutionComplex *filter_make_convolution_complex(
     size_t n_stationary_elements, 
     const double complex stationary_elements[]
 );
+ConvolutionReal *filter_make_convolution_real(
+    size_t n_stationary_elements, 
+    const double stationary_elements[]
+);
 void filter_reset_convolution_complex(ConvolutionComplex *convolution);
+void filter_reset_convolution_real(ConvolutionReal *convolution);
 void filter_free_convolution_complex(ConvolutionComplex *convolution);
+void filter_free_convolution_real(ConvolutionReal *convolution);
 double complex filter_convolve_complex(
     double complex input, 
     ConvolutionComplex *convolution
@@ -83,6 +89,12 @@ DigitalFilterComplex *filter_make_digital_filter_complex(
     size_t n_feedback,
     const double complex feedback[]
 );
+DigitalFilterReal *filter_make_digital_filter_real(
+    size_t n_feedforward, 
+    const double feedforward[],
+    size_t n_feedback,
+    const double feedback[]
+);
 DigitalFilterComplex *filter_make_ewma(double alpha);
 DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency);
 DigitalFilterComplex *filter_make_sinc(
@@ -90,7 +102,7 @@ DigitalFilterComplex *filter_make_sinc(
     size_t length, 
     WindowFunction window
 );
-DigitalFilterComplex *filter_make_savgol(size_t window_length, int deriv, int polyorder);
+DigitalFilterReal *filter_make_savgol(size_t window_length, int deriv, int polyorder);
 void filter_reset_digital_filter_complex(DigitalFilterComplex *filter);
 void filter_free_digital_filter_complex(DigitalFilterComplex *filter);
 
@@ -100,7 +112,7 @@ Pid filter_make_pid(
     double derivative_gain
 );
 void filter_reset_pid(Pid *pid);
-double complex filter_evaluate_pid(double input, Pid *pid);
+double filter_evaluate_pid(double input, Pid *pid);
 
 MovingAverage *filter_make_moving_average(size_t length);
 double complex filter_evaluate_moving_average(

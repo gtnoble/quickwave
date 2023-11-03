@@ -18,13 +18,16 @@ ${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
 	$(CC) ${CFLAGS} -c -Iext/munit $< -o $@
 
 ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${LIB_SOURCE_DIR}/%.h
-	cc ${CFLAGS} -c $< -o $@
+	$(CC) ${CFLAGS} -c $< -o $@
 
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
-	cc -c $< -o $@
+	$(CC) -c $< -o $@
 
 tests/iq.csv tests/const_freq.csv tests/sweep.csv &: tests/test_pll
 	./tests/test_pll
+
+tests/iir_response.csv tests/test_sinc.csv &: tests/test_filter
+	./tests/test_filter
 
 tests/%.pdf: ${TEST_SOURCE_DIR}/plot.plt ${TEST_SOURCE_DIR}/%.plt tests/%.csv 
 	gnuplot -c  $^ $@
