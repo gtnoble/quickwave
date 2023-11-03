@@ -95,16 +95,19 @@ DigitalFilterReal *filter_make_digital_filter_real(
     size_t n_feedback,
     const double feedback[]
 );
+void filter_reset_digital_filter_complex(DigitalFilterComplex *filter);
+void filter_reset_digital_filter_real(DigitalFilterReal *filter);
+void filter_free_digital_filter_complex(DigitalFilterComplex *filter);
+void filter_free_digital_filter_real(DigitalFilterReal *filter);
+
 DigitalFilterComplex *filter_make_ewma(double alpha);
 DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency);
-DigitalFilterComplex *filter_make_sinc(
+DigitalFilterReal *filter_make_sinc(
     double cutoff_frequency, 
     size_t length, 
     WindowFunction window
 );
 DigitalFilterReal *filter_make_savgol(size_t window_length, int deriv, int polyorder);
-void filter_reset_digital_filter_complex(DigitalFilterComplex *filter);
-void filter_free_digital_filter_complex(DigitalFilterComplex *filter);
 
 Pid filter_make_pid(
     double proportional_gain, 

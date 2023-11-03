@@ -12,9 +12,9 @@ void test_iir();
 void test_sinc();
 int test_filter(
     char *output_filename, 
-    double complex input[], 
-    double complex output[], 
-    DigitalFilterComplex *filter
+    double input[], 
+    double output[], 
+    DigitalFilterReal *filter
 );
 
 int main(int, char**) {
@@ -46,9 +46,9 @@ void test_iir() {
 }
 
 void test_sinc() {
-    DigitalFilterComplex *sinc_filter = filter_make_sinc(0.25, 101, window_hamming);
-    double complex filtered[TEST_SIGNAL_LENGTH];
-    double complex input[TEST_SIGNAL_LENGTH];
+    DigitalFilterReal *sinc_filter = filter_make_sinc(0.25, 101, window_hamming);
+    double filtered[TEST_SIGNAL_LENGTH];
+    double input[TEST_SIGNAL_LENGTH];
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         input[i] = sin(2 * M_PI * 0.2 * i) + cos(2 * M_PI * 0.3 * i);
@@ -56,14 +56,14 @@ void test_sinc() {
 
     test_filter("tests/test_sinc.csv", input, filtered, sinc_filter);
 
-    filter_free_digital_filter_complex(sinc_filter);
+    filter_free_digital_filter_real(sinc_filter);
 }
 
 int test_filter(
     char *output_filename, 
-    double complex input[], 
-    double complex output[], 
-    DigitalFilterComplex *filter
+    double input[], 
+    double output[], 
+    DigitalFilterReal *filter
 ) {
     FILE *output_file = fopen(output_filename, "w");
     if (output_file == NULL)
@@ -72,8 +72,8 @@ int test_filter(
     fprintf(output_file, "index,input,output\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
-        output[i] = filter_evaluate_digital_filter_complex(input[i], filter);
-        fprintf(output_file, "%f,%f\n", creal(input[i]), creal(output[i]));
+        output[i] = filter_evaluate_digital_filter_real(input[i], filter);
+        fprintf(output_file, "%f,%f\n", input[i], output[i]);
     }
 
     fclose(output_file);

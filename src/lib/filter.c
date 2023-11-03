@@ -442,7 +442,7 @@ DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency) {
  * @param window Windowing function
  * @return Constructed filter
  */
-DigitalFilterComplex *filter_make_sinc(
+DigitalFilterReal *filter_make_sinc(
     double cutoff_frequency, 
     size_t length, 
     WindowFunction window
@@ -452,7 +452,7 @@ DigitalFilterComplex *filter_make_sinc(
     if (window == NULL)
         window = window_rectangular;
 
-    double complex feedforward[length];
+    double feedforward[length];
     double kernel_shift = ((int) length - 1) / 2.0;
 
     for (size_t i = 0; i < length; i++) {
@@ -462,7 +462,7 @@ DigitalFilterComplex *filter_make_sinc(
             sinc(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
     }
-    return filter_make_digital_filter_complex(length, feedforward, 0, NULL);
+    return filter_make_digital_filter_real(length, feedforward, 0, NULL);
 }
 
 /**
