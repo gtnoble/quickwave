@@ -14,7 +14,7 @@ int test_filter(
     char *output_filename, 
     double complex input[], 
     double complex output[], 
-    DigitalFilter *filter
+    DigitalFilterComplex *filter
 );
 
 int main(int, char**) {
@@ -25,7 +25,7 @@ int main(int, char**) {
 
 
 void test_iir() {
-    DigitalFilter *iir = filter_make_first_order_iir(0.01);
+    DigitalFilterComplex *iir = filter_make_first_order_iir(0.01);
     munit_assert_not_null(iir);
 
     FILE *iir_response_csv = fopen("tests/iir_response.csv", "w");
@@ -35,18 +35,18 @@ void test_iir() {
 
     double complex filtered[TEST_SIGNAL_LENGTH];
     for (int i = 1; i < TEST_SIGNAL_LENGTH; i++) {
-        filtered[i] = filter_evaluate_digital_filter(1.0, iir);
+        filtered[i] = filter_evaluate_digital_filter_complex(1.0, iir);
         munit_assert_double(creal(filtered[i]), >=, creal(filtered[i-1]));
         fprintf(iir_response_csv, "%d,%f\n", i, creal(filtered[i]));
     }
     assert_complex_equal(filtered[TEST_SIGNAL_LENGTH - 1], 1.0, 2);
     fclose(iir_response_csv);
 
-    filter_free_digital_filter(iir);
+    filter_free_digital_filter_complex(iir);
 }
 
 void test_sinc() {
-    DigitalFilter *sinc_filter = filter_make_sinc(0.25, 101, window_hamming);
+    DigitalFilterComplex *sinc_filter = filter_make_sinc(0.25, 101, window_hamming);
     double complex filtered[TEST_SIGNAL_LENGTH];
     double complex input[TEST_SIGNAL_LENGTH];
 
@@ -56,14 +56,14 @@ void test_sinc() {
 
     test_filter("tests/test_sinc.csv", input, filtered, sinc_filter);
 
-    filter_free_digital_filter(sinc_filter);
+    filter_free_digital_filter_complex(sinc_filter);
 }
 
 int test_filter(
     char *output_filename, 
     double complex input[], 
     double complex output[], 
-    DigitalFilter *filter
+    DigitalFilterComplex *filter
 ) {
     FILE *output_file = fopen(output_filename, "w");
     if (output_file == NULL)
@@ -72,7 +72,7 @@ int test_filter(
     fprintf(output_file, "index,input,output\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
-        output[i] = filter_evaluate_digital_filter(input[i], filter);
+        output[i] = filter_evaluate_digital_filter_complex(input[i], filter);
         fprintf(output_file, "%d,%f,%f\n", i, creal(input[i]), creal(output[i]));
     }
 

@@ -8,14 +8,14 @@ INCLUDE=include
 
 TEST_SOURCE_DIR=src/test
 
+lib/libquickwave.a: ${LIB_OBJECTS}
+	ar rcs $@ $^
+
 tests/test_%: ${TEST_SOURCE_DIR}/%.test.o lib/libquickwave.a ext/munit/munit.o
 	$(CC) ${CFLAGS} $^ -lm -o $@
 
 ${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
 	$(CC) ${CFLAGS} -c -Iext/munit $< -o $@
-
-lib/libquickwave.a: ${LIB_OBJECTS}
-	ar rcs $@ $^
 
 ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${LIB_SOURCE_DIR}/%.h
 	cc ${CFLAGS} -c $< -o $@
@@ -23,15 +23,17 @@ ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${LIB_SOURCE_DIR}/%.h
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 	cc -c $< -o $@
 
-tests/iq.csv: tests/test_pll
+tests/iq.csv tests/const_freq.csv tests/sweep.csv &: tests/test_pll
 	./tests/test_pll
 
 tests/%.pdf: ${TEST_SOURCE_DIR}/plot.plt ${TEST_SOURCE_DIR}/%.plt tests/%.csv 
 	gnuplot -c  $^ $@
 
-.PHONY: clean test
+.PHONY: clean test plots
 
 test: tests/test_filter tests/test_pll tests/test_buffer
+
+plots: tests/iq.pdf tests/const_freq.pdf tests/sweep.pdf
 
 clean:
 	rm -rf tests/*

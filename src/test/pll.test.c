@@ -13,8 +13,8 @@
 void test_pll();
 void test_vco();
 void test_quadrature_mix();
-double complex pll_filter(double complex input, void *filter);
-double complex detected_phase;
+double pll_filter(double input, void *filter);
+double detected_phase;
 
 int main(int , char **) {
     //test_vco();
@@ -85,7 +85,7 @@ void test_quadrature_mix() {
 
 void test_pll() {
 
-    Pid filter = filter_make_pid(0.1, 0.1, 0.0);
+    Pid filter = filter_make_pid(0.001, 0.01, 0.0);
 
     //munit_assert_not_null(filter);
     
@@ -103,7 +103,7 @@ void test_pll() {
     FILE *const_freq_csv = fopen("tests/const_freq.csv", "w");
     munit_assert_not_null(const_freq_csv);
 
-    fprintf(const_freq_csv, "index,test,pll,pll-i,pll-q,pll_freq,detected_phase\n");
+    fprintf(const_freq_csv, "test,pll-i,pll-q,pll_freq,detected_phase\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         test_signal[i] = sin(i / 4.0);
@@ -111,13 +111,12 @@ void test_pll() {
         double vco_frequency = complex_frequency_to_ordinary(pll.nco.complex_frequency);
         fprintf(
             const_freq_csv, 
-            "%d,%f,%f,%f,%f,%f\n", 
-            i, 
+            "%f,%f,%f,%f,%f\n", 
             test_signal[i], 
             sinusoid_inphase(pll_out[i]),
             sinusoid_quadrature(pll_out[i]),
             vco_frequency,
-            creal(detected_phase) + cimag(detected_phase)
+            detected_phase
         );
     }
 
@@ -126,14 +125,14 @@ void test_pll() {
     fclose(const_freq_csv);
 
     pll_reset(initial_vco, &pll);
-    filter_reset_pid(&filter);
+    filter = filter_make_pid(0.1, 0.1, 0.0);
 
     FILE *sweep_csv  = fopen("tests/sweep.csv", "w");
     munit_assert_not_null(sweep_csv);
 
     Sinusoid nco = sinusoid_make(0, 0.0);
 
-    fprintf(sweep_csv, "index,test,pll,pll_freq,detected_phase,test_frequency\n");
+    fprintf(sweep_csv, "test,pll in-phase,pll quadrature,pll frequency,detected phase,test frequency\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         double frequency = (((double) TEST_SIGNAL_LENGTH - i) / TEST_SIGNAL_LENGTH) / 2 / 2;
@@ -143,12 +142,12 @@ void test_pll() {
         double vco_frequency = complex_frequency_to_ordinary(pll.nco.complex_frequency);
         fprintf(
             sweep_csv, 
-            "%d,%f,%f,%f,%f,%f\n", 
-            i, 
+            "%f,%f,%f,%f,%f,%f\n", 
             test_signal[i], 
             sinusoid_inphase(pll_out[i]),
+            sinusoid_quadrature(pll_out[i]),
             vco_frequency,
-            creal(detected_phase) + cimag(detected_phase),
+            detected_phase,
             complex_frequency_to_ordinary(nco.complex_frequency)
         );
     }
@@ -159,11 +158,8 @@ void test_pll() {
 
 }
 
-double complex pll_filter(double complex input, void *context) {
+double pll_filter(double input, void *context) {
     detected_phase = input;
-    double complex filtered = 
-        angular_to_complex_frequency(
-            creal(
-                filter_evaluate_pid(carg(input), context))); 
+    double complex filtered = filter_evaluate_pid(input, context); 
     return filtered; 
 }

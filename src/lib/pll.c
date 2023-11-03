@@ -1,6 +1,7 @@
 #include "pll.h"
 #include "sinusoid.h"
 #include "constants.h"
+#include "phasor.h"
 #include <math.h>
 #include <assert.h>
 #include <complex.h>
@@ -15,7 +16,7 @@
  */
 PhaseLockedLoop pll_make(
     Sinusoid nco_initial,
-    double complex (*loop_filter)(double complex input, void *filter_context),
+    double (*loop_filter)(double input, void *filter_context),
     void *filter_context
 ) {
     assert(loop_filter != NULL);
@@ -46,17 +47,18 @@ void pll_reset(Sinusoid nco_initial, PhaseLockedLoop *pll) {
  * @return Numerically-controlled oscillator (NCO) state
  */
 Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll) {
-    pll->input_iq = quadrature_mix(sinusoid_negate_phase(pll->nco), input);
-    Sinusoid phase_error = pll->input_iq;
+    Sinusoid phase_error = quadrature_mix(sinusoid_negate_phase(pll->nco), input);
 
     double complex next_frequency = 
-        pll->loop_filter(
-            phase_error.phasor, 
-            pll->filter_context
+        angular_to_complex_frequency(
+            pll->loop_filter(
+                sinusoid_phase(phase_error), 
+                pll->filter_context
+            )
         );
 
-    pll->nco = nco_update(next_frequency, pll->nco);
     Sinusoid output = pll->nco;
+    pll->nco = nco_update(next_frequency, pll->nco);
     return output;
 }
 

@@ -13,7 +13,7 @@
  * Can be used as a sort of continuous sinusoid fit.
  */
 typedef struct {
-    double complex (*loop_filter)(double complex input, void *filter_context);
+    double (*loop_filter)(double input, void *filter_context);
     void *filter_context;
     Sinusoid input_iq;
     Sinusoid nco;
@@ -21,7 +21,7 @@ typedef struct {
 
 PhaseLockedLoop pll_make(
     Sinusoid vco_initial,
-    double complex (*loop_filter)(double complex input, void *filter_context),
+    double (*loop_filter)(double input, void *filter_context),
     void *filter_context
 );
 Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll);
