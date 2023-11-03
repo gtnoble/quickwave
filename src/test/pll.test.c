@@ -6,6 +6,7 @@
 #include "pll.h"
 #include "test.h"
 #include "constants.h"
+#include "pid.h"
 
 #define TEST_SIGNAL_LENGTH 10000
 #define PI 3.14159265358979323846
@@ -85,7 +86,7 @@ void test_quadrature_mix() {
 
 void test_pll() {
 
-    Pid filter = filter_make_pid(0.001, 0.01, 0.0);
+    Pid filter = pid_make(0.001, 0.01, 0.0);
 
     //munit_assert_not_null(filter);
     
@@ -125,7 +126,7 @@ void test_pll() {
     fclose(const_freq_csv);
 
     pll_reset(initial_vco, &pll);
-    filter = filter_make_pid(0.1, 0.1, 0.0);
+    filter = pid_make(0.1, 0.1, 0.0);
 
     FILE *sweep_csv  = fopen("tests/sweep.csv", "w");
     munit_assert_not_null(sweep_csv);
@@ -160,6 +161,6 @@ void test_pll() {
 
 double pll_filter(double input, void *context) {
     detected_phase = input;
-    double complex filtered = filter_evaluate_pid(input, context); 
+    double complex filtered = pid_evaluate(input, context); 
     return filtered; 
 }
