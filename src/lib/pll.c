@@ -6,14 +6,6 @@
 #include <assert.h>
 #include <complex.h>
 
-/**
- * @brief 
- * Constructs a phase-locked loop.
- * @param nco_initial Initial numerically controlled oscillator (NCO) state
- * @param loop_filter Loop filter function
- * @param filter_context Context data to pass to loop filter when it is called. Can store filter state objects, etc.
- * @return Phase-locked loop
- */
 PhaseLockedLoop pll_make(
     Sinusoid nco_initial,
     double (*loop_filter)(double input, void *filter_context),
@@ -29,23 +21,10 @@ PhaseLockedLoop pll_make(
     return pll;
 }
 
-/**
- * @brief 
- * Resets phase-locked loop (PLL) to an initial state
- * @param nco_initial State to reset NCO to
- * @param pll PLL to reset
- */
 void pll_reset(Sinusoid nco_initial, PhaseLockedLoop *pll) {
     pll->nco = nco_initial;
 }
 
-/**
- * @brief 
- * Evaluates a phase-locked loop (PLL)
- * @param input Next input signal value
- * @param pll PLL to evaluate
- * @return Numerically-controlled oscillator (NCO) state
- */
 Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll) {
     Sinusoid phase_error = quadrature_mix(sinusoid_negate_phase(pll->nco), input);
 
@@ -62,13 +41,6 @@ Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll) {
     return output;
 }
 
-/**
- * @brief 
- * Updates frequency and phase of a Numerically-controlled osciallator (NCO) for the next time step.
- * @param update_frequency Next frequency
- * @param nco NCO to update
- * @return Updated NCO
- */
 Sinusoid nco_update(double complex update_frequency, Sinusoid nco) {
     double complex next_frequency =
         update_frequency == 0.0 ? 
@@ -82,13 +54,6 @@ Sinusoid nco_update(double complex update_frequency, Sinusoid nco) {
     return updated_nco;
 }
 
-/**
- * @brief 
- * Performs quadrature mixing. Converts a baseband signal to and from an I/Q (inphase and quadrature) signal.
- * @param reference Oscillator used as the reference for the mixing.
- * @param input Next input signal value to mix
- * @return Mixed value
- */
 Sinusoid quadrature_mix(Sinusoid reference, double complex input) {
 
     Sinusoid input_sinusoid = {

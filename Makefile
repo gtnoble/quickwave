@@ -38,6 +38,11 @@ test: tests/test_filter tests/test_pll tests/test_buffer
 
 plots: tests/iq.pdf tests/const_freq.pdf tests/sweep.pdf tests/iir_response.pdf tests/test_sinc.pdf
 
+install:
+	cp lib/* /usr/local/lib
+	mkdir -p /usr/local/include/quickwave
+	cp include/* /usr/local/include/quickwave
+
 clean:
 	rm -rf tests/*
 	rm -rf bin/*

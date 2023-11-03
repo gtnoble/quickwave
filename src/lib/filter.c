@@ -6,15 +6,14 @@
 #include "constants.h"
 #include "assertions.h"
 
-double sinc(double x);
-
 /**
  * @brief 
- * Evaluates a linear digital filter
- * @param input Next input signal value
- * @param filter Filter to apply
- * @return Filtered value
+ * Normalized sinc function
+ * @param x input
+ * @return result
  */
+double sinc(double x);
+
 double complex filter_evaluate_digital_filter_complex(double complex input, DigitalFilterComplex *filter) {
     assert_not_null(filter);
 
@@ -28,13 +27,6 @@ double complex filter_evaluate_digital_filter_complex(double complex input, Digi
     return accumulate;
 }
 
-/**
- * @brief 
- * Evaluates a linear digital filter
- * @param input Next input signal value
- * @param filter Filter to apply
- * @return Filtered value
- */
 double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filter) {
     assert_not_null(filter);
 
@@ -48,15 +40,6 @@ double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filt
     return accumulate;
 }
 
-/**
- * @brief 
- * Makes and allocates a linear digital filter.
- * @param n_feedforward Number of filter feedforward coefficients
- * @param feedforward Feedforward coefficient values
- * @param n_feedback Number of filter feedback coefficients
- * @param feedback Feedback coefficient values
- * @return Constucted filter
- */
 DigitalFilterComplex *filter_make_digital_filter_complex(
     size_t n_feedforward, 
     const double complex feedforward[],
@@ -96,15 +79,6 @@ DigitalFilterComplex *filter_make_digital_filter_complex(
         return NULL;
 }
 
-/**
- * @brief 
- * Makes and allocates a linear digital filter.
- * @param n_feedforward Number of filter feedforward coefficients
- * @param feedforward Feedforward coefficient values
- * @param n_feedback Number of filter feedback coefficients
- * @param feedback Feedback coefficient values
- * @return Constucted filter
- */
 DigitalFilterReal *filter_make_digital_filter_real(
     size_t n_feedforward, 
     const double feedforward[],
@@ -144,11 +118,6 @@ DigitalFilterReal *filter_make_digital_filter_real(
         return NULL;
 }
 
-/**
- * @brief 
- * Resets a linear filter to its initial state
- * @param filter Filter to be reset
- */
 void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
     assert_not_null(filter);
 
@@ -157,11 +126,6 @@ void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
     filter->previous_output = 0;
 }
 
-/**
- * @brief 
- * Resets a linear filter to its initial state
- * @param filter Filter to be reset
- */
 void filter_reset_digital_filter_real(DigitalFilterReal *filter) {
     assert_not_null(filter); 
 
@@ -170,11 +134,6 @@ void filter_reset_digital_filter_real(DigitalFilterReal *filter) {
     filter->previous_output = 0;
 }
 
-/**
- * @brief 
- * Frees memory associated with a linear filter
- * @param filter Filter to be freed
- */
 void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
     assert_not_null(filter);
 
@@ -185,11 +144,6 @@ void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
     free(filter);
 }
 
-/**
- * @brief 
- * Frees memory associated with a linear filter
- * @param filter Filter to be freed
- */
 void filter_free_digital_filter_real(DigitalFilterReal *filter) {
     assert_not_null(filter);
 
@@ -200,14 +154,6 @@ void filter_free_digital_filter_real(DigitalFilterReal *filter) {
     free(filter);
 }
 
-/**
- * @brief 
- * Makes and allocates Savitzky-Golay (savgol) filter
- * @param filter_length Number of filter coefficients
- * @param derivative Order of the derivative for the returned value. 0 means no derivative. 
- * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
- * @return Constructed filter
- */
 DigitalFilterReal *filter_make_savgol(
     size_t filter_length, 
     int derivative, 
@@ -235,12 +181,6 @@ DigitalFilterReal *filter_make_savgol(
     return filter_make_digital_filter_real(filter_length, feedforward, 0, NULL);
 }
 
-/**
- * @brief 
- * Makes an exponentially weighted moving average (EWMA) filter
- * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
- * @return EWMA filter 
- */
 DigitalFilterComplex *filter_make_ewma(double alpha) {
     assert(alpha >= 0.0);
     assert(alpha <= 1.0);
@@ -250,12 +190,6 @@ DigitalFilterComplex *filter_make_ewma(double alpha) {
     return filter_make_digital_filter_complex(1, feedforward, 1, feedback);
 }
 
-/**
- * @brief 
- * Makes a first order IIR low-pass filter. This is a variant of the EWMA filter.
- * @param cutoff_frequency Normalized cutoff frequency
- * @return Constructed filter
- */
 DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
@@ -269,14 +203,6 @@ DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency) {
     );
 }
 
-/**
- * @brief 
- * Makes and allocates a windowed-sinc low-pass filter
- * @param cutoff_frequency Normalized cutoff frequency
- * @param length Number of filter coefficients
- * @param window Windowing function
- * @return Constructed filter
- */
 DigitalFilterReal *filter_make_sinc(
     double cutoff_frequency, 
     size_t length, 
