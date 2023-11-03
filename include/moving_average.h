@@ -1,3 +1,6 @@
+#ifndef QUICKWAVE_MOVING_AVERAGE
+#define QUICKWAVE_MOVING_AVERAGE
+
 #include <complex.h>
 #include "buffer.h"
 
@@ -8,14 +11,16 @@
  * this is a more optimized O(1) implementation than a naive linear filter.
  */
 typedef struct {
-    double complex moving_sum;
-    CircularBufferComplex *previous_input;
+    double moving_sum;
+    CircularBufferReal *previous_input;
 } MovingAverage;
 
-MovingAverage *filter_make_moving_average(size_t length);
-double complex filter_evaluate_moving_average(
-    double complex input, 
+MovingAverage *moving_average_make(size_t length);
+double moving_average_evaluate(
+    double input, 
     MovingAverage *filter
 );
-void filter_reset_moving_average(MovingAverage *filter);
-void filter_free_moving_average(MovingAverage *filter);
+void moving_average_reset(MovingAverage *filter);
+void moving_average_free(MovingAverage *filter);
+
+#endif

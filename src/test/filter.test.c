@@ -31,7 +31,7 @@ void test_iir() {
     FILE *iir_response_csv = fopen("tests/iir_response.csv", "w");
     munit_assert_not_null(iir_response_csv);
 
-    fprintf(iir_response_csv, "index,value\n");
+    fprintf(iir_response_csv, "value\n");
 
     double complex filtered[TEST_SIGNAL_LENGTH];
     for (int i = 1; i < TEST_SIGNAL_LENGTH; i++) {
@@ -69,7 +69,7 @@ int test_filter(
     if (output_file == NULL)
         return 0;
 
-    fprintf(output_file, "index,input,output\n");
+    fprintf(output_file, "input,output\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         output[i] = filter_evaluate_digital_filter_real(input[i], filter);

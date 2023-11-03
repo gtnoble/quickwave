@@ -1,3 +1,5 @@
+#ifndef QUICKWAVE_PID
+#define QUICKWAVE_PID
 
 /**
  * @brief 
@@ -19,3 +21,5 @@ Pid pid_make(
 );
 void pid_reset(Pid *pid);
 double pid_evaluate(double input, Pid *pid);
+
+#endif

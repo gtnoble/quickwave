@@ -36,7 +36,7 @@ tests/%.pdf: ${TEST_SOURCE_DIR}/plot.plt ${TEST_SOURCE_DIR}/%.plt tests/%.csv
 
 test: tests/test_filter tests/test_pll tests/test_buffer
 
-plots: tests/iq.pdf tests/const_freq.pdf tests/sweep.pdf
+plots: tests/iq.pdf tests/const_freq.pdf tests/sweep.pdf tests/iir_response.pdf tests/test_sinc.pdf
 
 clean:
 	rm -rf tests/*
