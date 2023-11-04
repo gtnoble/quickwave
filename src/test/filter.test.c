@@ -17,7 +17,7 @@ int test_filter(
     DigitalFilterReal *filter
 );
 
-int main(int, char**) {
+int main() {
     test_iir();
     test_sinc();
     return 0;

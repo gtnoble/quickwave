@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c2x -I${INCLUDE} 
+CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c99 -I${INCLUDE} 
 
 LIB_SOURCE_DIR=src/lib
 LIB_SOURCE=${wildcard ${LIB_SOURCE_DIR}/*.c}

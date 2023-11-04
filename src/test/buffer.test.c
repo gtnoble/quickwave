@@ -3,7 +3,7 @@
 
 void test_indexing();
 
-int main(int , char **) {
+int main() {
     test_indexing();
     return 0;
 }

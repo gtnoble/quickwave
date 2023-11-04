@@ -17,7 +17,7 @@ void test_quadrature_mix();
 double pll_filter(double input, void *filter);
 double detected_phase;
 
-int main(int , char **) {
+int main() {
     //test_vco();
     test_quadrature_mix();
     test_pll();
