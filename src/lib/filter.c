@@ -14,6 +14,14 @@
  */
 double sinc(double x);
 
+/**
+ * @brief 
+ * Dirac delta function
+ * @param x Input
+ * @return Result 
+ */
+double dirac_delta(double x);
+
 double complex filter_evaluate_digital_filter_complex(double complex input, DigitalFilterComplex *filter) {
     assert_not_null(filter);
 
@@ -169,7 +177,8 @@ DigitalFilterReal *filter_make_savgol(
     double feedforward[filter_length];
 
     for (size_t i = 0; i < filter_length; i++) {
-        feedforward[i] = savgol_weight(
+        size_t last_index = filter_length - 1;
+        feedforward[last_index - i] = savgol_weight(
             i, 
             center, 
             filter_length, 
@@ -206,9 +215,11 @@ DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency) {
 DigitalFilterReal *filter_make_sinc(
     double cutoff_frequency, 
     size_t length, 
+    enum FilterType filter_type,
     WindowFunction window
 ) {
     assert(cutoff_frequency >= 0);
+    assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
 
     if (window == NULL)
         window = window_rectangular;
@@ -217,21 +228,24 @@ DigitalFilterReal *filter_make_sinc(
     double kernel_shift = ((int) length - 1) / 2.0;
 
     for (size_t i = 0; i < length; i++) {
-        feedforward[i] = 
+        double filter_coefficient = 
             2 * 
             cutoff_frequency * 
             sinc(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
+
+        feedforward[i] = 
+            filter_type == LOW_PASS ? 
+            filter_coefficient : 
+            dirac_delta(i) - filter_coefficient;
     }
     return filter_make_digital_filter_real(length, feedforward, 0, NULL);
 }
 
-/**
- * @brief 
- * Normalized sinc function
- * @param x Operand
- * @return Output
- */
 double sinc(double x) {
     return x == 0.0 ? 1.0 : sin(M_PI * x) / (M_PI * x);
+}
+
+double dirac_delta(double x) {
+    return x == 0.0 ? 1.0 : 0.0;
 }

@@ -88,3 +88,7 @@ Sinusoid sinusoid_shift_phase(double angle_radians, Sinusoid x) {
     return result;
 }
 
+Sinusoid sinusoid_predict(double delta_samples, Sinusoid x) {
+    return sinusoid_shift_phase(sinusoid_angular_freq(x) * delta_samples, x);
+}
+

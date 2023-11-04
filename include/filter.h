@@ -26,6 +26,11 @@ typedef struct {
     double previous_output;
 } DigitalFilterReal;
 
+enum FilterType {
+    LOW_PASS,
+    HIGH_PASS
+};
+
 /**
  * @brief 
  * Evaluates a complex linear digital filter
@@ -97,12 +102,14 @@ DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency);
  * Makes and allocates a windowed-sinc low-pass filter
  * @param cutoff_frequency Normalized cutoff frequency
  * @param length Number of filter coefficients
+ * @param filter_type The type of the filter. Can be low-pass or high-pass
  * @param window Windowing function
  * @return Constructed filter
  */
 DigitalFilterReal *filter_make_sinc(
     double cutoff_frequency, 
     size_t length, 
+    enum FilterType filter_type,
     WindowFunction window
 );
 

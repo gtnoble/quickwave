@@ -15,4 +15,9 @@ typedef struct {
     double intercept_x_offset;
 } LinearEstimator;
 
+
+LinearEstimator *linear_estimator_new(size_t window_length);
+LinearModel linear_estimator_estimate(double input, LinearEstimator *estimator);
+double linear_model_predict(double x, LinearModel model);
+
 #endif

@@ -114,6 +114,15 @@ double sinusoid_phase(Sinusoid x);
  */
 double sinusoid_angular_freq(Sinusoid x);
 
+/**
+ * @brief 
+ * Estimates the updated sinusoid after a change in time
+ * @param delta_time Change in time in samples
+ * @param x Initial sinusoid
+ * @return Updated sinusoid 
+ */
+Sinusoid sinusoid_predict(double delta_time, Sinusoid x);
+
 #endif
 
 

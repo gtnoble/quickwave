@@ -1,6 +1,8 @@
 /**
  * @brief 
- * Calucluates the coefficients of a Savitzky-Golay (savgol) filter
+ * Calucluates the coefficients of a Savitzky-Golay (savgol) filter.
+ * Returns coefficients in canonical order. They must be reversed when used as filter
+ * coefficients.
  * @param i Index of coefficient. Must be greater than or equal to zero
  * @param center Where to center the estimated value. Zero means that it is centered at the middle of the filter
  * @param window Number of filter coefficients. Must be odd
