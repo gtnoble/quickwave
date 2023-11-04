@@ -92,3 +92,10 @@ Sinusoid sinusoid_predict(double delta_samples, Sinusoid x) {
     return sinusoid_shift_phase(sinusoid_angular_freq(x) * delta_samples, x);
 }
 
+Sinusoid sinusoid_scale(double scaling_factor, Sinusoid x) {
+    Sinusoid result = {
+        .complex_frequency = x.complex_frequency,
+        .phasor = x.phasor * scaling_factor
+    };
+    return result;
+}

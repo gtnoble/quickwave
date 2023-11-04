@@ -123,6 +123,15 @@ double sinusoid_angular_freq(Sinusoid x);
  */
 Sinusoid sinusoid_predict(double delta_time, Sinusoid x);
 
+/**
+ * @brief 
+ * Scales the amplitude of a sinusoid
+ * @param scaling_factor Factor by which to scale.
+ * @param x Sinusoid to scale
+ * @return Scaled sinusoid 
+ */
+Sinusoid sinusoid_scale(double scaling_factor, Sinusoid x);
+
 #endif
 
 

@@ -220,6 +220,7 @@ DigitalFilterReal *filter_make_sinc(
 ) {
     assert(cutoff_frequency >= 0);
     assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
+    assert((length & 0x1) == 1);
 
     if (window == NULL)
         window = window_rectangular;
@@ -237,7 +238,7 @@ DigitalFilterReal *filter_make_sinc(
         feedforward[i] = 
             filter_type == LOW_PASS ? 
             filter_coefficient : 
-            dirac_delta(i) - filter_coefficient;
+            dirac_delta(i - length / 2) - filter_coefficient;
     }
     return filter_make_digital_filter_real(length, feedforward, 0, NULL);
 }
