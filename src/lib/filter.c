@@ -225,20 +225,26 @@ DigitalFilterReal *filter_make_sinc(
     if (window == NULL)
         window = window_rectangular;
 
-    double feedforward[length];
+    double filter_coefficients[length];
     double kernel_shift = ((int) length - 1) / 2.0;
+    double uncorrected_dc_gain = 0;
 
     for (size_t i = 0; i < length; i++) {
-        double filter_coefficient = 
-            2 * 
-            cutoff_frequency * 
+        filter_coefficients[i] = 
             sinc(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
+        
+        uncorrected_dc_gain += filter_coefficients[i];
+    }
 
+    double feedforward[length];
+
+    for (size_t i = 0; i < length; i++) {
+        double dc_corrected_coefficient = filter_coefficients[i] / uncorrected_dc_gain;
         feedforward[i] = 
             filter_type == LOW_PASS ? 
-            filter_coefficient : 
-            dirac_delta(i - length / 2) - filter_coefficient;
+            dc_corrected_coefficient : 
+            dirac_delta(i - length / 2) - dc_corrected_coefficient;
     }
     return filter_make_digital_filter_real(length, feedforward, 0, NULL);
 }
