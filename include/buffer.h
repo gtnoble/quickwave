@@ -1,5 +1,5 @@
-#ifndef SQLDSP_BUFFER
-#define SQLDSP_BUFFER
+#ifndef QUICKWAVE_BUFFER
+#define QUICKWAVE_BUFFER
 
 #include <stdlib.h>
 #include <complex.h>

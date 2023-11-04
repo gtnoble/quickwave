@@ -1,5 +1,5 @@
-#ifndef SQLDSP_PLL
-#define SQLDSP_PLL
+#ifndef QUICKWAVE_PLL
+#define QUICKWAVE_PLL
 
 #include "filter.h"
 #include "sinusoid.h"

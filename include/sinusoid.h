@@ -1,5 +1,5 @@
-#ifndef SQLDSP_SINUSOID
-#define SQLDSP_SINUSOID
+#ifndef QUICKWAVE_SINUSOID
+#define QUICKWAVE_SINUSOID
 
 #include <complex.h>
 #include "buffer.h"

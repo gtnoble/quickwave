@@ -1,5 +1,5 @@
-#ifndef SQLDSP_FILTER
-#define SQLDSP_FILTER
+#ifndef QUICKWAVE_FILTER
+#define QUICKWAVE_FILTER
 
 #include <complex.h>
 #include "buffer.h"
