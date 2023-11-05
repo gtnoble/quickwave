@@ -2,6 +2,7 @@
 #include "sinusoid.h"
 #include "constants.h"
 #include "phasor.h"
+#include "pid.h"
 #include <math.h>
 #include <assert.h>
 #include <complex.h>
@@ -62,4 +63,21 @@ Sinusoid quadrature_mix(Sinusoid reference, double complex input) {
             input * reference.phasor
     };
     return input_sinusoid;
+}
+
+Pid pll_loop_filter_make(double noise_bandwidth, double damping_coefficient) {
+    return pid_make(
+        4.0 * damping_coefficient * noise_bandwidth / 
+        (
+            damping_coefficient + 
+            1.0 / (4.0 * damping_coefficient)
+        ),
+        4.0 * pow(noise_bandwidth, 2.0) /
+        pow(
+            damping_coefficient + 
+            1.0 / (4.0 * damping_coefficient),
+            2.0
+        ),
+        0.0
+    );
 }
