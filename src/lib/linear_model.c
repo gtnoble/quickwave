@@ -9,7 +9,7 @@ LinearEstimator *linear_estimator_new(size_t window_length) {
         return NULL;
     }
 
-    MovingAverage *intercept_estimator = moving_average_make(window_length);
+    MovingAverageReal *intercept_estimator = moving_average_real_make(window_length);
     if (intercept_estimator == NULL) {
         goto intercept_estimator_alloc_failure;
     }
@@ -26,7 +26,7 @@ LinearEstimator *linear_estimator_new(size_t window_length) {
     return estimator;
 
     slope_estimator_alloc_failure:
-        moving_average_free(intercept_estimator);
+        moving_average_real_free(intercept_estimator);
     intercept_estimator_alloc_failure:
         free(estimator);
         return NULL;
@@ -37,7 +37,7 @@ LinearModel linear_estimator_estimate(double input, LinearEstimator *estimator) 
 
     double slope = filter_evaluate_digital_filter_real(input, estimator->slope_estimator);
     double intercept = 
-        moving_average_evaluate(input, estimator->intercept_estimator) + 
+        moving_average_real_evaluate(input, estimator->intercept_estimator) + 
         slope * 
         estimator->intercept_x_offset;
     LinearModel model = {

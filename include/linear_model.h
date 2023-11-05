@@ -10,7 +10,7 @@ typedef struct {
 } LinearModel;
 
 typedef struct {
-    MovingAverage *intercept_estimator;
+    MovingAverageReal *intercept_estimator;
     DigitalFilterReal *slope_estimator;
     double intercept_x_offset;
 } LinearEstimator;

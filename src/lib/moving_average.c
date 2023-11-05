@@ -1,45 +1,79 @@
 #include "moving_average.h"
 #include "assertions.h"
 
-MovingAverage *moving_average_make(size_t length) {
-    MovingAverage *filter = malloc(sizeof(MovingAverage));
-    
-    if (filter == NULL) {
-        return NULL;
-    }
-
-    filter->previous_input = circbuf_real_new(length);
-    if (filter->previous_input == NULL) {
-        free(filter);
-        return NULL;
-    }
-
-    filter->moving_sum = 0;
-
+#define MOVING_AVERAGE_MAKE(moving_average_type, circbuf_constructor) \
+    moving_average_type *filter = malloc(sizeof(moving_average_type)); \
+    \
+    if (filter == NULL) { \
+        return NULL; \
+    } \
+    \
+    filter->previous_input = circbuf_constructor(length); \
+    if (filter->previous_input == NULL) { \
+        free(filter); \
+        return NULL; \
+    } \
+    \
+    filter->moving_sum = 0; \
+    \
     return filter;
+
+
+MovingAverageReal *moving_average_real_make(size_t length) {
+    MOVING_AVERAGE_MAKE(MovingAverageReal, circbuf_real_new)
 }
 
-double moving_average_evaluate(
+MovingAverageComplex *moving_average_complex_make(size_t length) {
+    MOVING_AVERAGE_MAKE(MovingAverageComplex, circbuf_complex_new)
+}
+
+#define MOVING_AVERAGE_EVALUATE(circbuf_shifter) \
+    assert_not_null(filter); \
+    \
+    filter->moving_sum += input; \
+    filter->moving_sum -= circbuf_shifter(input, filter->previous_input); \
+    return filter->moving_sum / filter->previous_input->n_elements; 
+
+double moving_average_real_evaluate(
     double input, 
-    MovingAverage *filter
+    MovingAverageReal *filter
 ) {
-    assert_not_null(filter);
-
-    filter->moving_sum += input;
-    filter->moving_sum -= circbuf_real_shift(input, filter->previous_input);
-    return filter->moving_sum / filter->previous_input->n_elements;
+    MOVING_AVERAGE_EVALUATE(circbuf_real_shift)
 }
 
-void moving_average_reset(MovingAverage *filter) {
-    assert_not_null(filter);
-
-    circbuf_real_reset(filter->previous_input);
-    filter->moving_sum = 0;
+double complex moving_average_complex_evaluate(
+    double complex input, 
+    MovingAverageComplex *filter
+) {
+    MOVING_AVERAGE_EVALUATE(circbuf_complex_shift)
 }
 
-void moving_average_free(MovingAverage *filter) {
-    assert_not_null(filter);
+#define MOVING_AVERAGE_RESET(circbuf_resetter) \
+    assert_not_null(filter); \
+    \
+    circbuf_resetter(filter->previous_input); \
+    filter->moving_sum = 0; 
 
-    free(filter->previous_input);
-    free(filter);
+
+void moving_average_real_reset(MovingAverageReal *filter) {
+    MOVING_AVERAGE_RESET(circbuf_real_reset)
+}
+
+void moving_average_complex_reset(MovingAverageComplex *filter) {
+    MOVING_AVERAGE_RESET(circbuf_complex_reset)
+}
+
+#define MOVING_AVERAGE_FREE \
+    assert_not_null(filter); \
+    \
+    free(filter->previous_input); \
+    free(filter); 
+
+
+void moving_average_real_free(MovingAverageReal *filter) {
+    MOVING_AVERAGE_FREE
+}
+
+void moving_average_complex_free(MovingAverageComplex *filter) {
+    MOVING_AVERAGE_FREE
 }

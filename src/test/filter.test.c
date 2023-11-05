@@ -46,7 +46,7 @@ void test_iir() {
 }
 
 void test_sinc() {
-    DigitalFilterReal *sinc_filter = filter_make_sinc(0.25, 101, window_hamming);
+    DigitalFilterReal *sinc_filter = filter_make_sinc(0.25, 101, LOW_PASS, window_hamming);
     double filtered[TEST_SIGNAL_LENGTH];
     double input[TEST_SIGNAL_LENGTH];
 
