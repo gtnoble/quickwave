@@ -1,10 +1,13 @@
 #ifndef QUICKWAVE_PLL
 #define QUICKWAVE_PLL
 
-#include "filter.h"
-#include "sinusoid.h"
 #include <stdbool.h>
 #include <complex.h>
+
+#include "filter.h"
+#include "sinusoid.h"
+#include "pid.h"
+
 
 /**
  * @brief 
@@ -67,5 +70,14 @@ Sinusoid nco_update(double complex complex_freq, Sinusoid nco);
  * @return Mixed value
  */
 Sinusoid quadrature_mix(Sinusoid reference, double complex input);
+
+/**
+ * @brief 
+ * Creates a type 2 PLL loop filter
+ * @param noise_bandwidth Normalized noise bandwidth
+ * @param damping_coefficient Damping coefficient
+ * @return loop filter
+ */
+Pid pll_loop_filter_make(double noise_bandwidth, double damping_coefficient);
 
 #endif
