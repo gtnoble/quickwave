@@ -4,86 +4,83 @@
 #include <assert.h>
 #include "buffer.h"
 
-double complex circbuf_complex_shift(double complex element, CircularBufferComplex *buf) {
-    assert(buf != NULL);
-    assert(buf->buffer != NULL);
-    buf->index = modular_add(buf->index, 1, buf->n_elements);
-    double complex last_element = buf->buffer[buf->index];
-    buf->buffer[buf->index] = element;
+#define MAKE_CIRCBUF_SHIFT(element_type) \
+    assert(buf != NULL); \
+    assert(buf->buffer != NULL); \
+    buf->index = modular_add(buf->index, 1, buf->n_elements); \
+    element_type last_element = buf->buffer[buf->index]; \
+    buf->buffer[buf->index] = element; \
     return last_element;
+
+
+double complex circbuf_complex_shift(double complex element, CircularBufferComplex *buf) {
+    MAKE_CIRCBUF_SHIFT(double complex)
 }
 
 double circbuf_real_shift(double element, CircularBufferReal *buf) {
-    assert(buf != NULL);
-    assert(buf->buffer != NULL);
-    buf->index = modular_add(buf->index, 1, buf->n_elements);
-    double last_element = buf->buffer[buf->index];
-    buf->buffer[buf->index] = element;
-    return last_element;
+    MAKE_CIRCBUF_SHIFT(double)
 }
 
-double complex *circbuf_complex_element(int index, CircularBufferComplex *buf) {
+#define MAKE_CIRCBUF_ELEMENT \
     return &buf->buffer[modular_add(index, buf->index, buf->n_elements)];
+
+double complex *circbuf_complex_element(int index, CircularBufferComplex *buf) {
+    MAKE_CIRCBUF_ELEMENT
 }
 
 double *circbuf_real_element(int index, CircularBufferReal *buf) {
-    return &buf->buffer[modular_add(index, buf->index, buf->n_elements)];
+    MAKE_CIRCBUF_ELEMENT
 }
 
+#define MAKE_CIRCBUF_INTERPOLATED_ELEMENT(circbuf_element_getter) \
+    double fraction_between_elements = index - floor(index); \
+    return  \
+        *circbuf_element_getter((int) floor(index), buf) * (1 - fraction_between_elements) + \
+        *circbuf_element_getter((int) ceil(index), buf) * fraction_between_elements;
+
 double complex circbuf_complex_interpolated_element(double index, CircularBufferComplex *buf) {
-    double fraction_between_elements = index - floor(index);
-    return 
-        *circbuf_complex_element((int) floor(index), buf) * (1 - fraction_between_elements) +
-        *circbuf_complex_element((int) ceil(index), buf) * fraction_between_elements;
+    MAKE_CIRCBUF_INTERPOLATED_ELEMENT(circbuf_complex_element)
 }
 
 double circbuf_real_interpolated_element(double index, CircularBufferReal *buf) {
-    double fraction_between_elements = index - floor(index);
-    return 
-        *circbuf_real_element((int) floor(index), buf) * (1 - fraction_between_elements) +
-        *circbuf_real_element((int) ceil(index), buf) * fraction_between_elements;
+    MAKE_CIRCBUF_INTERPOLATED_ELEMENT(circbuf_real_element)
 }
 
-CircularBufferComplex *circbuf_complex_new(size_t size) {
-    CircularBufferComplex *circbuf = malloc(
-        sizeof(CircularBufferComplex) + sizeof(double complex) * size);
-    if (circbuf == NULL) 
-        return NULL;
-
-    circbuf->n_elements = size;
-
-    circbuf_complex_reset(circbuf);
+#define MAKE_CIRCBUF_NEW(buffer_type, element_type, buffer_resetter) \
+    buffer_type *circbuf = malloc( \
+        sizeof(buffer_type) + sizeof(element_type) * size); \
+    if (circbuf == NULL)  \
+        return NULL; \
+    \
+    circbuf->n_elements = size; \
+    \
+    buffer_resetter(circbuf); \
     return circbuf;
+
+
+CircularBufferComplex *circbuf_complex_new(size_t size) {
+    MAKE_CIRCBUF_NEW(CircularBufferComplex, double complex, circbuf_complex_reset)
 }
 
 CircularBufferReal *circbuf_real_new(size_t size) {
-    CircularBufferReal *circbuf = malloc(
-        sizeof(CircularBufferReal) + sizeof(double) * size);
-    if (circbuf == NULL) 
-        return NULL;
-
-    circbuf->n_elements = size;
-
-    circbuf_real_reset(circbuf);
-    return circbuf;
+    MAKE_CIRCBUF_NEW(CircularBufferReal, double, circbuf_real_reset)
 }
 
-void circbuf_complex_reset(CircularBufferComplex *buf) {
-    if (buf == NULL)
-        return;
-    for (size_t ii = 0; ii < buf->n_elements; ii++) {
-        buf->buffer[ii] = 0.0;
-    }
+#define MAKE_CIRCBUF_RESET \
+    if (buf == NULL) \
+        return; \
+    for (size_t ii = 0; ii < buf->n_elements; ii++) { \
+        buf->buffer[ii] = 0.0; \
+    } \
     buf->index = 0;
+
+
+void circbuf_complex_reset(CircularBufferComplex *buf) {
+    MAKE_CIRCBUF_RESET
 }
 
 void circbuf_real_reset(CircularBufferReal *buf) {
-    if (buf == NULL)
-        return;
-    for (size_t ii = 0; ii < buf->n_elements; ii++) {
-        buf->buffer[ii] = 0.0;
-    }
-    buf->index = 0;
+    MAKE_CIRCBUF_RESET
 }
 
 void circbuf_complex_free(CircularBufferComplex *buf) {
