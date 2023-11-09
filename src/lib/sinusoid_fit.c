@@ -34,7 +34,8 @@ Sinusoid sinusoid_fit_evaluate(double input, SinusoidFit *model) {
         quadrature_mix(sinusoid_negate_phase(model->reference), input);
     double complex smoothed_phase = 
         moving_average_complex_evaluate(difference.phasor, model->fit_window);
-    Sinusoid reconstructed_positive = quadrature_mix(model->reference, smoothed_phase);
+    Sinusoid positive_frequency = quadrature_mix(model->reference, smoothed_phase);
+    Sinusoid negative_frequency = sinusoid_negate_phase(positive_frequency);
     model->reference = nco_update(0.0, model->reference);
-    return sinusoid_add(reconstructed_positive, sinusoid_negate_phase(reconstructed_positive));
+    return sinusoid_add(positive_frequency, negative_frequency);
 }
