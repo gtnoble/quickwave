@@ -42,29 +42,6 @@ Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll) {
     return output;
 }
 
-Sinusoid nco_update(double complex update_frequency, Sinusoid nco) {
-    double complex next_frequency =
-        update_frequency == 0.0 ? 
-        nco.complex_frequency : 
-        update_frequency / cabs(update_frequency);
-
-    Sinusoid updated_nco = {
-        .complex_frequency = next_frequency,
-        .phasor = nco.phasor * next_frequency
-    };
-    return updated_nco;
-}
-
-Sinusoid quadrature_mix(Sinusoid reference, double complex input) {
-
-    Sinusoid input_sinusoid = {
-        .complex_frequency = reference.complex_frequency,
-        .phasor = 
-            input * reference.phasor
-    };
-    return input_sinusoid;
-}
-
 Pid pll_loop_filter_make(double noise_bandwidth, double damping_coefficient) {
     return pid_make(
         4.0 * damping_coefficient * noise_bandwidth / 

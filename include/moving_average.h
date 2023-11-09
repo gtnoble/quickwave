@@ -42,6 +42,8 @@ MovingAverageReal *moving_average_real_make(size_t length);
  */
 MovingAverageComplex *moving_average_complex_make(size_t length);
 
+size_t moving_average_complex_length(MovingAverageComplex *filter);
+
 /**
  * @brief 
  * Evaluates a real-valued moving average filter

@@ -66,6 +66,11 @@ CircularBufferReal *circbuf_real_new(size_t size) {
     MAKE_CIRCBUF_NEW(CircularBufferReal, double, circbuf_real_reset)
 }
 
+
+size_t circbuf_complex_length(CircularBufferComplex *buf) {
+    return buf->n_elements;
+}
+
 #define MAKE_CIRCBUF_RESET \
     if (buf == NULL) \
         return; \

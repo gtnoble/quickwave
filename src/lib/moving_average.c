@@ -27,6 +27,10 @@ MovingAverageComplex *moving_average_complex_make(size_t length) {
     MOVING_AVERAGE_MAKE(MovingAverageComplex, circbuf_complex_new)
 }
 
+size_t moving_average_complex_length(MovingAverageComplex *filter) {
+    return circbuf_complex_length(filter->previous_input);
+}
+
 #define MOVING_AVERAGE_EVALUATE(circbuf_shifter) \
     assert_not_null(filter); \
     \

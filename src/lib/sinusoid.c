@@ -99,3 +99,26 @@ Sinusoid sinusoid_scale(double scaling_factor, Sinusoid x) {
     };
     return result;
 }
+
+Sinusoid nco_update(double complex update_frequency, Sinusoid nco) {
+    double complex next_frequency =
+        update_frequency == 0.0 ? 
+        nco.complex_frequency : 
+        update_frequency / cabs(update_frequency);
+
+    Sinusoid updated_nco = {
+        .complex_frequency = next_frequency,
+        .phasor = nco.phasor * next_frequency
+    };
+    return updated_nco;
+}
+
+Sinusoid quadrature_mix(Sinusoid reference, double complex input) {
+
+    Sinusoid input_sinusoid = {
+        .complex_frequency = reference.complex_frequency,
+        .phasor = 
+            input * reference.phasor
+    };
+    return input_sinusoid;
+}

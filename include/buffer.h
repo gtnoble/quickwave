@@ -64,6 +64,9 @@ double complex circbuf_complex_interpolated_element(double index, CircularBuffer
  */
 CircularBufferComplex *circbuf_complex_new(size_t size);
 
+
+size_t circbuf_complex_length(CircularBufferComplex *buf);
+
 /**
  * @brief 
  * Resets all values of the buffer to zero

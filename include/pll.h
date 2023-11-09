@@ -55,24 +55,6 @@ void pll_reset(Sinusoid vco_initial, PhaseLockedLoop *pll);
 
 /**
  * @brief 
- * Updates frequency and phase of a Numerically-controlled osciallator (NCO) for the next time step.
- * @param update_frequency Next frequency
- * @param nco NCO to update
- * @return Updated NCO
- */
-Sinusoid nco_update(double complex complex_freq, Sinusoid nco);
-
-/**
- * @brief 
- * Performs quadrature mixing. Converts a baseband signal to and from an I/Q (inphase and quadrature) signal.
- * @param reference Oscillator used as the reference for the mixing.
- * @param input Next input signal value to mix
- * @return Mixed value
- */
-Sinusoid quadrature_mix(Sinusoid reference, double complex input);
-
-/**
- * @brief 
  * Creates a type 2 PLL loop filter
  * @param noise_bandwidth Normalized noise bandwidth
  * @param damping_coefficient Damping coefficient
