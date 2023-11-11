@@ -9,8 +9,8 @@
  * A sinusoid with a specified phase and frequency
  */
 typedef struct {
-    double _Complex complex_frequency;
-    double _Complex phasor;
+    double complex complex_frequency; /** Frequency (phase velocity) of sinusoid */
+    double complex phasor; /** Amplitude and phase of sinusoid */
 } Sinusoid;
 
 /**

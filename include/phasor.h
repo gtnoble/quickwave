@@ -4,7 +4,16 @@
 #include <complex.h>
 #include "constants.h"
 
+/**
+ * @brief 
+ * Phasor corresponding to zero ordinary or angular frequency
+ */
 static const double complex zero_complex_frequency = 1.0;
+
+/**
+ * @brief 
+ * Phasor corresponding to zero angular phase
+ */
 static const double complex zero_phase_phasor = 1.0;
 
 /**

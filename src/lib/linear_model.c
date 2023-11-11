@@ -32,6 +32,12 @@ LinearEstimator *linear_estimator_new(size_t window_length) {
         return NULL;
 }
 
+void linear_estimator_free(LinearEstimator *model) {
+    moving_average_real_free(model->intercept_estimator);
+    filter_free_digital_filter_real(model->slope_estimator);
+    free(model);
+}
+
 LinearModel linear_estimator_estimate(double input, LinearEstimator *estimator) {
     assert_not_null(estimator);
 

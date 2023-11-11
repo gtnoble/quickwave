@@ -8,27 +8,31 @@
 
 /**
  * @brief 
- * Linear filter. Can be IIR or FIR
+ * Complex-valued linear filter. Can be IIR or FIR
  */
 typedef struct {
-    ConvolutionComplex *feedforward;
-    ConvolutionComplex *feedback;
-    double complex previous_output;
+    ConvolutionComplex *feedforward; /** Feedforward (FIR) terms of the filter */
+    ConvolutionComplex *feedback; /** Feedback (IIR) terms of the filter */
+    double complex previous_output; /** Most recent output value */
 } DigitalFilterComplex;
 
 /**
  * @brief 
- * Linear filter. Can be IIR or FIR
+ * Real-valued linear filter. Can be IIR or FIR
  */
 typedef struct {
-    ConvolutionReal *feedforward;
-    ConvolutionReal *feedback;
-    double previous_output;
+    ConvolutionReal *feedforward; /** Feedforward (FIR) terms of the filter */
+    ConvolutionReal *feedback; /** Feedback (IIR) terms of the filter */
+    double previous_output; /** Most recent output value */
 } DigitalFilterReal;
 
+/**
+ * @brief 
+ * Specifies the nature of the filter stop-band
+ */
 enum FilterType {
-    LOW_PASS,
-    HIGH_PASS
+    LOW_PASS, /** Low pass filter */
+    HIGH_PASS /** High pass filter */
 };
 
 /**

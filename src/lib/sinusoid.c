@@ -27,18 +27,16 @@ Sinusoid sinusoid_add(Sinusoid a, Sinusoid b) {
 }
 
 Sinusoid sinusoid_mult(Sinusoid a, Sinusoid b) {
-    assert(a.complex_frequency == b.complex_frequency);
     Sinusoid result = {
-        .complex_frequency = a.complex_frequency,
+        .complex_frequency = a.complex_frequency * b.complex_frequency,
         .phasor = a.phasor * b.phasor
     };
     return result;
 }
 
 Sinusoid sinusoid_div(Sinusoid a, Sinusoid b) {
-    assert(a.complex_frequency == b.complex_frequency);
     Sinusoid result = {
-        .complex_frequency = a.complex_frequency,
+        .complex_frequency = a.complex_frequency / b.complex_frequency,
         .phasor = a.phasor / b.phasor
     };
     return result;
@@ -74,7 +72,7 @@ Sinusoid sinusoid_normalize(Sinusoid x) {
 
 Sinusoid sinusoid_negate_phase(Sinusoid x) {
     Sinusoid result = {
-        .complex_frequency = x.complex_frequency,
+        .complex_frequency = conj(x.complex_frequency),
         .phasor = conj(x.phasor)
     };
     return result;

@@ -6,24 +6,24 @@
 
 /**
  * @brief 
- * Circular buffer. Stores the n_elements most recently inserted elements.
+ * Complex-valued circular buffer. Stores the `n_elements` most recently inserted elements.
  * Older elements are overwritten
  */
 typedef struct {
-    size_t n_elements;
-    size_t index;
-    double complex buffer[];
+    size_t n_elements; /** Number of elements in the buffer */
+    size_t index; /** Index for the first element in the buffer. This is shifted as elements are added. */
+    double complex buffer[]; /** Buffer elements */
 } CircularBufferComplex;
 
 /**
  * @brief 
- * Circular buffer. Stores the n_elements most recently inserted elements.
+ * Real-valued circular buffer. Stores the `n_elements` most recently inserted elements.
  * Older elements are overwritten
  */
 typedef struct {
-    size_t n_elements;
-    size_t index;
-    double buffer[];
+    size_t n_elements; /** Number of elmeents in the buffer */
+    size_t index; /** Index for the first element in the buffer. This is shifted as elements are added. */
+    double buffer[]; /** Buffer elements */
 } CircularBufferReal;
 
 
