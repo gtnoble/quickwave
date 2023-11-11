@@ -22,144 +22,145 @@ double sinc(double x);
  */
 double dirac_delta(double x);
 
-double complex filter_evaluate_digital_filter_complex(double complex input, DigitalFilterComplex *filter) {
-    assert_not_null(filter);
-
-    double complex accumulate = 0;
-    accumulate += convolution_convolve_complex(input, filter->feedforward);
-    if (filter->feedback != NULL) {
-        accumulate += convolution_convolve_complex(filter->previous_output, filter->feedback);
-        filter->previous_output = accumulate;
-    }
-
+#define MAKE_FILTER_EVALUATE_DIGITAL_FILTER(vector_dot, vector_shift) \
+    assert_not_null(filter); \
+    assert_not_null(filter->feedforward); \
+\
+    double complex accumulate = 0; \
+    vector_shift(input, filter->previous_input); \
+    accumulate += \
+        vector_dot( \
+            filter->feedforward,  \
+            filter->previous_input \
+        ); \
+    if (filter->feedback != NULL) { \
+        accumulate += vector_dot(filter->feedback, filter->previous_input); \
+        vector_shift(accumulate, filter->previous_output); \
+    } \
+\
     return accumulate;
-}
 
 double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filter) {
-    assert_not_null(filter);
-
-    double accumulate = 0;
-    accumulate += convolution_convolve_real(input, filter->feedforward);
-    if (filter->feedback != NULL) {
-        accumulate += convolution_convolve_real(filter->previous_output, filter->feedback);
-        filter->previous_output = accumulate;
-    }
-
-    return accumulate;
+    MAKE_FILTER_EVALUATE_DIGITAL_FILTER(vector_real_dot, vector_real_shift)
 }
 
+double complex filter_evaluate_digital_filter_complex(double complex input, DigitalFilterComplex *filter) {
+    MAKE_FILTER_EVALUATE_DIGITAL_FILTER(vector_complex_dot, vector_complex_shift)
+}
+
+#define MAKE_FILTER_MAKE_DIGITAL_FILTER(vector_new, vector_free, vector_duplicate, filter_type, vector_reverser, vector_length) \
+    filter_type *filter = malloc(sizeof(filter_type)); \
+    if (filter == NULL) \
+        return NULL; \
+    \
+    assert_valid_vector(feedforward); \
+    filter->feedforward = vector_duplicate(feedforward); \
+    if (filter->feedforward == NULL) { \
+        goto fail_allocate_feedforward; \
+    } \
+    \
+    filter->previous_input = vector_new(vector_length(feedforward)); \
+    if (filter->previous_input == NULL) { \
+        goto fail_allocate_previous_input; \
+    } \
+    \
+    if (feedback != NULL) { \
+        assert_valid_vector(feedback); \
+        filter->feedback = vector_duplicate(feedback); \
+        if (filter->feedback == NULL) { \
+            goto fail_allocate_feedback; \
+        } \
+        \
+        filter->previous_output =  \
+            vector_new(vector_length(feedback)); \
+        if (filter->previous_output == NULL) { \
+            goto fail_allocate_previous_output; \
+        } \
+    } \
+    else { \
+        filter->feedback = NULL; \
+    } \
+    \
+    return filter; \
+    \
+    fail_allocate_previous_output: \
+        vector_free(filter->feedback); \
+    fail_allocate_feedback:  \
+        vector_free(filter->previous_input); \
+    fail_allocate_previous_input: \
+        vector_free(filter->feedforward); \
+    fail_allocate_feedforward: \
+        free(filter); \
+        return NULL;
+
+
 DigitalFilterComplex *filter_make_digital_filter_complex(
-    size_t n_feedforward, 
-    const double complex feedforward[],
-    size_t n_feedback,
-    const double complex feedback[]
-    ) {
-    DigitalFilterComplex *filter = malloc(sizeof(DigitalFilterComplex));
-    if (filter == NULL)
-        return NULL;
+    const VectorComplex *feedforward,
+    const VectorComplex *feedback
+) {
+    MAKE_FILTER_MAKE_DIGITAL_FILTER(
+        vector_complex_new, 
+        vector_complex_free, 
+        vector_complex_duplicate, 
+        DigitalFilterComplex,
+        vector_complex_reverse,
+        vector_complex_length
+    )
 
-    assert(n_feedforward > 0);
-    assert(feedforward != NULL);
-    filter->feedforward = convolution_make_complex(n_feedforward, feedforward);
-    if (filter->feedforward == NULL) {
-        goto fail_allocate_feedforward;
-    }
-
-    if (n_feedback > 0) {
-        assert(feedback != NULL);
-        filter->feedback = convolution_make_complex(n_feedback, feedback);
-        if (filter->feedback == NULL) {
-            goto fail_allocate_feedback;
-        }
-    }
-    else {
-        filter->feedback = NULL;
-    }
-
-    filter->previous_output = 0;
-
-    return filter;
-
-    fail_allocate_feedback: 
-        convolution_reset_complex(filter->feedforward);
-    fail_allocate_feedforward:
-        free(filter);
-        return NULL;
 }
 
 DigitalFilterReal *filter_make_digital_filter_real(
-    size_t n_feedforward, 
-    const double feedforward[],
-    size_t n_feedback,
-    const double feedback[]
-    ) {
-    DigitalFilterReal *filter = malloc(sizeof(DigitalFilterReal));
-    if (filter == NULL)
-        return NULL;
-
-    assert(n_feedforward > 0);
-    assert(feedforward != NULL);
-    filter->feedforward = convolution_make_real(n_feedforward, feedforward);
-    if (filter->feedforward == NULL) {
-        goto fail_allocate_feedforward;
-    }
-
-    if (n_feedback > 0) {
-        assert(feedback != NULL);
-        filter->feedback = convolution_make_real(n_feedback, feedback);
-        if (filter->feedback == NULL) {
-            goto fail_allocate_feedback;
-        }
-    }
-    else {
-        filter->feedback = NULL;
-    }
-
-    filter->previous_output = 0;
-
-    return filter;
-
-    fail_allocate_feedback: 
-        convolution_free_real(filter->feedforward);
-    fail_allocate_feedforward:
-        free(filter);
-        return NULL;
+    const VectorReal *feedforward,
+    const VectorReal *feedback
+) {
+    MAKE_FILTER_MAKE_DIGITAL_FILTER(
+        vector_real_new,
+        vector_real_free,
+        vector_real_duplicate,
+        DigitalFilterReal,
+        vector_real_reverse,
+        vector_real_length
+    )
 }
 
-void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
-    assert_not_null(filter);
+#define MAKE_RESET_DIGITAL_FILTER(reset_vector) \
+    assert_not_null(filter); \
+    \
+    reset_vector(filter->previous_input); \
+    if (filter->previous_output) \
+        reset_vector(filter->previous_output);
 
-    convolution_reset_complex(filter->feedforward);
-    convolution_reset_complex(filter->feedback);
-    filter->previous_output = 0;
+void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
+    MAKE_RESET_DIGITAL_FILTER(vector_complex_reset)
 }
 
 void filter_reset_digital_filter_real(DigitalFilterReal *filter) {
-    assert_not_null(filter); 
-
-    convolution_reset_real(filter->feedforward);
-    convolution_reset_real(filter->feedback);
-    filter->previous_output = 0;
+    MAKE_RESET_DIGITAL_FILTER(vector_real_reset);
 }
 
-void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
-    assert_not_null(filter);
-
-    convolution_reset_complex(filter->feedforward);
-    if (filter->feedback != NULL) {
-        convolution_reset_complex(filter->feedback);
-    }
+#define MAKE_FREE_DIGITAL_FILTER(vector_free) \
+    assert_not_null(filter); \
+    \
+    assert_not_null(filter->feedforward); \
+    vector_free(filter->feedforward); \
+\
+    assert_not_null(filter->previous_input); \
+    vector_free(filter->previous_input); \
+\
+    if (filter->feedback != NULL) { \
+        vector_free(filter->feedback); \
+        assert_not_null(filter->previous_output); \
+        vector_free(filter->previous_output); \
+    } \
     free(filter);
+
+
+void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
+    MAKE_FREE_DIGITAL_FILTER(vector_complex_free);
 }
 
 void filter_free_digital_filter_real(DigitalFilterReal *filter) {
-    assert_not_null(filter);
-
-    convolution_free_real(filter->feedforward);
-    if (filter->feedback != NULL) {
-        convolution_free_real(filter->feedback);
-    }
-    free(filter);
+    MAKE_FREE_DIGITAL_FILTER(vector_real_free);
 }
 
 DigitalFilterReal *filter_make_savgol(
@@ -174,11 +175,13 @@ DigitalFilterReal *filter_make_savgol(
     assert(derivative <= polynomial_order);
 
     int center = 0;
-    double feedforward[filter_length];
+    VectorReal *feedforward = vector_real_new(filter_length);
+    if (feedforward == NULL) {
+        return NULL;
+    }
 
-    for (size_t i = 0; i < filter_length; i++) {
-        size_t last_index = filter_length - 1;
-        feedforward[last_index - i] = savgol_weight(
+    for (size_t i = 1; i <= filter_length; i++) {
+        *vector_real_element(- i, feedforward) = savgol_weight(
             i, 
             center, 
             filter_length, 
@@ -187,16 +190,37 @@ DigitalFilterReal *filter_make_savgol(
         );
     }
 
-    return filter_make_digital_filter_real(filter_length, feedforward, 0, NULL);
+    DigitalFilterReal *filter = filter_make_digital_filter_real(feedforward, NULL);
+    vector_real_free(feedforward);
+    return filter;
 }
 
 DigitalFilterComplex *filter_make_ewma(double alpha) {
     assert(alpha >= 0.0);
     assert(alpha <= 1.0);
 
-    complex double feedforward[] = {alpha};
-    complex double feedback[] = {1 - alpha};
-    return filter_make_digital_filter_complex(1, feedforward, 1, feedback);
+    VectorComplex *feedforward = vector_complex_new(1);
+    if (feedforward == NULL)
+        goto feedforward_allocation_failed;
+    *vector_complex_element(0, feedforward) = alpha;
+
+    VectorComplex *feedback = vector_complex_new(1);
+    if (feedback == NULL)
+        goto feedback_allocation_failed;
+    *vector_complex_element(0, feedback) = 1 - alpha;
+
+    DigitalFilterComplex *filter = 
+        filter_make_digital_filter_complex(feedforward, feedback);
+
+    vector_complex_free(feedforward);
+    vector_complex_free(feedback);
+    
+    return filter;
+
+    feedback_allocation_failed:
+        vector_complex_free(feedforward);
+    feedforward_allocation_failed:
+        return NULL;
 }
 
 DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency) {
@@ -225,28 +249,36 @@ DigitalFilterReal *filter_make_sinc(
     if (window == NULL)
         window = window_rectangular;
 
-    double filter_coefficients[length];
+    VectorReal *filter_coefficients = vector_real_new(length);
+    if (filter_coefficients == NULL) {
+        return NULL;
+    }
+
     double kernel_shift = ((int) length - 1) / 2.0;
     double uncorrected_dc_gain = 0;
 
     for (size_t i = 0; i < length; i++) {
-        filter_coefficients[i] = 
+        *vector_real_element(i, filter_coefficients) = 
             sinc(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
         
-        uncorrected_dc_gain += filter_coefficients[i];
+        uncorrected_dc_gain += *vector_real_element(i, filter_coefficients);
     }
 
-    double feedforward[length];
-
     for (size_t i = 0; i < length; i++) {
-        double dc_corrected_coefficient = filter_coefficients[i] / uncorrected_dc_gain;
-        feedforward[i] = 
+        double dc_corrected_coefficient = 
+            *vector_real_element(i, filter_coefficients) / uncorrected_dc_gain;
+        *vector_real_element(i, filter_coefficients) = 
             filter_type == LOW_PASS ? 
             dc_corrected_coefficient : 
             dirac_delta(i - length / 2) - dc_corrected_coefficient;
     }
-    return filter_make_digital_filter_real(length, feedforward, 0, NULL);
+    DigitalFilterReal *filter = 
+        filter_make_digital_filter_real(filter_coefficients, NULL);
+    
+    vector_real_free(filter_coefficients);
+
+    return filter;
 }
 
 double sinc(double x) {

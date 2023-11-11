@@ -1,4 +1,3 @@
-CC=gcc
 CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c99 -I${INCLUDE_DIR} 
 
 LIB_SOURCE_DIR=src/lib
@@ -12,16 +11,16 @@ lib/libquickwave.a: ${LIB_OBJECTS}
 	ar rcs $@ $^
 
 tests/test_%: ${TEST_SOURCE_DIR}/%.test.o lib/libquickwave.a ext/munit/munit.o
-	$(CC) ${CFLAGS} $^ -lm -o $@
+	$(CC) $(CFLAGS) $^ -lm -o $@
 
 ${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
-	$(CC) ${CFLAGS} -c -Iext/munit $< -o $@
+	$(CC) $(CFLAGS) -c -Iext/munit $< -o $@
 
 ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h
-	$(CC) ${CFLAGS} -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
-	$(CC) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 tests/iq.csv tests/const_freq.csv tests/sweep.csv &: tests/test_pll
 	./tests/test_pll
@@ -38,17 +37,19 @@ tests/sinusoid_fit.csv &: tests/test_sinusoid_fit
 tests/%.pdf: ${TEST_SOURCE_DIR}/plot.plt ${TEST_SOURCE_DIR}/%.plt tests/%.csv 
 	gnuplot -c  $^ $@
 
-.PHONY: clean test plots
-
+.PHONY: test
 test: tests/test_filter tests/test_pll tests/test_buffer tests/test_linear_model
 
+.PHONY: plots
 plots: tests/iq.pdf tests/const_freq.pdf tests/sweep.pdf tests/iir_response.pdf tests/test_sinc.pdf tests/sinusoid_fit.pdf
 
+.PHONY: install
 install:
 	cp lib/* /usr/local/lib
 	mkdir -p /usr/local/include/quickwave
 	cp include/* /usr/local/include/quickwave
 
+.PHONY: clean
 clean:
 	rm -rf tests/*
 	rm -rf bin/*

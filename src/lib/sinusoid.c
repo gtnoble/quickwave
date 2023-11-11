@@ -2,7 +2,7 @@
 #include <complex.h>
 
 #include "sinusoid.h"
-#include "buffer.h"
+#include "vector.h"
 #include "constants.h"
 #include "phasor.h"
 
@@ -18,9 +18,8 @@ Sinusoid sinusoid_make(double phase_degrees, double normalized_frequency) {
 }
 
 Sinusoid sinusoid_add(Sinusoid a, Sinusoid b) {
-    assert(a.complex_frequency == b.complex_frequency);
     Sinusoid result = {
-        .complex_frequency = a.complex_frequency,
+        .complex_frequency = a.complex_frequency + b.complex_frequency,
         .phasor = a.phasor + b.phasor
     };
     return result;

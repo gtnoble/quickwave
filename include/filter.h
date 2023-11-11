@@ -2,18 +2,18 @@
 #define QUICKWAVE_FILTER
 
 #include <complex.h>
-#include "buffer.h"
+#include "vector.h"
 #include "window.h"
-#include "convolution.h"
 
 /**
  * @brief 
  * Complex-valued linear filter. Can be IIR or FIR
  */
 typedef struct {
-    ConvolutionComplex *feedforward; /** Feedforward (FIR) terms of the filter */
-    ConvolutionComplex *feedback; /** Feedback (IIR) terms of the filter */
-    double complex previous_output; /** Most recent output value */
+    VectorComplex *feedforward; /** Feedforward (FIR) terms of the filter */
+    VectorComplex *previous_input;
+    VectorComplex *feedback; /** Feedback (IIR) terms of the filter */
+    VectorComplex *previous_output;
 } DigitalFilterComplex;
 
 /**
@@ -21,9 +21,10 @@ typedef struct {
  * Real-valued linear filter. Can be IIR or FIR
  */
 typedef struct {
-    ConvolutionReal *feedforward; /** Feedforward (FIR) terms of the filter */
-    ConvolutionReal *feedback; /** Feedback (IIR) terms of the filter */
-    double previous_output; /** Most recent output value */
+    VectorReal *feedforward; /** Feedforward (FIR) terms of the filter */
+    VectorReal *previous_input;
+    VectorReal *feedback; /** Feedback (IIR) terms of the filter */
+    VectorReal *previous_output;
 } DigitalFilterReal;
 
 /**
@@ -56,33 +57,25 @@ double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filt
 /**
  * @brief 
  * Makes and allocates a complex linear digital filter.
- * @param n_feedforward Number of filter feedforward coefficients
  * @param feedforward Feedforward coefficient values
- * @param n_feedback Number of filter feedback coefficients
  * @param feedback Feedback coefficient values
  * @return Constucted filter
  */
 DigitalFilterComplex *filter_make_digital_filter_complex(
-    size_t n_feedforward, 
-    const double complex feedforward[],
-    size_t n_feedback,
-    const double complex feedback[]
+    const VectorComplex *feedforward,
+    const VectorComplex *feedback
 );
 
 /**
  * @brief 
  * Makes and allocates a real linear digital filter.
- * @param n_feedforward Number of filter feedforward coefficients
  * @param feedforward Feedforward coefficient values
- * @param n_feedback Number of filter feedback coefficients
  * @param feedback Feedback coefficient values
  * @return Constucted filter
  */
 DigitalFilterReal *filter_make_digital_filter_real(
-    size_t n_feedforward, 
-    const double feedforward[],
-    size_t n_feedback,
-    const double feedback[]
+    const VectorReal *feedforward,
+    const VectorReal *feedback
 );
 
 /**

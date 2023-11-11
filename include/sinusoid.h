@@ -2,7 +2,6 @@
 #define QUICKWAVE_SINUSOID
 
 #include <complex.h>
-#include "buffer.h"
 
 /**
  * @brief 

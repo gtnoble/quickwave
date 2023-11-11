@@ -3,6 +3,10 @@
 
 #include <stdlib.h>
 #include <complex.h>
+#include "assertions.h"
+#include <stdbool.h>
+
+#define assert_valid_vector(vector) assert(vector != NULL && vector->elements != NULL)
 
 /**
  * @brief 
@@ -11,9 +15,10 @@
  */
 typedef struct {
     size_t n_elements; /** Number of elements in the buffer */
-    size_t index; /** Index for the first element in the buffer. This is shifted as elements are added. */
-    double complex buffer[]; /** Buffer elements */
-} CircularBufferComplex;
+    size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
+    bool is_reversed;
+    double complex elements[]; /** Buffer elements */
+} VectorComplex;
 
 /**
  * @brief 
@@ -22,10 +27,10 @@ typedef struct {
  */
 typedef struct {
     size_t n_elements; /** Number of elmeents in the buffer */
-    size_t index; /** Index for the first element in the buffer. This is shifted as elements are added. */
-    double buffer[]; /** Buffer elements */
-} CircularBufferReal;
-
+    size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
+    bool is_reversed;
+    double elements[]; /** Buffer elements */
+} VectorReal;
 
 /**
  * @brief 
@@ -35,26 +40,28 @@ typedef struct {
  * @param buf Buffer to be operated on
  * @return Last element in the buffer, before being overwritten
  */
-double complex circbuf_complex_shift(double complex element, CircularBufferComplex *buf);
+double complex vector_complex_shift(double complex element, VectorComplex *buf);
 
 
 /**
  * @brief 
- * Returns complex element at index. Negative indices represent previously inserted elements.
- * @param index Index of element to be returned
+ * Returns complex element at last_element_index. Negative indices represent previously inserted elements.
+ * @param last_element_index Index of element to be returned
  * @param buf Buffer to be accessed
  * @return Indexed element
  */
-double complex *circbuf_complex_element(int index, CircularBufferComplex *buf);
+double complex *vector_complex_element(int last_element_index, VectorComplex *buf);
 
 /**
  * @brief 
  * Interpolates values of a complex circular buffer
- * @param index Generalized index to interpolate at. Can be between integer indices.
+ * @param last_element_index Generalized last_element_index to interpolate at. Can be between integer indices.
  * @param buf Buffer to be accessed
  * @return Interpolated element
  */
-double complex circbuf_complex_interpolated_element(double index, CircularBufferComplex *buf);
+double complex vector_complex_interpolated_element(double index, VectorComplex *buf);
+
+double complex vector_complex_dot(VectorComplex *a, VectorComplex *b);
 
 /**
  * @brief 
@@ -62,24 +69,28 @@ double complex circbuf_complex_interpolated_element(double index, CircularBuffer
  * @param size Number of elements in the circular buffer
  * @return Circular buffer 
  */
-CircularBufferComplex *circbuf_complex_new(size_t size);
+VectorComplex *vector_complex_new(size_t size);
+
+VectorComplex *vector_complex_duplicate(const VectorComplex *vector);
 
 
-size_t circbuf_complex_length(CircularBufferComplex *buf);
+size_t vector_complex_length(const VectorComplex *buf);
+
+void vector_complex_reverse(VectorComplex *vector);
 
 /**
  * @brief 
  * Resets all values of the buffer to zero
  * @param buf Buffer to reset
  */
-void circbuf_complex_reset(CircularBufferComplex *buf);
+void vector_complex_reset(VectorComplex *buf);
 
 /**
  * @brief 
  * Frees circular buffer memory allocations
  * @param buf Buffer to be freed
  */
-void circbuf_complex_free(CircularBufferComplex *buf);
+void vector_complex_free(VectorComplex *buf);
 
 
 /**
@@ -90,25 +101,27 @@ void circbuf_complex_free(CircularBufferComplex *buf);
  * @param buf Buffer to be operated on
  * @return Last element in the buffer, before being overwritten
  */
-double circbuf_real_shift(double element, CircularBufferReal *buf);
+double vector_real_shift(double element, VectorReal *buf);
 
 /**
  * @brief 
- * Returns real element at index. Negative indices represent previously inserted elements.
- * @param index Index of element to be returned
+ * Returns real element at last_element_index. Negative indices represent previously inserted elements.
+ * @param last_element_index Index of element to be returned
  * @param buf Buffer to be accessed
  * @return Indexed element
  */
-double *circbuf_real_element(int index, CircularBufferReal *buf);
+double *vector_real_element(int index, VectorReal *buf);
 
 /**
  * @brief 
  * Interpolates values of a real circular buffer
- * @param index Generalized index to interpolate at. Can be between integer indices.
+ * @param last_element_index Generalized last_element_index to interpolate at. Can be between integer indices.
  * @param buf Buffer to be accessed
  * @return Interpolated element
  */
-double circbuf_real_interpolated_element(double index, CircularBufferReal *buf);
+double vector_real_interpolated_element(double index, VectorReal *buf);
+
+double vector_real_dot(VectorReal *a, VectorReal *b);
 
 /**
  * @brief 
@@ -116,21 +129,27 @@ double circbuf_real_interpolated_element(double index, CircularBufferReal *buf);
  * @param size Number of elements in the circular buffer
  * @return Circular buffer 
  */
-CircularBufferReal *circbuf_real_new(size_t size);
+VectorReal *vector_real_new(size_t size);
+
+VectorReal *vector_real_duplicate(const VectorReal *vector);
+
+size_t vector_real_length(const VectorReal *buf);
+
+void vector_real_reverse(VectorReal *vector);
 
 /**
  * @brief 
  * Resets all values of the buffer to zero
  * @param buf Buffer to reset
  */
-void circbuf_real_reset(CircularBufferReal *buf);
+void vector_real_reset(VectorReal *buf);
 
 /**
  * @brief 
  * Frees circular buffer memory allocations
  * @param buf Buffer to be freed
  */
-void circbuf_real_free(CircularBufferReal *buf);
+void vector_real_free(VectorReal *buf);
 
 /**
  * @brief 

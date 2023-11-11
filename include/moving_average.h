@@ -2,7 +2,7 @@
 #define QUICKWAVE_MOVING_AVERAGE
 
 #include <complex.h>
-#include "buffer.h"
+#include "vector.h"
 
 /**
  * @brief 
@@ -12,7 +12,7 @@
  */
 typedef struct {
     double moving_sum;
-    CircularBufferReal *previous_input;
+    VectorReal *previous_input;
 } MovingAverageReal;
 
 /**
@@ -23,7 +23,7 @@ typedef struct {
  */
 typedef struct {
     double complex moving_sum;
-    CircularBufferComplex *previous_input;
+    VectorComplex *previous_input;
 } MovingAverageComplex;
 
 /**

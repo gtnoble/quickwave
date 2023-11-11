@@ -20,15 +20,15 @@
 
 
 MovingAverageReal *moving_average_real_make(size_t length) {
-    MOVING_AVERAGE_MAKE(MovingAverageReal, circbuf_real_new)
+    MOVING_AVERAGE_MAKE(MovingAverageReal, vector_real_new)
 }
 
 MovingAverageComplex *moving_average_complex_make(size_t length) {
-    MOVING_AVERAGE_MAKE(MovingAverageComplex, circbuf_complex_new)
+    MOVING_AVERAGE_MAKE(MovingAverageComplex, vector_complex_new)
 }
 
 size_t moving_average_complex_length(MovingAverageComplex *filter) {
-    return circbuf_complex_length(filter->previous_input);
+    return vector_complex_length(filter->previous_input);
 }
 
 #define MOVING_AVERAGE_EVALUATE(circbuf_shifter) \
@@ -42,14 +42,14 @@ double moving_average_real_evaluate(
     double input, 
     MovingAverageReal *filter
 ) {
-    MOVING_AVERAGE_EVALUATE(circbuf_real_shift)
+    MOVING_AVERAGE_EVALUATE(vector_real_shift)
 }
 
 double complex moving_average_complex_evaluate(
     double complex input, 
     MovingAverageComplex *filter
 ) {
-    MOVING_AVERAGE_EVALUATE(circbuf_complex_shift)
+    MOVING_AVERAGE_EVALUATE(vector_complex_shift)
 }
 
 #define MOVING_AVERAGE_RESET(circbuf_resetter) \
@@ -60,11 +60,11 @@ double complex moving_average_complex_evaluate(
 
 
 void moving_average_real_reset(MovingAverageReal *filter) {
-    MOVING_AVERAGE_RESET(circbuf_real_reset)
+    MOVING_AVERAGE_RESET(vector_real_reset)
 }
 
 void moving_average_complex_reset(MovingAverageComplex *filter) {
-    MOVING_AVERAGE_RESET(circbuf_complex_reset)
+    MOVING_AVERAGE_RESET(vector_complex_reset)
 }
 
 #define MOVING_AVERAGE_FREE \
