@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "fft.h"
 #include "test.h"
 #include "vector.h"
@@ -14,7 +16,23 @@ int main() {
     FftComplex *fft = fft_make_fft_complex(num_test_points);
 
     fft_fft(test_vector, fft);
+    VectorComplex *transformed = vector_duplicate_generic(test_vector);
     fft_ifft(test_vector, fft);
+
+    for (size_t i = 0; i < num_test_points; i++) {
+        double complex transformed_point = 
+            *vector_element_generic(i, transformed);
+        double complex inverse_transformed_point = 
+            *vector_element_generic(i, test_vector);
+        printf(
+            "%f + 0i, %f + %fi, %f + %fi\n", 
+            creal(test_points[i]),
+            creal(transformed_point),
+            cimag(transformed_point),
+            creal(inverse_transformed_point),
+            cimag(inverse_transformed_point)
+        );
+    }
 
     for (size_t i = 0; i < num_test_points; i++) {
         assert_complex_equal(*vector_element_generic(i, test_vector), test_points[i], 3);

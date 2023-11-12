@@ -90,6 +90,18 @@ double complex vector_complex_dot(const VectorComplex *a, const VectorComplex *b
     return sum;
 }
 
+void vector_real_scale(double scalar, VectorReal *vector) {
+    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+        *vector_element_generic(i, vector) *= scalar;
+    }
+}
+
+void vector_complex_scale(double complex scalar, VectorComplex *vector) {
+    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+        *vector_element_generic(i, vector) *= scalar;
+    }
+}
+
 void vector_real_apply(double (*operation)(double), VectorReal *vector) {
     for (size_t i = 0; i < vector_length_generic(vector); i++) {
         *vector_element_generic(i, vector) = 

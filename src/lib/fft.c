@@ -17,7 +17,7 @@ FftComplex *fft_make_fft_complex(int length) {
     FftComplex *fft = malloc(sizeof(FftComplex));
     if (fft == NULL)
         goto fft_allocation_failure;
-
+    
     fft->in_out_data = malloc(sizeof(double) * 2 * length);
     if (fft->in_out_data == NULL)
         goto data_allocation_failure;
@@ -30,6 +30,8 @@ FftComplex *fft_make_fft_complex(int length) {
     fft->wave_table = malloc(sizeof(double) * (length / 2));
     if (fft->wave_table == NULL)
         goto wave_table_allocation_failure;
+
+    fft->length = length;
 
     return fft;
 
@@ -56,7 +58,7 @@ void fft_fft(VectorComplex *data, FftComplex *fft) {
     assert_not_null(fft);
 
     double *in_data = fft->in_out_data;
-    double *out_data = fft->in_out_data + fft->length / 2;
+    double *out_data = fft->in_out_data; //+ fft->length / 2;
 
     for (size_t i = 0; i < vector_length_generic(data); i++) {
         double complex input_element = *vector_element_generic(i, data);
@@ -65,7 +67,7 @@ void fft_fft(VectorComplex *data, FftComplex *fft) {
     }
 
     cdft(
-        fft->length, 
+        fft->length * 2, 
         FORWARD_TRANSFORM, 
         fft->in_out_data, 
         fft->bit_reversal_work_area, 
@@ -82,6 +84,7 @@ void fft_ifft(VectorComplex *data, FftComplex *fft) {
     vector_complex_apply(conj, data);
     fft_fft(data, fft);
     vector_complex_apply(conj, data);
+    vector_complex_scale(1.0 / vector_length_generic(data), data);
 }
 
 static bool is_power_of_two(int n) {

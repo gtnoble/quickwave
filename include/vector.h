@@ -95,6 +95,8 @@ double complex vector_complex_interpolated_element(double index, const VectorCom
 
 double complex vector_complex_dot(const VectorComplex *a, const VectorComplex *b);
 
+void vector_complex_scale(double complex scalar, VectorComplex *vector);
+
 void vector_complex_apply(
     double complex (*operation)(double complex), 
     VectorComplex *vector
@@ -161,6 +163,8 @@ double *vector_real_element(int index, VectorReal *buf);
 double vector_real_interpolated_element(double index, const VectorReal *buf);
 
 double vector_real_dot(const VectorReal *a, const VectorReal *b);
+
+void vector_real_scale(double scalar, VectorReal *vector);
 
 void vector_real_apply(double (*operation)(double), VectorReal *vector);
 

@@ -14,161 +14,6 @@ functions
     dfct: Cosine Transform of RDFT (Real Symmetric DFT)
     dfst: Sine Transform of RDFT (Real Anti-symmetric DFT)
 
--------- DCT (Discrete Cosine Transform) / Inverse of DCT --------
-    [definition]
-        <case1> IDCT (excluding scale)
-            C[k] = sum_j=0^n-1 a[j]*cos(pi*j*(k+1/2)/n), 0<=k<n
-        <case2> DCT
-            C[k] = sum_j=0^n-1 a[j]*cos(pi*(j+1/2)*k/n), 0<=k<n
-    [usage]
-        <case1>
-            ip[0] = 0; // first time only
-            ddct(n, 1, a, ip, w);
-        <case2>
-            ip[0] = 0; // first time only
-            ddct(n, -1, a, ip, w);
-    [parameters]
-        n              :data length (int)
-                        n >= 2, n = power of 2
-        a[0...n-1]     :input/output data (double *)
-                        output data
-                            a[k] = C[k], 0<=k<n
-        ip[0...*]      :work area for bit reversal (int *)
-                        length of ip >= 2+sqrt(n/2)
-                        strictly, 
-                        length of ip >= 
-                            2+(1<<(int)(log(n/2+0.5)/log(2))/2).
-                        ip[0],ip[1] are pointers of the cos/sin table.
-        w[0...n*5/4-1] :cos/sin table (double *)
-                        w[],ip[] are initialized if ip[0] == 0.
-    [remark]
-        Inverse of 
-            ddct(n, -1, a, ip, w);
-        is 
-            a[0] *= 0.5;
-            ddct(n, 1, a, ip, w);
-            for (j = 0; j <= n - 1; j++) {
-                a[j] *= 2.0 / n;
-            }
-        .
-
-
--------- DST (Discrete Sine Transform) / Inverse of DST --------
-    [definition]
-        <case1> IDST (excluding scale)
-            S[k] = sum_j=1^n A[j]*sin(pi*j*(k+1/2)/n), 0<=k<n
-        <case2> DST
-            S[k] = sum_j=0^n-1 a[j]*sin(pi*(j+1/2)*k/n), 0<k<=n
-    [usage]
-        <case1>
-            ip[0] = 0; // first time only
-            ddst(n, 1, a, ip, w);
-        <case2>
-            ip[0] = 0; // first time only
-            ddst(n, -1, a, ip, w);
-    [parameters]
-        n              :data length (int)
-                        n >= 2, n = power of 2
-        a[0...n-1]     :input/output data (double *)
-                        <case1>
-                            input data
-                                a[j] = A[j], 0<j<n
-                                a[0] = A[n]
-                            output data
-                                a[k] = S[k], 0<=k<n
-                        <case2>
-                            output data
-                                a[k] = S[k], 0<k<n
-                                a[0] = S[n]
-        ip[0...*]      :work area for bit reversal (int *)
-                        length of ip >= 2+sqrt(n/2)
-                        strictly, 
-                        length of ip >= 
-                            2+(1<<(int)(log(n/2+0.5)/log(2))/2).
-                        ip[0],ip[1] are pointers of the cos/sin table.
-        w[0...n*5/4-1] :cos/sin table (double *)
-                        w[],ip[] are initialized if ip[0] == 0.
-    [remark]
-        Inverse of 
-            ddst(n, -1, a, ip, w);
-        is 
-            a[0] *= 0.5;
-            ddst(n, 1, a, ip, w);
-            for (j = 0; j <= n - 1; j++) {
-                a[j] *= 2.0 / n;
-            }
-        .
-
-
--------- Cosine Transform of RDFT (Real Symmetric DFT) --------
-    [definition]
-        C[k] = sum_j=0^n a[j]*cos(pi*j*k/n), 0<=k<=n
-    [usage]
-        ip[0] = 0; // first time only
-        dfct(n, a, t, ip, w);
-    [parameters]
-        n              :data length - 1 (int)
-                        n >= 2, n = power of 2
-        a[0...n]       :input/output data (double *)
-                        output data
-                            a[k] = C[k], 0<=k<=n
-        t[0...n/2]     :work area (double *)
-        ip[0...*]      :work area for bit reversal (int *)
-                        length of ip >= 2+sqrt(n/4)
-                        strictly, 
-                        length of ip >= 
-                            2+(1<<(int)(log(n/4+0.5)/log(2))/2).
-                        ip[0],ip[1] are pointers of the cos/sin table.
-        w[0...n*5/8-1] :cos/sin table (double *)
-                        w[],ip[] are initialized if ip[0] == 0.
-    [remark]
-        Inverse of 
-            a[0] *= 0.5;
-            a[n] *= 0.5;
-            dfct(n, a, t, ip, w);
-        is 
-            a[0] *= 0.5;
-            a[n] *= 0.5;
-            dfct(n, a, t, ip, w);
-            for (j = 0; j <= n; j++) {
-                a[j] *= 2.0 / n;
-            }
-        .
-
-
--------- Sine Transform of RDFT (Real Anti-symmetric DFT) --------
-    [definition]
-        S[k] = sum_j=1^n-1 a[j]*sin(pi*j*k/n), 0<k<n
-    [usage]
-        ip[0] = 0; // first time only
-        dfst(n, a, t, ip, w);
-    [parameters]
-        n              :data length + 1 (int)
-                        n >= 2, n = power of 2
-        a[0...n-1]     :input/output data (double *)
-                        output data
-                            a[k] = S[k], 0<k<n
-                        (a[0] is used for work area)
-        t[0...n/2-1]   :work area (double *)
-        ip[0...*]      :work area for bit reversal (int *)
-                        length of ip >= 2+sqrt(n/4)
-                        strictly, 
-                        length of ip >= 
-                            2+(1<<(int)(log(n/4+0.5)/log(2))/2).
-                        ip[0],ip[1] are pointers of the cos/sin table.
-        w[0...n*5/8-1] :cos/sin table (double *)
-                        w[],ip[] are initialized if ip[0] == 0.
-    [remark]
-        Inverse of 
-            dfst(n, a, t, ip, w);
-        is 
-            dfst(n, a, t, ip, w);
-            for (j = 1; j <= n - 1; j++) {
-                a[j] *= 2.0 / n;
-            }
-        .
-
-
 Appendix :
     The cos/sin table is recalculated when the larger table required.
     w[] and ip[] are compatible with all routines.
@@ -187,8 +32,10 @@ static void dstsub(int n, double *a, int nc, double *c);
 static void cft1st(int n, double *a, double *w);
 static void cftmdl(int n, int l, double *a, double *w);
 
-void cdft(int n, TransformDirection isgn, double *a, int *ip, double *w)
+void cdft(int n, TransformDirection direction, double *a, int *ip, double *w)
 {
+    int isgn = direction == FORWARD_TRANSFORM ? -1 : 1;
+
     if (n > (ip[0] << 2)) {
         makewt(n >> 2, ip, w);
     }
@@ -206,8 +53,10 @@ void cdft(int n, TransformDirection isgn, double *a, int *ip, double *w)
 }
 
 
-void rdft(int n, TransformDirection isgn, double *a, int *ip, double *w)
+void rdft(int n, TransformDirection direction, double *a, int *ip, double *w)
 {
+    int isgn = direction == FORWARD_TRANSFORM ? 1 : -1;
+
     int nw, nc;
     double xi;
     
