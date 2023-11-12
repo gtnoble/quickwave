@@ -10,12 +10,22 @@ Fast Fourier/Cosine/Sine Transform
 
 #include "fftg_h.h"
 
+static void bitrv2(int n, double *a);
+static void bitrv2conj(int n, double *a);
+static void cftfsub(int n, double *a);
+static void cftbsub(int n, double *a);
+static void rftfsub(int n, double *a);
+static void rftbsub(int n, double *a);
+static void dctsub(int n, double *a);
+static void dctsub4(int n, double *a);
+static void dstsub(int n, double *a);
+static void dstsub4(int n, double *a);
+static void bitrv1(int n, double *a);
+static void cft1st(int n, double *a);
+static void cftmdl(int n, int l, double *a);
+
 void cdft(int n, int isgn, double *a)
 {
-    void bitrv2(int n, double *a);
-    void bitrv2conj(int n, double *a);
-    void cftfsub(int n, double *a);
-    void cftbsub(int n, double *a);
     
     if (n > 4) {
         if (isgn >= 0) {
@@ -33,11 +43,6 @@ void cdft(int n, int isgn, double *a)
 
 void rdft(int n, int isgn, double *a)
 {
-    void bitrv2(int n, double *a);
-    void cftfsub(int n, double *a);
-    void cftbsub(int n, double *a);
-    void rftfsub(int n, double *a);
-    void rftbsub(int n, double *a);
     double xi;
     
     if (isgn >= 0) {
@@ -67,13 +72,6 @@ void rdft(int n, int isgn, double *a)
 
 void ddct(int n, int isgn, double *a)
 {
-    void bitrv2(int n, double *a);
-    void cftfsub(int n, double *a);
-    void cftbsub(int n, double *a);
-    void rftfsub(int n, double *a);
-    void rftbsub(int n, double *a);
-    void dctsub(int n, double *a);
-    void dctsub4(int n, double *a);
     int j;
     double xr;
     
@@ -119,13 +117,6 @@ void ddct(int n, int isgn, double *a)
 
 void ddst(int n, int isgn, double *a)
 {
-    void bitrv2(int n, double *a);
-    void cftfsub(int n, double *a);
-    void cftbsub(int n, double *a);
-    void rftfsub(int n, double *a);
-    void rftbsub(int n, double *a);
-    void dstsub(int n, double *a);
-    void dstsub4(int n, double *a);
     int j;
     double xr;
     
@@ -171,8 +162,6 @@ void ddst(int n, int isgn, double *a)
 
 void dfct(int n, double *a)
 {
-    void ddct(int n, int isgn, double *a);
-    void bitrv1(int n, double *a);
     int j, k, m, mh;
     double xr, xi, yr, yi, an;
     
@@ -218,8 +207,6 @@ void dfct(int n, double *a)
 
 void dfst(int n, double *a)
 {
-    void ddst(int n, int isgn, double *a);
-    void bitrv1(int n, double *a);
     int j, k, m, mh;
     double xr, xi, yr, yi;
     
@@ -284,7 +271,7 @@ void dfst(int n, double *a)
 #endif
 
 
-void bitrv2(int n, double *a)
+static void bitrv2(int n, double *a)
 {
     int j0, k0, j1, k1, l, m, i, j, k;
     double xr, xi, yr, yi;
@@ -383,7 +370,7 @@ void bitrv2(int n, double *a)
 }
 
 
-void bitrv2conj(int n, double *a)
+static void bitrv2conj(int n, double *a)
 {
     int j0, k0, j1, k1, l, m, i, j, k;
     double xr, xi, yr, yi;
@@ -491,7 +478,7 @@ void bitrv2conj(int n, double *a)
 }
 
 
-void bitrv1(int n, double *a)
+static void bitrv1(int n, double *a)
 {
     int j0, k0, j1, k1, l, m, i, j, k;
     double x;
@@ -555,10 +542,8 @@ void bitrv1(int n, double *a)
 }
 
 
-void cftfsub(int n, double *a)
+static void cftfsub(int n, double *a)
 {
-    void cft1st(int n, double *a);
-    void cftmdl(int n, int l, double *a);
     int j, j1, j2, j3, l;
     double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
     
@@ -607,10 +592,8 @@ void cftfsub(int n, double *a)
 }
 
 
-void cftbsub(int n, double *a)
+static void cftbsub(int n, double *a)
 {
-    void cft1st(int n, double *a);
-    void cftmdl(int n, int l, double *a);
     int j, j1, j2, j3, l;
     double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
     
@@ -659,7 +642,7 @@ void cftbsub(int n, double *a)
 }
 
 
-void cft1st(int n, double *a)
+static void cft1st(int n, double *a)
 {
     int j, kj, kr;
     double ew, wn4r, wk1r, wk1i, wk2r, wk2i, wk3r, wk3i;
@@ -765,7 +748,7 @@ void cft1st(int n, double *a)
 }
 
 
-void cftmdl(int n, int l, double *a)
+static void cftmdl(int n, int l, double *a)
 {
     int j, j1, j2, j3, k, kj, kr, m, m2;
     double ew, wn4r, wk1r, wk1i, wk2r, wk2i, wk3r, wk3i;
@@ -893,7 +876,7 @@ void cftmdl(int n, int l, double *a)
 }
 
 
-void rftfsub(int n, double *a)
+static void rftfsub(int n, double *a)
 {
     int i, i0, j, k;
     double ec, w1r, w1i, wkr, wki, wdr, wdi, ss, xr, xi, yr, yi;
@@ -958,7 +941,7 @@ void rftfsub(int n, double *a)
 }
 
 
-void rftbsub(int n, double *a)
+static void rftbsub(int n, double *a)
 {
     int i, i0, j, k;
     double ec, w1r, w1i, wkr, wki, wdr, wdi, ss, xr, xi, yr, yi;
@@ -1025,7 +1008,7 @@ void rftbsub(int n, double *a)
 }
 
 
-void dctsub(int n, double *a)
+static void dctsub(int n, double *a)
 {
     int i, i0, j, k, m;
     double ec, w1r, w1i, wkr, wki, wdr, wdi, ss, xr, xi, yr, yi;
@@ -1078,7 +1061,7 @@ void dctsub(int n, double *a)
 }
 
 
-void dstsub(int n, double *a)
+static void dstsub(int n, double *a)
 {
     int i, i0, j, k, m;
     double ec, w1r, w1i, wkr, wki, wdr, wdi, ss, xr, xi, yr, yi;
@@ -1131,7 +1114,7 @@ void dstsub(int n, double *a)
 }
 
 
-void dctsub4(int n, double *a)
+static void dctsub4(int n, double *a)
 {
     int m;
     double wki, wdr, wdi, xr;
@@ -1149,7 +1132,7 @@ void dctsub4(int n, double *a)
 }
 
 
-void dstsub4(int n, double *a)
+static void dstsub4(int n, double *a)
 {
     int m;
     double wki, wdr, wdi, xr;
