@@ -13,106 +13,6 @@ functions
     ddst: Discrete Sine Transform
     dfct: Cosine Transform of RDFT (Real Symmetric DFT)
     dfst: Sine Transform of RDFT (Real Anti-symmetric DFT)
-function prototypes
-    void cdft(int, int, double *, int *, double *);
-    void rdft(int, int, double *, int *, double *);
-    void ddct(int, int, double *, int *, double *);
-    void ddst(int, int, double *, int *, double *);
-    void dfct(int, double *, double *, int *, double *);
-    void dfst(int, double *, double *, int *, double *);
-
-
--------- Complex DFT (Discrete Fourier Transform) --------
-    [definition]
-        <case1>
-            X[k] = sum_j=0^n-1 x[j]*exp(2*pi*i*j*k/n), 0<=k<n
-        <case2>
-            X[k] = sum_j=0^n-1 x[j]*exp(-2*pi*i*j*k/n), 0<=k<n
-        (notes: sum_j=0^n-1 is a summation from j=0 to n-1)
-    [usage]
-        <case1>
-            ip[0] = 0; // first time only
-            cdft(2*n, 1, a, ip, w);
-        <case2>
-            ip[0] = 0; // first time only
-            cdft(2*n, -1, a, ip, w);
-    [parameters]
-        2*n            :data length (int)
-                        n >= 1, n = power of 2
-        a[0...2*n-1]   :input/output data (double *)
-                        input data
-                            a[2*j] = Re(x[j]), 
-                            a[2*j+1] = Im(x[j]), 0<=j<n
-                        output data
-                            a[2*k] = Re(X[k]), 
-                            a[2*k+1] = Im(X[k]), 0<=k<n
-        ip[0...*]      :work area for bit reversal (int *)
-                        length of ip >= 2+sqrt(n)
-                        strictly, 
-                        length of ip >= 
-                            2+(1<<(int)(log(n+0.5)/log(2))/2).
-                        ip[0],ip[1] are pointers of the cos/sin table.
-        w[0...n/2-1]   :cos/sin table (double *)
-                        w[],ip[] are initialized if ip[0] == 0.
-    [remark]
-        Inverse of 
-            cdft(2*n, -1, a, ip, w);
-        is 
-            cdft(2*n, 1, a, ip, w);
-            for (j = 0; j <= 2 * n - 1; j++) {
-                a[j] *= 1.0 / n;
-            }
-        .
-
-
--------- Real DFT / Inverse of Real DFT --------
-    [definition]
-        <case1> RDFT
-            R[k] = sum_j=0^n-1 a[j]*cos(2*pi*j*k/n), 0<=k<=n/2
-            I[k] = sum_j=0^n-1 a[j]*sin(2*pi*j*k/n), 0<k<n/2
-        <case2> IRDFT (excluding scale)
-            a[k] = (R[0] + R[n/2]*cos(pi*k))/2 + 
-                   sum_j=1^n/2-1 R[j]*cos(2*pi*j*k/n) + 
-                   sum_j=1^n/2-1 I[j]*sin(2*pi*j*k/n), 0<=k<n
-    [usage]
-        <case1>
-            ip[0] = 0; // first time only
-            rdft(n, 1, a, ip, w);
-        <case2>
-            ip[0] = 0; // first time only
-            rdft(n, -1, a, ip, w);
-    [parameters]
-        n              :data length (int)
-                        n >= 2, n = power of 2
-        a[0...n-1]     :input/output data (double *)
-                        <case1>
-                            output data
-                                a[2*k] = R[k], 0<=k<n/2
-                                a[2*k+1] = I[k], 0<k<n/2
-                                a[1] = R[n/2]
-                        <case2>
-                            input data
-                                a[2*j] = R[j], 0<=j<n/2
-                                a[2*j+1] = I[j], 0<j<n/2
-                                a[1] = R[n/2]
-        ip[0...*]      :work area for bit reversal (int *)
-                        length of ip >= 2+sqrt(n/2)
-                        strictly, 
-                        length of ip >= 
-                            2+(1<<(int)(log(n/2+0.5)/log(2))/2).
-                        ip[0],ip[1] are pointers of the cos/sin table.
-        w[0...n/2-1]   :cos/sin table (double *)
-                        w[],ip[] are initialized if ip[0] == 0.
-    [remark]
-        Inverse of 
-            rdft(n, 1, a, ip, w);
-        is 
-            rdft(n, -1, a, ip, w);
-            for (j = 0; j <= n - 1; j++) {
-                a[j] *= 2.0 / n;
-            }
-        .
-
 
 -------- DCT (Discrete Cosine Transform) / Inverse of DCT --------
     [definition]
@@ -274,15 +174,21 @@ Appendix :
     w[] and ip[] are compatible with all routines.
 */
 
+#include "fftg.h"
 
-void cdft(int n, int isgn, double *a, int *ip, double *w)
+static void bitrv2(int n, int *ip, double *a);
+static void bitrv2conj(int n, int *ip, double *a);
+static void cftfsub(int n, double *a, double *w);
+static void cftbsub(int n, double *a, double *w);
+static void rftfsub(int n, double *a, int nc, double *c);
+static void rftbsub(int n, double *a, int nc, double *c);
+static void dctsub(int n, double *a, int nc, double *c);
+static void dstsub(int n, double *a, int nc, double *c);
+static void cft1st(int n, double *a, double *w);
+static void cftmdl(int n, int l, double *a, double *w);
+
+void cdft(int n, TransformDirection isgn, double *a, int *ip, double *w)
 {
-    void makewt(int nw, int *ip, double *w);
-    void bitrv2(int n, int *ip, double *a);
-    void bitrv2conj(int n, int *ip, double *a);
-    void cftfsub(int n, double *a, double *w);
-    void cftbsub(int n, double *a, double *w);
-    
     if (n > (ip[0] << 2)) {
         makewt(n >> 2, ip, w);
     }
@@ -300,15 +206,8 @@ void cdft(int n, int isgn, double *a, int *ip, double *w)
 }
 
 
-void rdft(int n, int isgn, double *a, int *ip, double *w)
+void rdft(int n, TransformDirection isgn, double *a, int *ip, double *w)
 {
-    void makewt(int nw, int *ip, double *w);
-    void makect(int nc, int *ip, double *c);
-    void bitrv2(int n, int *ip, double *a);
-    void cftfsub(int n, double *a, double *w);
-    void cftbsub(int n, double *a, double *w);
-    void rftfsub(int n, double *a, int nc, double *c);
-    void rftbsub(int n, double *a, int nc, double *c);
     int nw, nc;
     double xi;
     
@@ -349,14 +248,6 @@ void rdft(int n, int isgn, double *a, int *ip, double *w)
 
 void ddct(int n, int isgn, double *a, int *ip, double *w)
 {
-    void makewt(int nw, int *ip, double *w);
-    void makect(int nc, int *ip, double *c);
-    void bitrv2(int n, int *ip, double *a);
-    void cftfsub(int n, double *a, double *w);
-    void cftbsub(int n, double *a, double *w);
-    void rftfsub(int n, double *a, int nc, double *c);
-    void rftbsub(int n, double *a, int nc, double *c);
-    void dctsub(int n, double *a, int nc, double *c);
     int j, nw, nc;
     double xr;
     
@@ -408,14 +299,6 @@ void ddct(int n, int isgn, double *a, int *ip, double *w)
 
 void ddst(int n, int isgn, double *a, int *ip, double *w)
 {
-    void makewt(int nw, int *ip, double *w);
-    void makect(int nc, int *ip, double *c);
-    void bitrv2(int n, int *ip, double *a);
-    void cftfsub(int n, double *a, double *w);
-    void cftbsub(int n, double *a, double *w);
-    void rftfsub(int n, double *a, int nc, double *c);
-    void rftbsub(int n, double *a, int nc, double *c);
-    void dstsub(int n, double *a, int nc, double *c);
     int j, nw, nc;
     double xr;
     
@@ -467,12 +350,6 @@ void ddst(int n, int isgn, double *a, int *ip, double *w)
 
 void dfct(int n, double *a, double *t, int *ip, double *w)
 {
-    void makewt(int nw, int *ip, double *w);
-    void makect(int nc, int *ip, double *c);
-    void bitrv2(int n, int *ip, double *a);
-    void cftfsub(int n, double *a, double *w);
-    void rftfsub(int n, double *a, int nc, double *c);
-    void dctsub(int n, double *a, int nc, double *c);
     int j, k, l, m, mh, nw, nc;
     double xr, xi, yr, yi;
     
@@ -563,12 +440,6 @@ void dfct(int n, double *a, double *t, int *ip, double *w)
 
 void dfst(int n, double *a, double *t, int *ip, double *w)
 {
-    void makewt(int nw, int *ip, double *w);
-    void makect(int nc, int *ip, double *c);
-    void bitrv2(int n, int *ip, double *a);
-    void cftfsub(int n, double *a, double *w);
-    void rftfsub(int n, double *a, int nc, double *c);
-    void dstsub(int n, double *a, int nc, double *c);
     int j, k, l, m, mh, nw, nc;
     double xr, xi, yr, yi;
     
@@ -655,7 +526,6 @@ void dfst(int n, double *a, double *t, int *ip, double *w)
 
 void makewt(int nw, int *ip, double *w)
 {
-    void bitrv2(int n, int *ip, double *a);
     int j, nwh;
     double delta, x, y;
     
@@ -705,7 +575,7 @@ void makect(int nc, int *ip, double *c)
 /* -------- child routines -------- */
 
 
-void bitrv2(int n, int *ip, double *a)
+static void bitrv2(int n, int *ip, double *a)
 {
     int j, j1, k, k1, l, m, m2;
     double xr, xi, yr, yi;
@@ -805,7 +675,7 @@ void bitrv2(int n, int *ip, double *a)
 }
 
 
-void bitrv2conj(int n, int *ip, double *a)
+static void bitrv2conj(int n, int *ip, double *a)
 {
     int j, j1, k, k1, l, m, m2;
     double xr, xi, yr, yi;
@@ -914,10 +784,8 @@ void bitrv2conj(int n, int *ip, double *a)
 }
 
 
-void cftfsub(int n, double *a, double *w)
+static void cftfsub(int n, double *a, double *w)
 {
-    void cft1st(int n, double *a, double *w);
-    void cftmdl(int n, int l, double *a, double *w);
     int j, j1, j2, j3, l;
     double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
     
@@ -966,10 +834,8 @@ void cftfsub(int n, double *a, double *w)
 }
 
 
-void cftbsub(int n, double *a, double *w)
+static void cftbsub(int n, double *a, double *w)
 {
-    void cft1st(int n, double *a, double *w);
-    void cftmdl(int n, int l, double *a, double *w);
     int j, j1, j2, j3, l;
     double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
     
@@ -1018,7 +884,7 @@ void cftbsub(int n, double *a, double *w)
 }
 
 
-void cft1st(int n, double *a, double *w)
+static void cft1st(int n, double *a, double *w)
 {
     int j, k1, k2;
     double wk1r, wk1i, wk2r, wk2i, wk3r, wk3i;
@@ -1123,7 +989,7 @@ void cft1st(int n, double *a, double *w)
 }
 
 
-void cftmdl(int n, int l, double *a, double *w)
+static void cftmdl(int n, int l, double *a, double *w)
 {
     int j, j1, j2, j3, k, k1, k2, m, m2;
     double wk1r, wk1i, wk2r, wk2i, wk3r, wk3i;
@@ -1250,7 +1116,7 @@ void cftmdl(int n, int l, double *a, double *w)
 }
 
 
-void rftfsub(int n, double *a, int nc, double *c)
+static void rftfsub(int n, double *a, int nc, double *c)
 {
     int j, k, kk, ks, m;
     double wkr, wki, xr, xi, yr, yi;
@@ -1275,7 +1141,7 @@ void rftfsub(int n, double *a, int nc, double *c)
 }
 
 
-void rftbsub(int n, double *a, int nc, double *c)
+static void rftbsub(int n, double *a, int nc, double *c)
 {
     int j, k, kk, ks, m;
     double wkr, wki, xr, xi, yr, yi;
@@ -1302,7 +1168,7 @@ void rftbsub(int n, double *a, int nc, double *c)
 }
 
 
-void dctsub(int n, double *a, int nc, double *c)
+static void dctsub(int n, double *a, int nc, double *c)
 {
     int j, k, kk, ks, m;
     double wkr, wki, xr;
@@ -1323,7 +1189,7 @@ void dctsub(int n, double *a, int nc, double *c)
 }
 
 
-void dstsub(int n, double *a, int nc, double *c)
+static void dstsub(int n, double *a, int nc, double *c)
 {
     int j, k, kk, ks, m;
     double wkr, wki, xr;

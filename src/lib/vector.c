@@ -90,6 +90,24 @@ double complex vector_complex_dot(const VectorComplex *a, const VectorComplex *b
     return sum;
 }
 
+void vector_real_apply(double (*operation)(double), VectorReal *vector) {
+    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+        *vector_element_generic(i, vector) = 
+            operation(*vector_element_generic(i, vector));
+    }
+}
+
+void vector_complex_apply(
+    double complex (*operation)(double complex), 
+    VectorComplex *vector
+) {
+    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+        *vector_element_generic(i, vector) = 
+            operation(*vector_element_generic(i, vector));
+    }
+}
+
+
 VectorComplex *vector_complex_new(size_t size) {
     VectorComplex *circbuf = malloc(
         sizeof(VectorComplex) + sizeof(double complex) * size);
@@ -112,6 +130,32 @@ VectorReal *vector_real_new(size_t size) {
 
     vector_reset_generic(circbuf);
     return circbuf;
+}
+
+VectorComplex *vector_complex_from_array(size_t size, const double complex elements[]) {
+    VectorComplex *vector = vector_complex_new(size);
+    if (vector == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        *vector_element_generic(i, vector) = elements[i];
+    }
+
+    return vector;
+}
+
+VectorReal *vector_real_from_array(size_t size, const double elements[]) {
+    VectorReal *vector = vector_real_new(size);
+    if (vector == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        *vector_element_generic(i, vector) = elements[i];
+    }
+
+    return vector;
 }
 
 VectorComplex *vector_complex_duplicate(const VectorComplex *vector) {

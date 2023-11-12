@@ -95,6 +95,13 @@ double complex vector_complex_interpolated_element(double index, const VectorCom
 
 double complex vector_complex_dot(const VectorComplex *a, const VectorComplex *b);
 
+void vector_complex_apply(
+    double complex (*operation)(double complex), 
+    VectorComplex *vector
+);
+
+VectorComplex *vector_complex_from_array(size_t size, const double complex elements[]);
+
 /**
  * @brief 
  * Makes and allocates a new complex circular buffer
@@ -154,6 +161,10 @@ double *vector_real_element(int index, VectorReal *buf);
 double vector_real_interpolated_element(double index, const VectorReal *buf);
 
 double vector_real_dot(const VectorReal *a, const VectorReal *b);
+
+void vector_real_apply(double (*operation)(double), VectorReal *vector);
+
+VectorReal *vector_real_from_array(size_t size, const double elements[]);
 
 /**
  * @brief 

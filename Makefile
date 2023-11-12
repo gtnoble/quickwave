@@ -26,7 +26,7 @@ ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-${FFT_BIN_DIR}/ooura_fft.o: ${FFT_SOURCE_DIR}/fft4g_h.c ${FFT_INCLUDE_DIR}/fftg_h.h
+${FFT_BIN_DIR}/ooura_fft.o: ${FFT_SOURCE_DIR}/fft4g.c ${FFT_INCLUDE_DIR}/fftg.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tests/iq.csv tests/const_freq.csv tests/sweep.csv &: tests/test_pll
@@ -45,7 +45,7 @@ tests/%.pdf: ${TEST_SOURCE_DIR}/plot.plt ${TEST_SOURCE_DIR}/%.plt tests/%.csv
 	gnuplot -c  $^ $@
 
 .PHONY: test
-test: tests/test_filter tests/test_pll tests/test_buffer tests/test_linear_model
+test: tests/test_filter tests/test_pll tests/test_buffer tests/test_linear_model tests/test_fft
 
 .PHONY: plots
 plots: tests/iq.pdf tests/const_freq.pdf tests/sweep.pdf tests/iir_response.pdf tests/test_sinc.pdf tests/sinusoid_fit.pdf
