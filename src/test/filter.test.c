@@ -40,7 +40,7 @@ void test_iir() {
         fprintf(iir_response_csv, "%f\n", creal(filtered[i]));
     }
     fflush(iir_response_csv);
-    //assert_complex_equal(filtered[TEST_SIGNAL_LENGTH - 1], 1.0, 2);
+    assert_complex_equal(filtered[TEST_SIGNAL_LENGTH - 1], 1.0, 2);
     fclose(iir_response_csv);
 
     filter_free_digital_filter_complex(iir);

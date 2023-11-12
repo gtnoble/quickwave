@@ -18,8 +18,8 @@ int main() {
 }
 
 void test_sinusoid_fit() {
-    Sinusoid signal = sinusoid_make(0.0, signal_frequency);
-    Sinusoid noise = sinusoid_make(0.0, noise_frequency);
+    Oscillator signal = oscillator_make(0.0, signal_frequency);
+    Oscillator noise = oscillator_make(0.0, noise_frequency);
 
     SinusoidFit *sinusoid_fit_model = 
         sinusoid_fit_make(window_length, signal_frequency);
@@ -32,15 +32,15 @@ void test_sinusoid_fit() {
 
     for (size_t i = 0; i < n_test_points; i++) {
         double signal_part = 
-            sinusoid_inphase(signal = nco_update(0.0, signal));
+            oscillator_inphase(oscillator_update(0.0, &signal));
         double noise_part =
-            sinusoid_inphase(noise = nco_update(0.0, noise));
+            oscillator_inphase(oscillator_update(0.0, &noise));
         double sum =
             signal_part + noise_part;
         
-        Sinusoid fit = sinusoid_fit_evaluate(sum, sinusoid_fit_model);
+        Oscillator fit = sinusoid_fit_evaluate(sum, sinusoid_fit_model);
         double evaluated_fit = 
-            sinusoid_inphase(fit);
+            oscillator_inphase(fit);
 
         fprintf(csv_output, output_file_format, signal_part, noise_part, sum, evaluated_fit);
     }

@@ -33,8 +33,14 @@ static inline double complex rotate_phasor(double complex phasor, double angle_r
  * @param angular_frequency Angular frequency, in radians per sample
  * @return Complex frequency
  */
-static inline double _Complex angular_to_complex_frequency(double angular_frequency) {
+static inline double complex angular_to_complex_frequency(double angular_frequency) {
     return zero_complex_frequency * cexp(I * angular_frequency);
+}
+
+static inline double complex ordinary_to_complex_frequency(double ordinary_frequency){
+    return angular_to_complex_frequency(
+        ordinary_frequency_to_angular(ordinary_frequency)
+    );
 }
 
 /**

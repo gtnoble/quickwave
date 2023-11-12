@@ -15,7 +15,12 @@
 #define vector_dot_generic(a, b) \
     _Generic((a), VectorReal*: vector_real_dot, VectorComplex*: vector_complex_dot)(a, b)
 #define vector_element_generic(index, vector) \
-    _Generic((vector), VectorReal*: vector_real_element, VectorComplex*: vector_complex_element)(index, vector)
+    _Generic((vector), \
+        VectorReal*: vector_real_element, \
+        const VectorReal*: vector_real_element, \
+        VectorComplex*: vector_complex_element, \
+        const VectorComplex*: vector_complex_element \
+    )(index, vector)
 #define vector_reverse_generic(vector) \
     _Generic((vector), VectorReal*: vector_real_reverse, VectorComplex*: vector_complex_reverse)(vector)
 #define vector_duplicate_generic(vector) \
@@ -77,7 +82,7 @@ double complex vector_complex_shift(double complex element, VectorComplex *buf);
  * @param buf Buffer to be accessed
  * @return Indexed element
  */
-double complex *vector_complex_element(int last_element_index, VectorComplex *buf);
+double complex *vector_complex_element(int index, VectorComplex *buf);
 
 /**
  * @brief 
@@ -86,9 +91,9 @@ double complex *vector_complex_element(int last_element_index, VectorComplex *bu
  * @param buf Buffer to be accessed
  * @return Interpolated element
  */
-double complex vector_complex_interpolated_element(double index, VectorComplex *buf);
+double complex vector_complex_interpolated_element(double index, const VectorComplex *buf);
 
-double complex vector_complex_dot(VectorComplex *a, VectorComplex *b);
+double complex vector_complex_dot(const VectorComplex *a, const VectorComplex *b);
 
 /**
  * @brief 
@@ -146,9 +151,9 @@ double *vector_real_element(int index, VectorReal *buf);
  * @param buf Buffer to be accessed
  * @return Interpolated element
  */
-double vector_real_interpolated_element(double index, VectorReal *buf);
+double vector_real_interpolated_element(double index, const VectorReal *buf);
 
-double vector_real_dot(VectorReal *a, VectorReal *b);
+double vector_real_dot(const VectorReal *a, const VectorReal *b);
 
 /**
  * @brief 

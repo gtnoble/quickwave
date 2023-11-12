@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
-#include "sinusoid.h"
+#include "oscillator.h"
 #include "phasor.h"
 #include "pll.h"
 #include "test.h"
@@ -9,13 +9,10 @@
 #include "pid.h"
 
 #define TEST_SIGNAL_LENGTH 10000
-#define PI 3.14159265358979323846
 
 void test_pll();
 void test_vco();
 void test_quadrature_mix();
-double pll_filter(double input, void *filter);
-double detected_phase;
 
 int main() {
     //test_vco();
@@ -27,17 +24,17 @@ int main() {
 void test_vco() {
     double complex complex_frequency = 1.0 * I;
 
-    Sinusoid nco = {
+    Oscillator nco = {
         .complex_frequency = 1.0,
         .phasor = 1.0
     };
 
-    nco = nco_update(complex_frequency, nco);
+    nco = oscillator_update(complex_frequency, &nco);
     assert_complex_equal(nco.complex_frequency, complex_frequency, 5);
     assert_complex_equal(nco.phasor, complex_frequency, 5);
-    nco = nco_update(complex_frequency, nco);
+    nco = oscillator_update(complex_frequency, &nco);
     assert_complex_equal(nco.phasor, -1.0, 5);
-    nco = nco_update(complex_frequency, nco);
+    nco = oscillator_update(complex_frequency, &nco);
     assert_complex_equal(nco.phasor, -complex_frequency, 5);
 }
 
@@ -59,26 +56,26 @@ void test_quadrature_mix() {
         output_column_headers
     );
 
-    Sinusoid reference = sinusoid_make(0.0, 0.02);
+    Oscillator reference = oscillator_make(0.0, 0.02);
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
-        reference = nco_update(0, reference);
-        Sinusoid mixed = quadrature_mix(reference, sinusoid_inphase(reference));
+        oscillator_update(0, &reference);
+        double complex mixed = oscillator_phase(reference) * oscillator_inphase(reference);
         fprintf(
             iq_csv, 
             output_column_format, 
-            sinusoid_inphase(reference), 
-            sinusoid_inphase(mixed), 
-            sinusoid_quadrature(mixed),
-            sinusoid_phase(reference),
-            sinusoid_phase(mixed)
+            oscillator_inphase(reference), 
+            creal(mixed), 
+            cimag(mixed),
+            oscillator_angular_phase(reference),
+            carg(mixed)
         );
 
         //munit_assert_double_equal(sinusoid_evaluate(mixed), sinusoid_evaluate(reference), 4);
-        //munit_assert_double(sinusoid_quadrature(mixed), >=, -1);
-        //munit_assert_double(sinusoid_quadrature(mixed), <=, 1);
+        //munit_assert_double(oscillator_quadrature(mixed), >=, -1);
+        //munit_assert_double(oscillator_quadrature(mixed), <=, 1);
 
-        //munit_assert_double(sinusoid_inphase(mixed), >=, 0);
-        //munit_assert_double(sinusoid_inphase(mixed), <=, 1);
+        //munit_assert_double(oscillator_inphase(mixed), >=, 0);
+        //munit_assert_double(oscillator_inphase(mixed), <=, 1);
 
         fflush(iq_csv);
     }
@@ -90,16 +87,15 @@ void test_pll() {
 
     //munit_assert_not_null(filter);
     
-    Sinusoid initial_vco = sinusoid_make(0.0, 0.01);
+    Oscillator initial_vco = oscillator_make(0.0, 0.01);
 
     PhaseLockedLoop pll = pll_make(
         initial_vco, 
-        pll_filter,
-        &filter
+        filter
     );
 
     double test_signal[TEST_SIGNAL_LENGTH];
-    Sinusoid pll_out[TEST_SIGNAL_LENGTH];
+    Oscillator pll_out[TEST_SIGNAL_LENGTH];
 
     FILE *const_freq_csv = fopen("tests/const_freq.csv", "w");
     munit_assert_not_null(const_freq_csv);
@@ -112,12 +108,11 @@ void test_pll() {
         double vco_frequency = complex_frequency_to_ordinary(pll.nco.complex_frequency);
         fprintf(
             const_freq_csv, 
-            "%f,%f,%f,%f,%f\n", 
+            "%f,%f,%f,%f\n", 
             test_signal[i], 
-            sinusoid_inphase(pll_out[i]),
-            sinusoid_quadrature(pll_out[i]),
-            vco_frequency,
-            detected_phase
+            oscillator_inphase(pll_out[i]),
+            oscillator_quadrature(pll_out[i]),
+            vco_frequency
         );
     }
 
@@ -125,31 +120,28 @@ void test_pll() {
 
     fclose(const_freq_csv);
 
-    pll_reset(initial_vco, &pll);
     filter = pid_make(0.1, 0.1, 0.0);
+    pll = pll_make(initial_vco, filter);
 
     FILE *sweep_csv  = fopen("tests/sweep.csv", "w");
     munit_assert_not_null(sweep_csv);
 
-    Sinusoid nco = sinusoid_make(0, 0.0);
+    Oscillator nco = oscillator_make(0, 0.0);
 
-    fprintf(sweep_csv, "test,pll in-phase,pll quadrature,pll frequency,detected phase,test frequency\n");
+    fprintf(sweep_csv, "test,pll in-phase,pll frequency,test frequency\n");
 
     for (int i = 0; i < TEST_SIGNAL_LENGTH; i++) {
         double frequency = (((double) TEST_SIGNAL_LENGTH - i) / TEST_SIGNAL_LENGTH) / 2 / 2;
-        nco = nco_update(angular_to_complex_frequency(ordinary_frequency_to_angular(frequency)), nco);
-        test_signal[i] = sinusoid_inphase(nco);
+        Oscillator current_test_osc = oscillator_update(ordinary_to_complex_frequency(frequency), &nco);
+        test_signal[i] = oscillator_inphase(current_test_osc);
         pll_out[i] = pll_evaluate(test_signal[i], &pll);
-        double vco_frequency = complex_frequency_to_ordinary(pll.nco.complex_frequency);
         fprintf(
             sweep_csv, 
-            "%f,%f,%f,%f,%f,%f\n", 
+            "%f,%f,%f,%f\n", 
             test_signal[i], 
-            sinusoid_inphase(pll_out[i]),
-            sinusoid_quadrature(pll_out[i]),
-            vco_frequency,
-            detected_phase,
-            complex_frequency_to_ordinary(nco.complex_frequency)
+            oscillator_inphase(pll_out[i]),
+            complex_frequency_to_ordinary(pll.nco.complex_frequency),
+            complex_frequency_to_ordinary(oscillator_angular_freq(current_test_osc))
         );
     }
 
@@ -157,10 +149,4 @@ void test_pll() {
 
     fclose(sweep_csv);
 
-}
-
-double pll_filter(double input, void *context) {
-    detected_phase = input;
-    double complex filtered = pid_evaluate(input, context); 
-    return filtered; 
 }

@@ -1,5 +1,5 @@
 #include "pll.h"
-#include "sinusoid.h"
+#include "oscillator.h"
 #include "constants.h"
 #include "phasor.h"
 #include "pid.h"
@@ -8,38 +8,29 @@
 #include <complex.h>
 
 PhaseLockedLoop pll_make(
-    Sinusoid nco_initial,
-    double (*loop_filter)(double input, void *filter_context),
-    void *filter_context
+    Oscillator nco_initial,
+    Pid loop_filter
 ) {
-    assert(loop_filter != NULL);
-
     PhaseLockedLoop pll;
     pll.loop_filter = loop_filter;
-    pll.filter_context = filter_context;
     pll.nco = nco_initial;
 
     return pll;
 }
 
-void pll_reset(Sinusoid nco_initial, PhaseLockedLoop *pll) {
+void pll_reset(Oscillator nco_initial, PhaseLockedLoop *pll) {
     pll->nco = nco_initial;
 }
 
-Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll) {
-    Sinusoid phase_error = quadrature_mix(sinusoid_negate_phase(pll->nco), input);
+Oscillator pll_evaluate(double input, PhaseLockedLoop *pll) {
+    double complex phase_error = conj(oscillator_phase(pll->nco)) * input;
 
     double complex next_frequency = 
         angular_to_complex_frequency(
-            pll->loop_filter(
-                sinusoid_phase(phase_error), 
-                pll->filter_context
-            )
+            pid_evaluate(carg(phase_error), &pll->loop_filter)
         );
 
-    Sinusoid output = pll->nco;
-    pll->nco = nco_update(next_frequency, pll->nco);
-    return output;
+    return oscillator_update(next_frequency, &pll->nco);
 }
 
 Pid pll_loop_filter_make(double noise_bandwidth, double damping_coefficient) {

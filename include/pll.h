@@ -5,7 +5,7 @@
 #include <complex.h>
 
 #include "filter.h"
-#include "sinusoid.h"
+#include "oscillator.h"
 #include "pid.h"
 
 
@@ -16,10 +16,8 @@
  * Can be used as a sort of continuous sinusoid fit.
  */
 typedef struct {
-    double (*loop_filter)(double input, void *filter_context);
-    void *filter_context;
-    Sinusoid input_iq;
-    Sinusoid nco;
+    Pid loop_filter;
+    Oscillator nco;
 } PhaseLockedLoop;
 
 /**
@@ -31,9 +29,8 @@ typedef struct {
  * @return Phase-locked loop
  */
 PhaseLockedLoop pll_make(
-    Sinusoid vco_initial,
-    double (*loop_filter)(double input, void *filter_context),
-    void *filter_context
+    Oscillator vco_initial,
+    Pid loop_filter
 );
 
 /**
@@ -43,7 +40,7 @@ PhaseLockedLoop pll_make(
  * @param pll PLL to evaluate
  * @return Numerically-controlled oscillator (NCO) state
  */
-Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll);
+Oscillator pll_evaluate(double input, PhaseLockedLoop *pll);
 
 /**
  * @brief 
@@ -51,7 +48,7 @@ Sinusoid pll_evaluate(double input, PhaseLockedLoop *pll);
  * @param nco_initial State to reset NCO to
  * @param pll PLL to reset
  */
-void pll_reset(Sinusoid vco_initial, PhaseLockedLoop *pll);
+void pll_reset(Oscillator vco_initial, PhaseLockedLoop *pll);
 
 /**
  * @brief 

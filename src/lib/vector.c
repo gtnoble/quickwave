@@ -5,6 +5,15 @@
 #include <assert.h>
 #include "vector.h"
 
+double vector_real_element_value(int index, const VectorReal *buf);
+double complex vector_complex_element_value(int index, const VectorComplex *buf);
+
+#define vector_element_value_generic(index, buf) \
+    _Generic((buf), \
+        const VectorReal*: vector_real_element_value, \
+        const VectorComplex*: vector_complex_element_value \
+    )(index, buf)
+
 double complex vector_complex_shift(double complex element, VectorComplex *buf) {
     assert(buf != NULL);
     assert(buf->elements != NULL);
@@ -32,6 +41,10 @@ double complex *vector_complex_element(int index, VectorComplex *buf) {
     ];
 }
 
+double complex vector_complex_element_value(int index, const VectorComplex *buf) {
+    return *vector_complex_element(index, (VectorComplex*) buf);
+}
+
 double *vector_real_element(int index, VectorReal *buf) {
     return &buf->elements[
         modular_add( 
@@ -41,34 +54,38 @@ double *vector_real_element(int index, VectorReal *buf) {
     ];
 }
 
-double complex vector_complex_interpolated_element(double index, VectorComplex *buf) {
-    double fraction_between_elements = index - floor(index);
-    return 
-        *vector_element_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        *vector_element_generic((int) ceil(index), buf) * fraction_between_elements;
+double vector_real_element_value(int index, const VectorReal *buf) {
+    return *vector_real_element(index, (VectorReal*) buf);
 }
 
-double vector_real_interpolated_element(double index, VectorReal *buf) {
+double complex vector_complex_interpolated_element(double index, const VectorComplex *buf) {
     double fraction_between_elements = index - floor(index);
     return 
-        *vector_element_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        *vector_element_generic((int) ceil(index), buf) * fraction_between_elements;
+        vector_element_value_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
+        vector_element_value_generic((int) ceil(index), buf) * fraction_between_elements;
 }
 
-double vector_real_dot(VectorReal *a, VectorReal *b) {
+double vector_real_interpolated_element(double index, VectorReal const *buf) {
+    double fraction_between_elements = index - floor(index);
+    return 
+        vector_element_value_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
+        vector_element_value_generic((int) ceil(index), buf) * fraction_between_elements;
+}
+
+double vector_real_dot(const VectorReal *a, const VectorReal *b) {
     assert(vector_length_generic(a) == vector_length_generic(b));
     double sum = 0;
     for (size_t i = 0; i < vector_length_generic(a); i++) {
-        sum += *vector_element_generic(i, a) * *vector_element_generic(i, b);
+        sum += vector_element_value_generic(i, a) * vector_element_value_generic(i, b);
     }
     return sum;
 }
 
-double complex vector_complex_dot(VectorComplex *a, VectorComplex *b) {
+double complex vector_complex_dot(const VectorComplex *a, const VectorComplex *b) {
     assert(vector_length_generic(a) == vector_length_generic(b));
     double complex sum = 0;
     for (size_t i = 0; i < vector_length_generic(a); i++) {
-        sum += *vector_element_generic(i, a) * *vector_element_generic(i, b);
+        sum += vector_element_value_generic(i, a) * vector_element_value_generic(i, b);
     }
     return sum;
 }

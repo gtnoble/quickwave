@@ -1,7 +1,7 @@
 #ifndef QUICKWAVE_SINUSOID_FIT
 #define QUICKWAVE_SINUSOID_FIT
 
-#include "sinusoid.h"
+#include "oscillator.h"
 #include "moving_average.h"
 
 /**
@@ -12,7 +12,7 @@
  * over the window interval.
  */
 typedef struct {
-    Sinusoid reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
+    Oscillator reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
     MovingAverageComplex *fit_window; /** Window over which the sinusoid is fit */
 } SinusoidFit;
 
@@ -28,7 +28,7 @@ SinusoidFit *sinusoid_fit_make(size_t window_length, double frequency);
 /**
  * @brief 
  * Frees the memory associated with a sinusoid fit
- * @param model Sinusoid fit
+ * @param model Oscillator fit
  */
 void sinusoid_fit_free(SinusoidFit *model);
 
@@ -40,6 +40,6 @@ void sinusoid_fit_free(SinusoidFit *model);
  * @param model sinusoid fit
  * @return resulting fit sinusoid 
  */
-Sinusoid sinusoid_fit_evaluate(double input, SinusoidFit *model);
+Oscillator sinusoid_fit_evaluate(double input, SinusoidFit *model);
 
 #endif

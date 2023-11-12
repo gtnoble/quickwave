@@ -4,7 +4,7 @@
 #include "assertions.h"
 #include "sinusoid_fit.h"
 #include "moving_average.h"
-#include "sinusoid.h"
+#include "oscillator.h"
 
 SinusoidFit *sinusoid_fit_make(size_t window_length, double frequency) {
     SinusoidFit *model = malloc(sizeof(SinusoidFit));
@@ -18,7 +18,7 @@ SinusoidFit *sinusoid_fit_make(size_t window_length, double frequency) {
         return NULL;
     }
 
-    model->reference = sinusoid_make(0.0, frequency);
+    model->reference = oscillator_make(0.0, frequency);
     return model;
 }
 
@@ -27,8 +27,10 @@ void sinusoid_fit_free(SinusoidFit *model) {
     free(model);
 }
 
-Sinusoid sinusoid_fit_evaluate(double input, SinusoidFit *model) {
+Oscillator sinusoid_fit_evaluate(double input, SinusoidFit *model) {
     assert_not_null(model);
+
+    Oscillator reference = oscillator_update(0.0, &model->reference);
 
     /**
      * @brief 
@@ -37,8 +39,8 @@ Sinusoid sinusoid_fit_evaluate(double input, SinusoidFit *model) {
      * Return a sinusoid that has an amplitude equal to the input sample, 
      * but with a phase that is relative to the phase of the input signal sinusoid.
      */
-    Sinusoid phase_and_amplitude_relative_to_reference = 
-        quadrature_mix(sinusoid_negate_phase(model->reference), input);
+    double complex phase_and_amplitude_relative_to_reference = 
+        conj(oscillator_phase(reference)) * input;
 
     /**
      * @brief 
@@ -47,7 +49,7 @@ Sinusoid sinusoid_fit_evaluate(double input, SinusoidFit *model) {
      */
     double complex average_relative_phase_and_amplitude = 
         moving_average_complex_evaluate(
-            phase_and_amplitude_relative_to_reference.phasor, 
+            phase_and_amplitude_relative_to_reference, 
             model->fit_window
         );
 
@@ -56,22 +58,25 @@ Sinusoid sinusoid_fit_evaluate(double input, SinusoidFit *model) {
      * Recombining the average phase and amplitude differences with the reference
      * gives the positive frequency term of the DFT
      */
-    Sinusoid absolute_positive_frequency_component = 
-        quadrature_mix(model->reference, average_relative_phase_and_amplitude);
+    double complex absolute_positive_frequency_component = 
+        oscillator_phase(reference) * average_relative_phase_and_amplitude;
 
     /**
      * @brief 
      * The negative frequency term of the DFT is the conjugate of the positive frequency term (For real-valued signals)
      */
-    Sinusoid absolute_negative_frequency_component = 
-        sinusoid_negate_phase(absolute_positive_frequency_component);
+    double complex absolute_negative_frequency_component = 
+        conj(absolute_positive_frequency_component);
 
-    model->reference = nco_update(0.0, model->reference);
 
     /**
      * @brief 
      * We have to add the positive and negative frequencies together
      * to perform the inverse DFT
      */
-    return sinusoid_add(absolute_positive_frequency_component, absolute_negative_frequency_component);
+    return (Oscillator) {
+        .phasor = absolute_positive_frequency_component + 
+            absolute_negative_frequency_component,
+        .complex_frequency = oscillator_frequency(reference)
+    };
 }
