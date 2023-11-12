@@ -1,4 +1,4 @@
-CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c99 -I${INCLUDE_DIR} 
+CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c11 -I${INCLUDE_DIR} 
 
 LIB_SOURCE_DIR=src/lib
 LIB_SOURCE=${wildcard ${LIB_SOURCE_DIR}/*.c}

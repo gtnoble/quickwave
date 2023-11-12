@@ -22,90 +22,89 @@ double sinc(double x);
  */
 double dirac_delta(double x);
 
-#define MAKE_FILTER_EVALUATE_DIGITAL_FILTER(vector_dot, vector_shift) \
-    assert_not_null(filter); \
-    assert_not_null(filter->feedforward); \
-\
-    double complex accumulate = 0; \
-    vector_shift(input, filter->previous_input); \
-    accumulate += \
-        vector_dot( \
-            filter->feedforward,  \
-            filter->previous_input \
-        ); \
-    if (filter->feedback != NULL) { \
-        accumulate += vector_dot(filter->feedback, filter->previous_input); \
-        vector_shift(accumulate, filter->previous_output); \
-    } \
-\
-    return accumulate;
-
 double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filter) {
-    MAKE_FILTER_EVALUATE_DIGITAL_FILTER(vector_real_dot, vector_real_shift)
+    assert_not_null(filter);
+    assert_not_null(filter->feedforward);
+
+    double accumulate = 0.0;
+    vector_shift_generic(input, filter->previous_input);
+    accumulate +=
+        vector_dot_generic(
+            filter->feedforward,
+            filter->previous_input
+        );
+    if (filter->feedback != NULL) {
+        accumulate += vector_dot_generic(filter->feedback, filter->previous_output);
+        vector_shift_generic(accumulate, filter->previous_output);
+    }
+    return accumulate;
 }
 
 double complex filter_evaluate_digital_filter_complex(double complex input, DigitalFilterComplex *filter) {
-    MAKE_FILTER_EVALUATE_DIGITAL_FILTER(vector_complex_dot, vector_complex_shift)
+    assert_not_null(filter);
+    assert_not_null(filter->feedforward);
+
+    double complex accumulate = 0.0;
+    vector_shift_generic(input, filter->previous_input);
+    accumulate +=
+        vector_dot_generic(
+            filter->feedforward,
+            filter->previous_input
+        );
+    if (filter->feedback != NULL) {
+        accumulate += vector_dot_generic(filter->feedback, filter->previous_output);
+        vector_shift_generic(accumulate, filter->previous_output);
+    }
+    return accumulate;
 }
-
-#define MAKE_FILTER_MAKE_DIGITAL_FILTER(vector_new, vector_free, vector_duplicate, filter_type, vector_reverser, vector_length) \
-    filter_type *filter = malloc(sizeof(filter_type)); \
-    if (filter == NULL) \
-        return NULL; \
-    \
-    assert_valid_vector(feedforward); \
-    filter->feedforward = vector_duplicate(feedforward); \
-    if (filter->feedforward == NULL) { \
-        goto fail_allocate_feedforward; \
-    } \
-    \
-    filter->previous_input = vector_new(vector_length(feedforward)); \
-    if (filter->previous_input == NULL) { \
-        goto fail_allocate_previous_input; \
-    } \
-    \
-    if (feedback != NULL) { \
-        assert_valid_vector(feedback); \
-        filter->feedback = vector_duplicate(feedback); \
-        if (filter->feedback == NULL) { \
-            goto fail_allocate_feedback; \
-        } \
-        \
-        filter->previous_output =  \
-            vector_new(vector_length(feedback)); \
-        if (filter->previous_output == NULL) { \
-            goto fail_allocate_previous_output; \
-        } \
-    } \
-    else { \
-        filter->feedback = NULL; \
-    } \
-    \
-    return filter; \
-    \
-    fail_allocate_previous_output: \
-        vector_free(filter->feedback); \
-    fail_allocate_feedback:  \
-        vector_free(filter->previous_input); \
-    fail_allocate_previous_input: \
-        vector_free(filter->feedforward); \
-    fail_allocate_feedforward: \
-        free(filter); \
-        return NULL;
-
 
 DigitalFilterComplex *filter_make_digital_filter_complex(
     const VectorComplex *feedforward,
     const VectorComplex *feedback
 ) {
-    MAKE_FILTER_MAKE_DIGITAL_FILTER(
-        vector_complex_new, 
-        vector_complex_free, 
-        vector_complex_duplicate, 
-        DigitalFilterComplex,
-        vector_complex_reverse,
-        vector_complex_length
-    )
+    DigitalFilterComplex *filter = malloc(sizeof(DigitalFilterComplex));
+    if (filter == NULL)
+        return NULL;
+    
+    assert_valid_vector(feedforward);
+    filter->feedforward = vector_duplicate_generic(feedforward);
+    if (filter->feedforward == NULL) {
+        goto fail_allocate_feedforward;
+    }
+    
+    filter->previous_input = vector_complex_new(vector_length_generic(feedforward));
+    if (filter->previous_input == NULL) {
+        goto fail_allocate_previous_input;
+    }
+    
+    if (feedback != NULL) {
+        assert_valid_vector(feedback);
+        filter->feedback = vector_duplicate_generic(feedback);
+        if (filter->feedback == NULL) {
+            goto fail_allocate_feedback;
+        }
+        
+        filter->previous_output = 
+            vector_complex_new(vector_length_generic(feedback));
+        if (filter->previous_output == NULL) {
+            goto fail_allocate_previous_output;
+        }
+    }
+    else {
+        filter->feedback = NULL;
+    }
+    
+    return filter;
+    
+    fail_allocate_previous_output:
+        vector_free_generic(filter->feedback);
+    fail_allocate_feedback:
+        vector_free_generic(filter->previous_input);
+    fail_allocate_previous_input:
+        vector_free_generic(filter->feedforward);
+    fail_allocate_feedforward:
+        free(filter);
+        return NULL;
 
 }
 
@@ -113,54 +112,100 @@ DigitalFilterReal *filter_make_digital_filter_real(
     const VectorReal *feedforward,
     const VectorReal *feedback
 ) {
-    MAKE_FILTER_MAKE_DIGITAL_FILTER(
-        vector_real_new,
-        vector_real_free,
-        vector_real_duplicate,
-        DigitalFilterReal,
-        vector_real_reverse,
-        vector_real_length
-    )
+    DigitalFilterReal *filter = malloc(sizeof(DigitalFilterReal));
+    if (filter == NULL)
+        return NULL;
+    
+    assert_valid_vector(feedforward);
+    filter->feedforward = vector_duplicate_generic(feedforward);
+    if (filter->feedforward == NULL) {
+        goto fail_allocate_feedforward;
+    }
+    
+    filter->previous_input = vector_real_new(vector_length_generic(feedforward));
+    if (filter->previous_input == NULL) {
+        goto fail_allocate_previous_input;
+    }
+    
+    if (feedback != NULL) {
+        assert_valid_vector(feedback);
+        filter->feedback = vector_duplicate_generic(feedback);
+        if (filter->feedback == NULL) {
+            goto fail_allocate_feedback;
+        }
+        
+        filter->previous_output = 
+            vector_real_new(vector_length_generic(feedback));
+        if (filter->previous_output == NULL) {
+            goto fail_allocate_previous_output;
+        }
+    }
+    else {
+        filter->feedback = NULL;
+    }
+    
+    return filter;
+    
+    fail_allocate_previous_output:
+        vector_free_generic(filter->feedback);
+    fail_allocate_feedback:
+        vector_free_generic(filter->previous_input);
+    fail_allocate_previous_input:
+        vector_free_generic(filter->feedforward);
+    fail_allocate_feedforward:
+        free(filter);
+        return NULL;
+
 }
 
-#define MAKE_RESET_DIGITAL_FILTER(reset_vector) \
-    assert_not_null(filter); \
-    \
-    reset_vector(filter->previous_input); \
-    if (filter->previous_output) \
-        reset_vector(filter->previous_output);
-
 void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
-    MAKE_RESET_DIGITAL_FILTER(vector_complex_reset)
+    assert_not_null(filter);
+    
+    vector_reset_generic(filter->previous_input);
+    if (filter->previous_output)
+        vector_reset_generic(filter->previous_output);
 }
 
 void filter_reset_digital_filter_real(DigitalFilterReal *filter) {
-    MAKE_RESET_DIGITAL_FILTER(vector_real_reset);
+    assert_not_null(filter);
+    
+    vector_reset_generic(filter->previous_input);
+    if (filter->previous_output)
+        vector_reset_generic(filter->previous_output);
 }
 
-#define MAKE_FREE_DIGITAL_FILTER(vector_free) \
-    assert_not_null(filter); \
-    \
-    assert_not_null(filter->feedforward); \
-    vector_free(filter->feedforward); \
-\
-    assert_not_null(filter->previous_input); \
-    vector_free(filter->previous_input); \
-\
-    if (filter->feedback != NULL) { \
-        vector_free(filter->feedback); \
-        assert_not_null(filter->previous_output); \
-        vector_free(filter->previous_output); \
-    } \
-    free(filter);
-
-
 void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
-    MAKE_FREE_DIGITAL_FILTER(vector_complex_free);
+    assert_not_null(filter);
+    
+    assert_not_null(filter->feedforward);
+    vector_free_generic(filter->feedforward);
+
+    assert_not_null(filter->previous_input);
+    vector_free_generic(filter->previous_input);
+
+    if (filter->feedback != NULL) {
+        vector_free_generic(filter->feedback);
+        assert_not_null(filter->previous_output);
+        vector_free_generic(filter->previous_output);
+    }
+    free(filter);
 }
 
 void filter_free_digital_filter_real(DigitalFilterReal *filter) {
-    MAKE_FREE_DIGITAL_FILTER(vector_real_free);
+    assert_not_null(filter);
+    
+    assert_not_null(filter->feedforward);
+    vector_free_generic(filter->feedforward);
+
+    assert_not_null(filter->previous_input);
+    vector_free_generic(filter->previous_input);
+
+    if (filter->feedback != NULL) {
+        vector_free_generic(filter->feedback);
+        assert_not_null(filter->previous_output);
+        vector_free_generic(filter->previous_output);
+    }
+    free(filter);
 }
 
 DigitalFilterReal *filter_make_savgol(

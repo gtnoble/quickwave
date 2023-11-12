@@ -5,107 +5,123 @@
 #include <assert.h>
 #include "vector.h"
 
-#define MAKE_VECTOR_SHIFT(element_type) \
-    assert(buf != NULL); \
-    assert(buf->elements != NULL); \
-    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements); \
-    element_type last_element = buf->elements[buf->last_element_index]; \
-    buf->elements[buf->last_element_index] = element; \
-    return last_element;
-
-
 double complex vector_complex_shift(double complex element, VectorComplex *buf) {
-    MAKE_VECTOR_SHIFT(double complex)
+    assert(buf != NULL);
+    assert(buf->elements != NULL);
+    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
+    double complex last_element = buf->elements[buf->last_element_index];
+    buf->elements[buf->last_element_index] = element;
+    return last_element;
 }
 
 double vector_real_shift(double element, VectorReal *buf) {
-    MAKE_VECTOR_SHIFT(double)
+    assert(buf != NULL);
+    assert(buf->elements != NULL);
+    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
+    double last_element = buf->elements[buf->last_element_index];
+    buf->elements[buf->last_element_index] = element;
+    return last_element;
 }
 
-#define MAKE_VECTOR_ELEMENT \
-    return &buf->elements[ \
-        modular_add( \
-            index * (buf->is_reversed ? -1 : 1),  \
-            buf->last_element_index + ! buf->is_reversed, \
-            buf->n_elements) \
-    ];
-
 double complex *vector_complex_element(int index, VectorComplex *buf) {
-    MAKE_VECTOR_ELEMENT
+    return &buf->elements[
+        modular_add( 
+            index * (buf->is_reversed ? -1 : 1), 
+            buf->last_element_index + ! buf->is_reversed,
+            buf->n_elements)
+    ];
 }
 
 double *vector_real_element(int index, VectorReal *buf) {
-    MAKE_VECTOR_ELEMENT
+    return &buf->elements[
+        modular_add( 
+            index * (buf->is_reversed ? -1 : 1), 
+            buf->last_element_index + ! buf->is_reversed,
+            buf->n_elements)
+    ];
 }
 
-#define MAKE_VECTOR_INTERPOLATED_ELEMENT(circbuf_element_getter) \
-    double fraction_between_elements = index - floor(index); \
-    return  \
-        *circbuf_element_getter((int) floor(index), buf) * (1 - fraction_between_elements) + \
-        *circbuf_element_getter((int) ceil(index), buf) * fraction_between_elements;
-
 double complex vector_complex_interpolated_element(double index, VectorComplex *buf) {
-    MAKE_VECTOR_INTERPOLATED_ELEMENT(vector_complex_element)
+    double fraction_between_elements = index - floor(index);
+    return 
+        *vector_element_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
+        *vector_element_generic((int) ceil(index), buf) * fraction_between_elements;
 }
 
 double vector_real_interpolated_element(double index, VectorReal *buf) {
-    MAKE_VECTOR_INTERPOLATED_ELEMENT(vector_real_element)
+    double fraction_between_elements = index - floor(index);
+    return 
+        *vector_element_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
+        *vector_element_generic((int) ceil(index), buf) * fraction_between_elements;
 }
 
-#define MAKE_VECTOR_DOT(vector_length_getter, vector_element_getter, element_type) \
-    assert(vector_length_getter(a) == vector_length_getter(b)); \
-    element_type sum = 0; \
-    for (size_t i = 0; i < vector_length_getter(a); i++) { \
-        sum += *vector_element_getter(i, a) * *vector_element_getter(i, b); \
-    } \
-    return sum;
-
-
 double vector_real_dot(VectorReal *a, VectorReal *b) {
-    MAKE_VECTOR_DOT(vector_real_length, vector_real_element, double)
+    assert(vector_length_generic(a) == vector_length_generic(b));
+    double sum = 0;
+    for (size_t i = 0; i < vector_length_generic(a); i++) {
+        sum += *vector_element_generic(i, a) * *vector_element_generic(i, b);
+    }
+    return sum;
 }
 
 double complex vector_complex_dot(VectorComplex *a, VectorComplex *b) {
-    MAKE_VECTOR_DOT(vector_complex_length, vector_complex_element, double complex)
+    assert(vector_length_generic(a) == vector_length_generic(b));
+    double complex sum = 0;
+    for (size_t i = 0; i < vector_length_generic(a); i++) {
+        sum += *vector_element_generic(i, a) * *vector_element_generic(i, b);
+    }
+    return sum;
 }
 
-#define MAKE_VECTOR_NEW(buffer_type, element_type, buffer_resetter) \
-    buffer_type *circbuf = malloc( \
-        sizeof(buffer_type) + sizeof(element_type) * size); \
-    if (circbuf == NULL)  \
-        return NULL; \
-    \
-    circbuf->n_elements = size; \
-    \
-    buffer_resetter(circbuf); \
-    return circbuf;
-
-
 VectorComplex *vector_complex_new(size_t size) {
-    MAKE_VECTOR_NEW(VectorComplex, double complex, vector_complex_reset)
+    VectorComplex *circbuf = malloc(
+        sizeof(VectorComplex) + sizeof(double complex) * size);
+    if (circbuf == NULL)
+        return NULL;
+
+    circbuf->n_elements = size;
+
+    vector_reset_generic(circbuf);
+    return circbuf;
 }
 
 VectorReal *vector_real_new(size_t size) {
-    MAKE_VECTOR_NEW(VectorReal, double, vector_real_reset)
+    VectorReal *circbuf = malloc(
+        sizeof(VectorReal) + sizeof(double) * size);
+    if (circbuf == NULL)
+        return NULL;
+
+    circbuf->n_elements = size;
+
+    vector_reset_generic(circbuf);
+    return circbuf;
 }
 
 VectorComplex *vector_complex_duplicate(const VectorComplex *vector) {
-    size_t vector_length = vector_complex_length(vector);
+    size_t vector_length = vector_length_generic(vector);
     VectorComplex *new_vector = vector_complex_new(vector_length);
     if (new_vector == NULL) {
         return NULL;
     }
-    memcpy(new_vector->elements, vector->elements, vector_length);
+    memcpy(
+        new_vector->elements, 
+        vector->elements, 
+        sizeof(double complex) * vector_length
+    );
     return new_vector;
 }
 
 VectorReal *vector_real_duplicate(const VectorReal *vector) {
-    size_t vector_length = vector_real_length(vector);
+    size_t vector_length = vector_length_generic(vector);
     VectorReal *new_vector = vector_real_new(vector_length);
     if (new_vector == NULL) {
         return NULL;
     }
-    memcpy(new_vector->elements, vector->elements, vector_length);
+    memcpy(
+        new_vector->elements, 
+        vector->elements, 
+        sizeof(double) * vector_length
+    );
     return new_vector;
 }
 
@@ -126,22 +142,24 @@ void vector_real_reverse(VectorReal *vector) {
     vector->is_reversed = ! vector->is_reversed;
 }
 
-#define MAKE_VECTOR_RESET \
-    if (buf == NULL) \
-        return; \
-    for (size_t ii = 0; ii < buf->n_elements; ii++) { \
-        buf->elements[ii] = 0.0; \
-    } \
-    buf->last_element_index = 0; \
-    buf->is_reversed = false;
-
-
 void vector_complex_reset(VectorComplex *buf) {
-    MAKE_VECTOR_RESET
+    if (buf == NULL)
+        return;
+    for (size_t ii = 0; ii < buf->n_elements; ii++) {
+        buf->elements[ii] = 0.0;
+    }
+    buf->last_element_index = 0;
+    buf->is_reversed = false;
 }
 
 void vector_real_reset(VectorReal *buf) {
-    MAKE_VECTOR_RESET
+    if (buf == NULL)
+        return;
+    for (size_t ii = 0; ii < buf->n_elements; ii++) {
+        buf->elements[ii] = 0.0;
+    }
+    buf->last_element_index = 0;
+    buf->is_reversed = false;
 }
 
 void vector_complex_free(VectorComplex *buf) {

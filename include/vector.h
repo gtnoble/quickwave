@@ -8,6 +8,33 @@
 
 #define assert_valid_vector(vector) assert(vector != NULL && vector->elements != NULL)
 
+#define vector_free_generic(vector) \
+    _Generic((vector), VectorReal*: vector_real_free, VectorComplex*: vector_complex_free)(vector)
+#define vector_shift_generic(input, vector) \
+    _Generic((vector), VectorReal*: vector_real_shift, VectorComplex*: vector_complex_shift)(input, vector)
+#define vector_dot_generic(a, b) \
+    _Generic((a), VectorReal*: vector_real_dot, VectorComplex*: vector_complex_dot)(a, b)
+#define vector_element_generic(index, vector) \
+    _Generic((vector), VectorReal*: vector_real_element, VectorComplex*: vector_complex_element)(index, vector)
+#define vector_reverse_generic(vector) \
+    _Generic((vector), VectorReal*: vector_real_reverse, VectorComplex*: vector_complex_reverse)(vector)
+#define vector_duplicate_generic(vector) \
+    _Generic((vector), \
+        VectorReal*: vector_real_duplicate, \
+        const VectorReal*: vector_real_duplicate, \
+        VectorComplex*: vector_complex_duplicate, \
+        const VectorComplex*: vector_complex_duplicate \
+    )(vector)
+#define vector_length_generic(vector) \
+    _Generic((vector),  \
+        VectorReal*: vector_real_length, \
+        const VectorReal*: vector_real_length, \
+        VectorComplex*: vector_complex_length, \
+        const VectorComplex*: vector_complex_length \
+    )(vector)
+#define vector_reset_generic(vector) \
+    _Generic((vector), VectorReal*: vector_real_reset, VectorComplex*: vector_complex_reset)(vector)
+
 /**
  * @brief 
  * Complex-valued circular buffer. Stores the `n_elements` most recently inserted elements.
