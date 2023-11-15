@@ -4,6 +4,9 @@ LIB_SOURCE_DIR=src/lib
 LIB_SOURCE=${wildcard ${LIB_SOURCE_DIR}/*.c}
 LIB_OBJECTS=$(patsubst %.c,%.o,${LIB_SOURCE})
 INCLUDE_DIR=include
+INCLUDE_SOURCE=src/include
+
+MACRO_INCLUDE=macro
 
 FFT_BIN_DIR=ext/fft
 FFT_SOURCE_DIR=ext/fft/src
@@ -22,6 +25,12 @@ ${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
 
 ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h
 	$(CC) $(CFLAGS) -c $< -o $@
+
+${LIB_SOURCE_DIR}/%.c: ${LIB_SOURCE_DIR}/%.c.m4 ${MACRO_INCLUDE}/%.m4
+	m4 -E -Imacro $< > $@
+
+${INCLUDE_DIR}/%.h: ${INCLUDE_SOURCE}/%.h.m4 ${MACRO_INCLUDE}/%.m4
+	m4 -E -Imacro $< > $@
 
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 	$(CC) $(CFLAGS) -c $< -o $@

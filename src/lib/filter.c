@@ -59,8 +59,8 @@ double complex filter_evaluate_digital_filter_complex(double complex input, Digi
 }
 
 DigitalFilterComplex *filter_make_digital_filter_complex(
-    const VectorComplex *feedforward,
-    const VectorComplex *feedback
+    const VectorComplexDouble *feedforward,
+    const VectorComplexDouble *feedback
 ) {
     DigitalFilterComplex *filter = malloc(sizeof(DigitalFilterComplex));
     if (filter == NULL)
@@ -109,8 +109,8 @@ DigitalFilterComplex *filter_make_digital_filter_complex(
 }
 
 DigitalFilterReal *filter_make_digital_filter_real(
-    const VectorReal *feedforward,
-    const VectorReal *feedback
+    const VectorRealDouble *feedforward,
+    const VectorRealDouble *feedback
 ) {
     DigitalFilterReal *filter = malloc(sizeof(DigitalFilterReal));
     if (filter == NULL)
@@ -220,7 +220,7 @@ DigitalFilterReal *filter_make_savgol(
     assert(derivative <= polynomial_order);
 
     int center = 0;
-    VectorReal *feedforward = vector_real_new(filter_length);
+    VectorRealDouble *feedforward = vector_real_new(filter_length);
     if (feedforward == NULL) {
         return NULL;
     }
@@ -244,12 +244,12 @@ DigitalFilterComplex *filter_make_ewma(double alpha) {
     assert(alpha >= 0.0);
     assert(alpha <= 1.0);
 
-    VectorComplex *feedforward = vector_complex_new(1);
+    VectorComplexDouble *feedforward = vector_complex_new(1);
     if (feedforward == NULL)
         goto feedforward_allocation_failed;
     *vector_complex_element(0, feedforward) = alpha;
 
-    VectorComplex *feedback = vector_complex_new(1);
+    VectorComplexDouble *feedback = vector_complex_new(1);
     if (feedback == NULL)
         goto feedback_allocation_failed;
     *vector_complex_element(0, feedback) = 1 - alpha;
@@ -294,7 +294,7 @@ DigitalFilterReal *filter_make_sinc(
     if (window == NULL)
         window = window_rectangular;
 
-    VectorReal *filter_coefficients = vector_real_new(length);
+    VectorRealDouble *filter_coefficients = vector_real_new(length);
     if (filter_coefficients == NULL) {
         return NULL;
     }

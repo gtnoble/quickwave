@@ -52,7 +52,7 @@ void fft_free_fft_complex(FftComplex *fft) {
     free(fft);
 }
 
-void fft_fft(VectorComplex *data, FftComplex *fft) {
+void fft_fft(VectorComplexDouble *data, FftComplex *fft) {
     assert_not_null(data);
     assert(is_power_of_two(vector_length_generic(data)));
     assert_not_null(fft);
@@ -80,7 +80,7 @@ void fft_fft(VectorComplex *data, FftComplex *fft) {
     }
 }
 
-void fft_ifft(VectorComplex *data, FftComplex *fft) {
+void fft_ifft(VectorComplexDouble *data, FftComplex *fft) {
     vector_complex_apply(conj, data);
     fft_fft(data, fft);
     vector_complex_apply(conj, data);

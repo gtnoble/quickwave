@@ -9,7 +9,7 @@ int main() {
 }
 
 void test_indexing() {
-    VectorComplex *test_buf = vector_complex_new(5);
+    VectorComplexDouble *test_buf = vector_complex_new(5);
     for (int i = 0; i <= 4; i++) {
        vector_complex_shift((double complex) i, test_buf);
     }

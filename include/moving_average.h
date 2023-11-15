@@ -12,7 +12,7 @@
  */
 typedef struct {
     double moving_sum;
-    VectorReal *previous_input;
+    VectorRealDouble *previous_input;
 } MovingAverageReal;
 
 /**
@@ -23,7 +23,7 @@ typedef struct {
  */
 typedef struct {
     double complex moving_sum;
-    VectorComplex *previous_input;
+    VectorComplexDouble *previous_input;
 } MovingAverageComplex;
 
 /**

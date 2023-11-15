@@ -1,4 +1,4 @@
- 
+include(`vector.m4')
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -16,129 +16,46 @@ double complex vector_complex_element_value(int index, const VectorComplexDouble
     )(index, buf)
 
 
-
-
-double complex vector_shift_complex_double(double complex element, VectorComplexDouble *buf) {
+define(`make_vector_shift',
+`macro_make_vector_shift_prototype($1) {
     assert(buf != NULL);
     assert(buf->elements != NULL);
     buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
     double complex last_element = buf->elements[buf->last_element_index];
     buf->elements[buf->last_element_index] = element;
     return last_element;
-}
+}')
 
-float complex vector_shift_complex_float(float complex element, VectorComplexFloat *buf) {
-    assert(buf != NULL);
-    assert(buf->elements != NULL);
-    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    double complex last_element = buf->elements[buf->last_element_index];
-    buf->elements[buf->last_element_index] = element;
-    return last_element;
-}
+macro_make_for_numeric_types(`make_vector_shift')
 
-double vector_shift_real_double(double element, VectorRealDouble *buf) {
-    assert(buf != NULL);
-    assert(buf->elements != NULL);
-    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    double complex last_element = buf->elements[buf->last_element_index];
-    buf->elements[buf->last_element_index] = element;
-    return last_element;
-}
-
-float vector_shift_real_float(float element, VectorRealFloat *buf) {
-    assert(buf != NULL);
-    assert(buf->elements != NULL);
-    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    double complex last_element = buf->elements[buf->last_element_index];
-    buf->elements[buf->last_element_index] = element;
-    return last_element;
-}
-
-
-
-double complex *vector_element_complex_double(int index, VectorComplexDouble *buf) {
+define(`macro_make_vector_element', 
+`macro_make_vector_element_prototype($1) {
     return &buf->elements[
         modular_add( 
             index * (buf->is_reversed ? -1 : 1), 
             buf->last_element_index + ! buf->is_reversed,
             buf->n_elements)
     ];
-}
+}')
 
-float complex *vector_element_complex_float(int index, VectorComplexFloat *buf) {
-    return &buf->elements[
-        modular_add( 
-            index * (buf->is_reversed ? -1 : 1), 
-            buf->last_element_index + ! buf->is_reversed,
-            buf->n_elements)
-    ];
-}
+macro_make_for_numeric_types(`macro_make_vector_element')
 
-double *vector_element_real_double(int index, VectorRealDouble *buf) {
-    return &buf->elements[
-        modular_add( 
-            index * (buf->is_reversed ? -1 : 1), 
-            buf->last_element_index + ! buf->is_reversed,
-            buf->n_elements)
-    ];
-}
+define(`macro_make_vector_element_value',
+`$1 vector_element_value_`'macro_function_type_tag($1)`'(int index, const macro_vector_type($1) *buf) {
+    return *vector_element_`'macro_function_type_tag($1)`'(index, (macro_vector_type($1)*) buf);
+}')
 
-float *vector_element_real_float(int index, VectorRealFloat *buf) {
-    return &buf->elements[
-        modular_add( 
-            index * (buf->is_reversed ? -1 : 1), 
-            buf->last_element_index + ! buf->is_reversed,
-            buf->n_elements)
-    ];
-}
+macro_make_for_numeric_types(`macro_make_vector_element_value')
 
-
-
-double complex vector_element_value_complex_double(int index, const VectorComplexDouble *buf) {
-    return *vector_element_complex_double(index, (VectorComplexDouble*) buf);
-}
-
-float complex vector_element_value_complex_float(int index, const VectorComplexFloat *buf) {
-    return *vector_element_complex_float(index, (VectorComplexFloat*) buf);
-}
-
-double vector_element_value_real_double(int index, const VectorRealDouble *buf) {
-    return *vector_element_real_double(index, (VectorRealDouble*) buf);
-}
-
-float vector_element_value_real_float(int index, const VectorRealFloat *buf) {
-    return *vector_element_real_float(index, (VectorRealFloat*) buf);
-}
-
-
-
-double complex vector_interpolated_element_complex_double(double index, const VectorComplexDouble *buf) {
-    double complex fraction_between_elements = index - floor(index);
+define(`macro_make_vector_interpolated_element',
+`$1 vector_interpolated_element_`'macro_function_type_tag($1)`'(double index, const macro_vector_type($1) *buf) {
+    $1 fraction_between_elements = index - floor(index);
     return 
         vector_element_value_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
         vector_element_value_generic((int) ceil(index), buf) * fraction_between_elements;
-}
+}')
 
-float complex vector_interpolated_element_complex_float(double index, const VectorComplexFloat *buf) {
-    float complex fraction_between_elements = index - floor(index);
-    return 
-        vector_element_value_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_generic((int) ceil(index), buf) * fraction_between_elements;
-}
-
-double vector_interpolated_element_real_double(double index, const VectorRealDouble *buf) {
-    double fraction_between_elements = index - floor(index);
-    return 
-        vector_element_value_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_generic((int) ceil(index), buf) * fraction_between_elements;
-}
-
-float vector_interpolated_element_real_float(double index, const VectorRealFloat *buf) {
-    float fraction_between_elements = index - floor(index);
-    return 
-        vector_element_value_generic((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_generic((int) ceil(index), buf) * fraction_between_elements;
-}
+macro_make_for_numeric_types(`macro_make_vector_interpolated_element')
 
 double vector_real_dot(const VectorRealDouble *a, const VectorRealDouble *b) {
     assert(vector_length_generic(a) == vector_length_generic(b));

@@ -10,10 +10,10 @@
  * Complex-valued linear filter. Can be IIR or FIR
  */
 typedef struct {
-    VectorComplex *feedforward; /** Feedforward (FIR) terms of the filter */
-    VectorComplex *previous_input;
-    VectorComplex *feedback; /** Feedback (IIR) terms of the filter */
-    VectorComplex *previous_output;
+    VectorComplexDouble *feedforward; /** Feedforward (FIR) terms of the filter */
+    VectorComplexDouble *previous_input;
+    VectorComplexDouble *feedback; /** Feedback (IIR) terms of the filter */
+    VectorComplexDouble *previous_output;
 } DigitalFilterComplex;
 
 /**
@@ -21,10 +21,10 @@ typedef struct {
  * Real-valued linear filter. Can be IIR or FIR
  */
 typedef struct {
-    VectorReal *feedforward; /** Feedforward (FIR) terms of the filter */
-    VectorReal *previous_input;
-    VectorReal *feedback; /** Feedback (IIR) terms of the filter */
-    VectorReal *previous_output;
+    VectorRealDouble *feedforward; /** Feedforward (FIR) terms of the filter */
+    VectorRealDouble *previous_input;
+    VectorRealDouble *feedback; /** Feedback (IIR) terms of the filter */
+    VectorRealDouble *previous_output;
 } DigitalFilterReal;
 
 /**
@@ -62,8 +62,8 @@ double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filt
  * @return Constucted filter
  */
 DigitalFilterComplex *filter_make_digital_filter_complex(
-    const VectorComplex *feedforward,
-    const VectorComplex *feedback
+    const VectorComplexDouble *feedforward,
+    const VectorComplexDouble *feedback
 );
 
 /**
@@ -74,8 +74,8 @@ DigitalFilterComplex *filter_make_digital_filter_complex(
  * @return Constucted filter
  */
 DigitalFilterReal *filter_make_digital_filter_real(
-    const VectorReal *feedforward,
-    const VectorReal *feedback
+    const VectorRealDouble *feedforward,
+    const VectorRealDouble *feedback
 );
 
 /**

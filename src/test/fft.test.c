@@ -10,13 +10,13 @@ size_t num_test_points = 8;
 
 int main() {
 
-    VectorComplex *test_vector = 
+    VectorComplexDouble *test_vector = 
         vector_complex_from_array(num_test_points, test_points);
     
     FftComplex *fft = fft_make_fft_complex(num_test_points);
 
     fft_fft(test_vector, fft);
-    VectorComplex *transformed = vector_duplicate_generic(test_vector);
+    VectorComplexDouble *transformed = vector_duplicate_generic(test_vector);
     fft_ifft(test_vector, fft);
 
     for (size_t i = 0; i < num_test_points; i++) {
