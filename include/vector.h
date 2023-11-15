@@ -279,28 +279,28 @@ void vector_reset_real_float(VectorRealFloat *buf);
  * Frees circular buffer memory allocations
  * @param buf Buffer to be freed
  */
-void vector_free_complex_double(VectorComplexDouble *buf;
+void vector_free_complex_double(VectorComplexDouble *buf);
 
 /**
  * @brief 
  * Frees circular buffer memory allocations
  * @param buf Buffer to be freed
  */
-void vector_free_complex_float(VectorComplexFloat *buf;
+void vector_free_complex_float(VectorComplexFloat *buf);
 
 /**
  * @brief 
  * Frees circular buffer memory allocations
  * @param buf Buffer to be freed
  */
-void vector_free_real_double(VectorRealDouble *buf;
+void vector_free_real_double(VectorRealDouble *buf);
 
 /**
  * @brief 
  * Frees circular buffer memory allocations
  * @param buf Buffer to be freed
  */
-void vector_free_real_float(VectorRealFloat *buf;
+void vector_free_real_float(VectorRealFloat *buf);
 
 VectorComplexDouble *vector_duplicate_complex_double(const VectorComplexDouble *vector);
 

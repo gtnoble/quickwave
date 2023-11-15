@@ -1,29 +1,5 @@
+include(`code_generator.m4')dnl
 divert(-1)
-
-define(`macro_function_type_tag', 
-    `ifelse(
-        $1, `double complex', `complex_double',
-        $1, `double', `real_double',
-        $1, `float complex', `complex_float',
-        $1, `float', `real_float')')
-
-define(`macro_vector_type', 
-    `ifelse(
-        $1, `double complex', `VectorComplexDouble',
-        $1, `double', `VectorRealDouble',
-        $1, `float complex', `VectorComplexFloat',
-        $1, `float', `VectorRealFloat')')
-
-define(`macro_make_for_numeric_types', 
-`$1(`double complex')
-
-$1(`float complex')
-
-$1(`double')
-
-$1(`float')')
-
-define(`macro_tagged_function_name', `$1`'_`'macro_function_type_tag($2)')
 
 define(`macro_make_vector_shift_prototype',
 `$1 macro_tagged_function_name(vector_shift, $1)($1 element, macro_vector_type($1) *buf)')
@@ -59,7 +35,7 @@ define(`macro_make_vector_reset_prototype',
 `void macro_tagged_function_name(vector_reset, $1)(macro_vector_type($1) *buf)')
 
 define(`macro_make_vector_free_prototype',
-`void macro_tagged_function_name(vector_free, $1)(macro_vector_type($1) *buf')
+`void macro_tagged_function_name(vector_free, $1)(macro_vector_type($1) *buf)')
 
 define(`macro_make_vector_duplicate_prototype',
 `macro_vector_type($1) *macro_tagged_function_name(vector_duplicate, $1)(const macro_vector_type($1) *vector)')
