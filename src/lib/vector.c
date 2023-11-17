@@ -1,13 +1,11 @@
- #include <stdlib.h>
+
+
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <complex.h>
 #include <assert.h>
 #include "vector.h"
-
-
-
-
 
 double complex *vector_element_complex_double(int index, VectorComplexDouble *buf);
 
@@ -16,8 +14,6 @@ float complex *vector_element_complex_float(int index, VectorComplexFloat *buf);
 double *vector_element_real_double(int index, VectorRealDouble *buf);
 
 float *vector_element_real_float(int index, VectorRealFloat *buf);
-
-
 
 double complex vector_shift_complex_double(double complex element, VectorComplexDouble *buf) {
     assert(buf != NULL);
@@ -32,7 +28,7 @@ float complex vector_shift_complex_float(float complex element, VectorComplexFlo
     assert(buf != NULL);
     assert(buf->elements != NULL);
     buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    double complex last_element = buf->elements[buf->last_element_index];
+    float complex last_element = buf->elements[buf->last_element_index];
     buf->elements[buf->last_element_index] = element;
     return last_element;
 }
@@ -41,7 +37,7 @@ double vector_shift_real_double(double element, VectorRealDouble *buf) {
     assert(buf != NULL);
     assert(buf->elements != NULL);
     buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    double complex last_element = buf->elements[buf->last_element_index];
+    double last_element = buf->elements[buf->last_element_index];
     buf->elements[buf->last_element_index] = element;
     return last_element;
 }
@@ -50,12 +46,10 @@ float vector_shift_real_float(float element, VectorRealFloat *buf) {
     assert(buf != NULL);
     assert(buf->elements != NULL);
     buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    double complex last_element = buf->elements[buf->last_element_index];
+    float last_element = buf->elements[buf->last_element_index];
     buf->elements[buf->last_element_index] = element;
     return last_element;
 }
-
-
 
 double complex *vector_element_complex_double(int index, VectorComplexDouble *buf) {
     return &buf->elements[
@@ -93,61 +87,65 @@ float *vector_element_real_float(int index, VectorRealFloat *buf) {
     ];
 }
 
-
-
-double complex vector_real_element_value(int index, const VectorComplexDouble *buf) {
+double complex vector_element_value_complex_double(int index, const VectorComplexDouble *buf) {
     return *vector_element_complex_double(index, (VectorComplexDouble*) buf);
 }
 
-float complex vector_real_element_value(int index, const VectorComplexFloat *buf) {
+float complex vector_element_value_complex_float(int index, const VectorComplexFloat *buf) {
     return *vector_element_complex_float(index, (VectorComplexFloat*) buf);
 }
 
-double vector_real_element_value(int index, const VectorRealDouble *buf) {
+double vector_element_value_real_double(int index, const VectorRealDouble *buf) {
     return *vector_element_real_double(index, (VectorRealDouble*) buf);
 }
 
-float vector_real_element_value(int index, const VectorRealFloat *buf) {
+float vector_element_value_real_float(int index, const VectorRealFloat *buf) {
     return *vector_element_real_float(index, (VectorRealFloat*) buf);
 }
-
-
 
 double complex vector_interpolated_element_complex_double(double index, const VectorComplexDouble *buf) {
     double complex fraction_between_elements = index - floor(index);
     return 
-        vector_element_value_complex_double((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_complex_double((int) ceil(index), buf) * fraction_between_elements;
+        vector_element_value_complex_double((int) floor(index), buf) * 
+            (1 - fraction_between_elements) + 
+        vector_element_value_complex_double((int) ceil(index), buf) * 
+            fraction_between_elements;
 }
 
 float complex vector_interpolated_element_complex_float(double index, const VectorComplexFloat *buf) {
     float complex fraction_between_elements = index - floor(index);
     return 
-        vector_element_value_complex_float((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_complex_float((int) ceil(index), buf) * fraction_between_elements;
+        vector_element_value_complex_float((int) floor(index), buf) * 
+            (1 - fraction_between_elements) + 
+        vector_element_value_complex_float((int) ceil(index), buf) * 
+            fraction_between_elements;
 }
 
 double vector_interpolated_element_real_double(double index, const VectorRealDouble *buf) {
     double fraction_between_elements = index - floor(index);
     return 
-        vector_element_value_real_double((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_real_double((int) ceil(index), buf) * fraction_between_elements;
+        vector_element_value_real_double((int) floor(index), buf) * 
+            (1 - fraction_between_elements) + 
+        vector_element_value_real_double((int) ceil(index), buf) * 
+            fraction_between_elements;
 }
 
 float vector_interpolated_element_real_float(double index, const VectorRealFloat *buf) {
     float fraction_between_elements = index - floor(index);
     return 
-        vector_element_value_real_float((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_real_float((int) ceil(index), buf) * fraction_between_elements;
+        vector_element_value_real_float((int) floor(index), buf) * 
+            (1 - fraction_between_elements) + 
+        vector_element_value_real_float((int) ceil(index), buf) * 
+            fraction_between_elements;
 }
-
-
 
 double complex vector_dot_complex_double(const VectorComplexDouble *a, const VectorComplexDouble *b) {
     assert(vector_length_complex_double(a) == vector_length_complex_double(b));
     double sum = 0;
     for (size_t i = 0; i < vector_length_complex_double(a); i++) {
-        sum += vector_element_value_complex_double(i, a) * vector_element_value_complex_double(i, b);
+        sum += 
+            vector_element_value_complex_double(i, a) * 
+            vector_element_value_complex_double(i, b);
     }
     return sum;
 }
@@ -156,7 +154,9 @@ float complex vector_dot_complex_float(const VectorComplexFloat *a, const Vector
     assert(vector_length_complex_float(a) == vector_length_complex_float(b));
     double sum = 0;
     for (size_t i = 0; i < vector_length_complex_float(a); i++) {
-        sum += vector_element_value_complex_float(i, a) * vector_element_value_complex_float(i, b);
+        sum += 
+            vector_element_value_complex_float(i, a) * 
+            vector_element_value_complex_float(i, b);
     }
     return sum;
 }
@@ -165,7 +165,9 @@ double vector_dot_real_double(const VectorRealDouble *a, const VectorRealDouble 
     assert(vector_length_real_double(a) == vector_length_real_double(b));
     double sum = 0;
     for (size_t i = 0; i < vector_length_real_double(a); i++) {
-        sum += vector_element_value_real_double(i, a) * vector_element_value_real_double(i, b);
+        sum += 
+            vector_element_value_real_double(i, a) * 
+            vector_element_value_real_double(i, b);
     }
     return sum;
 }
@@ -174,12 +176,12 @@ float vector_dot_real_float(const VectorRealFloat *a, const VectorRealFloat *b) 
     assert(vector_length_real_float(a) == vector_length_real_float(b));
     double sum = 0;
     for (size_t i = 0; i < vector_length_real_float(a); i++) {
-        sum += vector_element_value_real_float(i, a) * vector_element_value_real_float(i, b);
+        sum += 
+            vector_element_value_real_float(i, a) * 
+            vector_element_value_real_float(i, b);
     }
     return sum;
 }
-
-
 
 void vector_scale_complex_double(double complex scalar, VectorComplexDouble *vector) {
     for (size_t i = 0; i < vector_length_complex_double(vector); i++) {
@@ -205,37 +207,33 @@ void vector_scale_real_float(float scalar, VectorRealFloat *vector) {
     }
 }
 
-
-
 void vector_apply_complex_double(double complex (*operation)(double complex), VectorComplexDouble *vector) {
-    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+    for (size_t i = 0; i < vector_length_complex_double(vector); i++) {
         *vector_element_complex_double(i, vector) = 
             operation(*vector_element_complex_double(i, vector));
     }
 }
 
 void vector_apply_complex_float(float complex (*operation)(float complex), VectorComplexFloat *vector) {
-    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+    for (size_t i = 0; i < vector_length_complex_float(vector); i++) {
         *vector_element_complex_float(i, vector) = 
             operation(*vector_element_complex_float(i, vector));
     }
 }
 
 void vector_apply_real_double(double (*operation)(double), VectorRealDouble *vector) {
-    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+    for (size_t i = 0; i < vector_length_real_double(vector); i++) {
         *vector_element_real_double(i, vector) = 
             operation(*vector_element_real_double(i, vector));
     }
 }
 
 void vector_apply_real_float(float (*operation)(float), VectorRealFloat *vector) {
-    for (size_t i = 0; i < vector_length_generic(vector); i++) {
+    for (size_t i = 0; i < vector_length_real_float(vector); i++) {
         *vector_element_real_float(i, vector) = 
             operation(*vector_element_real_float(i, vector));
     }
 }
-
-
 
 VectorComplexDouble *vector_new_complex_double(size_t size) {
     VectorComplexDouble *circbuf = malloc(
@@ -284,8 +282,6 @@ VectorRealFloat *vector_new_real_float(size_t size) {
     vector_reset_real_float(circbuf);
     return circbuf;
 }
-
-
 
 VectorComplexDouble *vector_from_array_complex_double(size_t size, const double complex elements[]) {
     VectorComplexDouble *vector = vector_new_complex_double(size);
@@ -338,8 +334,6 @@ VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[
 
     return vector;
 }
-
-
 
 VectorComplexDouble *vector_duplicate_complex_double(const VectorComplexDouble *vector) {
     size_t vector_length = vector_length_complex_double(vector);
@@ -397,8 +391,6 @@ VectorRealFloat *vector_duplicate_real_float(const VectorRealFloat *vector) {
     return new_vector;
 }
 
-
-
 size_t vector_length_complex_double(const VectorComplexDouble *buf) {
     return buf->n_elements;
 }
@@ -415,8 +407,6 @@ size_t vector_length_real_float(const VectorRealFloat *buf) {
     return buf->n_elements;
 }
 
-
-
 void vector_reverse_complex_double(VectorComplexDouble *vector) {
     vector->is_reversed = ! vector->is_reversed;
 }
@@ -432,8 +422,6 @@ void vector_reverse_real_double(VectorRealDouble *vector) {
 void vector_reverse_real_float(VectorRealFloat *vector) {
     vector->is_reversed = ! vector->is_reversed;
 }
-
-
 
 void vector_reset_complex_double(VectorComplexDouble *buf) {
     if (buf == NULL)
@@ -474,8 +462,6 @@ void vector_reset_real_float(VectorRealFloat *buf) {
     buf->last_element_index = 0;
     buf->is_reversed = false;
 }
-
-
 
 void vector_free_complex_double(VectorComplexDouble *buf) {
     free(buf);

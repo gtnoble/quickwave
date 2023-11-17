@@ -1,5 +1,12 @@
 divert(-1)
 
+define(`M4_REAL_TYPE',
+`ifelse(
+    $1, `double complex', `double',
+    $1, `float complex', `float',
+    $1, `float', `float',
+    $1, `double', `double')`)
+
 define(`M4_STRUCT_TYPE_TAG',
     `ifelse(
         $1, `double complex', `ComplexDouble',
@@ -21,5 +28,8 @@ define(`M4_FUNCTION_TYPE_TAG',
         $1, `float', `real_float')')
 
 define(`M4_TAGGED_FUNCTION_NAME', `$1`'_`'M4_FUNCTION_TYPE_TAG($2)')
+
+define(`M4_MAKE_TAGGED_FUNCTION',
+`define(`$1',`M4_TAGGED_FUNCTION_NAME($2, $'`1)')')
 
 divert(0)
