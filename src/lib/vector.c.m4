@@ -1,4 +1,5 @@
 include(`vector.m4')
+include(`code_generator.m4')
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -6,16 +7,16 @@ include(`vector.m4')
 #include <assert.h>
 #include "vector.h"
 
-define(`macro_make_vector_element_value_prototype',
-`$1 vector_real_element_value(int index, const macro_vector_type($1) *buf)')
+define(`M4_MAKE_VECTOR_ELEMENT_VALUE_PROTOTYPE',
+`$1 vector_real_element_value(int index, const M4_VECTOR_TYPE($1) *buf)')
 
-define(`macro_make_vector_element_value_declaration',
-`macro_make_vector_element_prototype($1);')
+define(`M4_MAKE_VECTOR_ELEMENT_VALUE_DECLARATION',
+`M4_MAKE_VECTOR_ELEMENT_PROTOTYPE($1);')
 
-macro_make_for_numeric_types(`macro_make_vector_element_value_declaration')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_ELEMENT_VALUE_DECLARATION')
 
 define(`make_vector_shift',
-`macro_make_vector_shift_prototype($1) {
+`M4_MAKE_VECTOR_SHIFT_PROTOTYPE($1) {
     assert(buf != NULL);
     assert(buf->elements != NULL);
     buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
@@ -24,10 +25,10 @@ define(`make_vector_shift',
     return last_element;
 }')
 
-macro_make_for_numeric_types(`make_vector_shift')
+M4_MAKE_FOR_NUMERIC_TYPES(`make_vector_shift')
 
-define(`macro_make_vector_element', 
-`macro_make_vector_element_prototype($1) {
+define(`M4_MAKE_VECTOR_ELEMENT', 
+`M4_MAKE_VECTOR_ELEMENT_PROTOTYPE($1) {
     return &buf->elements[
         modular_add( 
             index * (buf->is_reversed ? -1 : 1), 
@@ -36,91 +37,91 @@ define(`macro_make_vector_element',
     ];
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_element')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_ELEMENT')
 
-define(`macro_make_vector_element_value',
-`macro_make_vector_element_value_prototype($1) {
-    return *vector_element_`'macro_function_type_tag($1)`'(index, (macro_vector_type($1)*) buf);
+define(`M4_MAKE_VECTOR_ELEMENT_VALUE',
+`M4_MAKE_VECTOR_ELEMENT_VALUE_PROTOTYPE($1) {
+    return *vector_element_`'M4_FUNCTION_TYPE_TAG($1)`'(index, (M4_VECTOR_TYPE($1)*) buf);
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_element_value')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_ELEMENT_VALUE')
 
-define(`macro_make_vector_interpolated_element',
-`macro_make_vector_interpolated_element_prototype($1) {
+define(`M4_MAKE_VECTOR_INTERPOLATED_ELEMENT',
+`M4_MAKE_VECTOR_INTERPOLATED_ELEMENT_PROTOTYPE($1) {
     $1 fraction_between_elements = index - floor(index);
     return 
-        macro_tagged_function_name(vector_element_value, $1)((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        macro_tagged_function_name(vector_element_value, $1)((int) ceil(index), buf) * fraction_between_elements;
+        M4_TAGGED_FUNCTION_NAME(vector_element_value, $1)((int) floor(index), buf) * (1 - fraction_between_elements) + 
+        M4_TAGGED_FUNCTION_NAME(vector_element_value, $1)((int) ceil(index), buf) * fraction_between_elements;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_interpolated_element')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_INTERPOLATED_ELEMENT')
 
-define(`macro_make_vector_dot',
-`macro_make_vector_dot_prototype($1) {
-    assert(macro_tagged_function_name(vector_length, $1)(a) == macro_tagged_function_name(vector_length, $1)(b));
+define(`M4_MAKE_VECTOR_DOT',
+`M4_MAKE_VECTOR_DOT_PROTOTYPE($1) {
+    assert(M4_TAGGED_FUNCTION_NAME(vector_length, $1)(a) == M4_TAGGED_FUNCTION_NAME(vector_length, $1)(b));
     double sum = 0;
-    for (size_t i = 0; i < macro_tagged_function_name(vector_length, $1)(a); i++) {
-        sum += macro_tagged_function_name(vector_element_value, $1)(i, a) * macro_tagged_function_name(vector_element_value, $1)(i, b);
+    for (size_t i = 0; i < M4_TAGGED_FUNCTION_NAME(vector_length, $1)(a); i++) {
+        sum += M4_TAGGED_FUNCTION_NAME(vector_element_value, $1)(i, a) * M4_TAGGED_FUNCTION_NAME(vector_element_value, $1)(i, b);
     }
     return sum;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_dot')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_DOT')
 
-define(`macro_make_vector_scale',
-`macro_make_vector_scale_prototype($1) {
-    for (size_t i = 0; i < macro_tagged_function_name(vector_length, $1)(vector); i++) {
-        *macro_tagged_function_name(vector_element, $1)(i, vector) *= scalar;
+define(`M4_MAKE_VECTOR_SCALE',
+`M4_MAKE_VECTOR_SCALE_PROTOTYPE($1) {
+    for (size_t i = 0; i < M4_TAGGED_FUNCTION_NAME(vector_length, $1)(vector); i++) {
+        *M4_TAGGED_FUNCTION_NAME(vector_element, $1)(i, vector) *= scalar;
     }
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_scale')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_SCALE')
 
-define(`macro_make_vector_apply',
-`macro_make_vector_apply_prototype($1) {
+define(`M4_MAKE_VECTOR_APPLY',
+`M4_MAKE_VECTOR_APPLY_PROTOTYPE($1) {
     for (size_t i = 0; i < vector_length_generic(vector); i++) {
-        *macro_tagged_function_name(vector_element, $1)(i, vector) = 
-            operation(*macro_tagged_function_name(vector_element, $1)(i, vector));
+        *M4_TAGGED_FUNCTION_NAME(vector_element, $1)(i, vector) = 
+            operation(*M4_TAGGED_FUNCTION_NAME(vector_element, $1)(i, vector));
     }
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_apply')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_APPLY')
 
-define(`macro_make_vector_new',
-`macro_make_vector_new_prototype($1) {
-    macro_vector_type($1) *circbuf = malloc(
-        sizeof(macro_vector_type($1)) + sizeof($1) * size);
+define(`M4_MAKE_VECTOR_NEW',
+`M4_MAKE_VECTOR_NEW_PROTOTYPE($1) {
+    M4_VECTOR_TYPE($1) *circbuf = malloc(
+        sizeof(M4_VECTOR_TYPE($1)) + sizeof($1) * size);
     if (circbuf == NULL)
         return NULL;
 
     circbuf->n_elements = size;
 
-    macro_tagged_function_name(vector_reset, $1)(circbuf);
+    M4_TAGGED_FUNCTION_NAME(vector_reset, $1)(circbuf);
     return circbuf;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_new')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_NEW')
 
-define(`macro_make_vector_from_array',
-`macro_make_vector_from_array_prototype($1) {
-    macro_vector_type($1) *vector = macro_tagged_function_name(vector_new, $1)(size);
+define(`M4_MAKE_VECTOR_FROM_ARRAY',
+`M4_MAKE_VECTOR_FROM_ARRAY_PROTOTYPE($1) {
+    M4_VECTOR_TYPE($1) *vector = M4_TAGGED_FUNCTION_NAME(vector_new, $1)(size);
     if (vector == NULL) {
         return NULL;
     }
 
     for (size_t i = 0; i < size; i++) {
-        *macro_tagged_function_name(vector_element, $1)(i, vector) = elements[i];
+        *M4_TAGGED_FUNCTION_NAME(vector_element, $1)(i, vector) = elements[i];
     }
 
     return vector;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_from_array')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_FROM_ARRAY')
 
-define(`macro_make_vector_duplicate',
-`macro_make_vector_duplicate_prototype($1) {
-    size_t vector_length = macro_tagged_function_name(vector_length, $1)(vector);
-    macro_vector_type($1) *new_vector = macro_tagged_function_name(vector_new, $1)(vector_length);
+define(`M4_MAKE_VECTOR_DUPLICATE',
+`M4_MAKE_VECTOR_DUPLICATE_PROTOTYPE($1) {
+    size_t vector_length = M4_TAGGED_FUNCTION_NAME(vector_length, $1)(vector);
+    M4_VECTOR_TYPE($1) *new_vector = M4_TAGGED_FUNCTION_NAME(vector_new, $1)(vector_length);
     if (new_vector == NULL) {
         return NULL;
     }
@@ -132,24 +133,24 @@ define(`macro_make_vector_duplicate',
     return new_vector;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_duplicate')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_DUPLICATE')
 
-define(`macro_make_vector_length',
-`macro_make_vector_length_prototype($1) {
+define(`M4_MAKE_VECTOR_LENGTH',
+`M4_MAKE_VECTOR_LENGTH_PROTOTYPE($1) {
     return buf->n_elements;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_length')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_LENGTH')
 
-define(`macro_make_vector_reverse',
-`macro_make_vector_reverse_prototype($1) {
+define(`M4_MAKE_VECTOR_REVERSE',
+`M4_MAKE_VECTOR_REVERSE_PROTOTYPE($1) {
     vector->is_reversed = ! vector->is_reversed;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_reverse')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_REVERSE')
 
-define(`macro_make_vector_reset',
-`macro_make_vector_reset_prototype($1) {
+define(`M4_MAKE_VECTOR_RESET',
+`M4_MAKE_VECTOR_RESET_PROTOTYPE($1) {
     if (buf == NULL)
         return;
     for (size_t ii = 0; ii < buf->n_elements; ii++) {
@@ -159,14 +160,14 @@ define(`macro_make_vector_reset',
     buf->is_reversed = false;
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_reset')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_RESET')
 
-define(`macro_make_vector_free',
-`macro_make_vector_free_prototype($1) {
+define(`M4_MAKE_VECTOR_FREE',
+`M4_MAKE_VECTOR_FREE_PROTOTYPE($1) {
     free(buf);
 }')
 
-macro_make_for_numeric_types(`macro_make_vector_free')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_FREE')
 
 int modular_add(int a, int b, int max) {
     int sum = a + b;

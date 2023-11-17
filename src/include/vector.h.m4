@@ -1,4 +1,5 @@
 include(`vector.m4')
+include(`code_generator.m4')
 #ifndef QUICKWAVE_BUFFER
 #define QUICKWAVE_BUFFER
 
@@ -9,7 +10,7 @@ include(`vector.m4')
 
 #define assert_valid_vector(vector) assert(vector != NULL && vector->elements != NULL)
 
-define(`macro_make_vector_structure',
+define(`M4_MAKE_VECTOR_STRUCTURE',
 /**
  * @brief 
  * General fixed-length vector.
@@ -19,11 +20,11 @@ define(`macro_make_vector_structure',
     size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
     bool is_reversed;
     $1 elements[]; /** Buffer elements */
-} macro_vector_type($1);')dnl
+} M4_VECTOR_TYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_vector_structure')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_STRUCTURE')dnl
 
-define(`macro_make_declare_vector_shift',
+define(`M4_MAKE_DECLARE_VECTOR_SHIFT',
 `/**
  * @brief 
  * Circular buffer shift.
@@ -32,11 +33,11 @@ define(`macro_make_declare_vector_shift',
  * @param buf Buffer to be operated on
  * @return Last element in the buffer, before being overwritten
  */
-macro_make_vector_shift_prototype($1);')dnl
+M4_MAKE_VECTOR_SHIFT_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_shift')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_SHIFT')dnl
 
-define(`macro_make_declare_vector_element',
+define(`M4_MAKE_DECLARE_VECTOR_ELEMENT',
 `/**
  * @brief 
  * Returns vector element. Negative indices index backwards from the end of the vector.
@@ -44,11 +45,11 @@ define(`macro_make_declare_vector_element',
  * @param buf vector to be accessed
  * @return Indexed element
  */
-macro_make_vector_element_prototype($1);')dnl
+M4_MAKE_VECTOR_ELEMENT_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_element')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_ELEMENT')dnl
 
-define(`macro_make_declare_vector_interpolated_element',
+define(`M4_MAKE_DECLARE_VECTOR_INTERPOLATED_ELEMENT',
 `/**
  * @brief 
  * Interpolates between the values of a vector
@@ -56,75 +57,75 @@ define(`macro_make_declare_vector_interpolated_element',
  * @param buf vector to be accessed
  * @return Interpolated element
  */
-macro_make_vector_interpolated_element_prototype($1);')dnl
+M4_MAKE_VECTOR_INTERPOLATED_ELEMENT_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_interpolated_element')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_INTERPOLATED_ELEMENT')dnl
 
-define(`macro_make_declare_vector_dot',
-`macro_make_vector_dot_prototype($1);')dnl
+define(`M4_MAKE_DECLARE_VECTOR_DOT',
+`M4_MAKE_VECTOR_DOT_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_dot')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_DOT')dnl
 
-define(`macro_make_declare_vector_scale',
-`macro_make_vector_scale_prototype($1);')dnl
+define(`M4_MAKE_DECLARE_VECTOR_SCALE',
+`M4_MAKE_VECTOR_SCALE_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_scale')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_SCALE')dnl
 
-define(`macro_make_declare_vector_apply',
-`macro_make_vector_scale_prototype($1);')dnl
+define(`M4_MAKE_DECLARE_VECTOR_APPLY',
+`M4_MAKE_VECTOR_SCALE_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_apply')
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_APPLY')
 
-define(`macro_make_declare_vector_from_array',
-`macro_make_vector_from_array_prototype($1);')dnl
+define(`M4_MAKE_DECLARE_VECTOR_FROM_ARRAY',
+`M4_MAKE_VECTOR_FROM_ARRAY_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_from_array')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_FROM_ARRAY')dnl
 
-define(`macro_make_declare_vector_new',
+define(`M4_MAKE_DECLARE_VECTOR_NEW',
 `/**
  * @brief 
  * Makes and allocates a new vector
  * @param size Number of elements in the vector
  * @return vector
  */
-macro_make_vector_new_prototype($1);')dnl
+M4_MAKE_VECTOR_NEW_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_new')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_NEW')dnl
 
-define(`macro_make_declare_vector_length',
-`macro_make_vector_length_prototype($1);')dnl
+define(`M4_MAKE_DECLARE_VECTOR_LENGTH',
+`M4_MAKE_VECTOR_LENGTH_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_length')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_LENGTH')dnl
 
-define(`macro_make_declare_vector_reverse',
-`macro_make_vector_reverse_prototype($1);')dnl
+define(`M4_MAKE_DECLARE_VECTOR_REVERSE',
+`M4_MAKE_VECTOR_REVERSE_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_reverse')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_REVERSE')dnl
 
-define(`macro_make_declare_vector_reset',
+define(`M4_MAKE_DECLARE_VECTOR_RESET',
 `/**
  * @brief 
  * Resets all values of the buffer to zero
  * @param buf Buffer to reset
  */
-macro_make_vector_reset_prototype($1);')dnl
+M4_MAKE_VECTOR_RESET_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_reset')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_RESET')dnl
 
-define(`macro_make_declare_vector_free',
+define(`M4_MAKE_DECLARE_VECTOR_FREE',
 `/**
  * @brief 
  * Frees circular buffer memory allocations
  * @param buf Buffer to be freed
  */
-macro_make_vector_free_prototype($1);')dnl
+M4_MAKE_VECTOR_FREE_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_free')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_FREE')dnl
 
-define(`macro_make_declare_vector_duplicate',
-`macro_make_vector_duplicate_prototype($1);')dnl
+define(`M4_MAKE_DECLARE_VECTOR_DUPLICATE',
+`M4_MAKE_VECTOR_DUPLICATE_PROTOTYPE($1);')dnl
 
-macro_make_for_numeric_types(`macro_make_declare_vector_duplicate')dnl
+M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_DECLARE_VECTOR_DUPLICATE')dnl
 
 /**
  * @brief 

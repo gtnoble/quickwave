@@ -6,7 +6,8 @@ LIB_OBJECTS=$(patsubst %.c,%.o,${LIB_SOURCE})
 INCLUDE_DIR=include
 INCLUDE_SOURCE=src/include
 
-MACRO_INCLUDE=macro
+M4_INCLUDE=macro
+M4_FLAGS=-d -E -I${M4_INCLUDE}
 
 FFT_BIN_DIR=ext/fft
 FFT_SOURCE_DIR=ext/fft/src
@@ -26,11 +27,14 @@ ${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
 ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-${LIB_SOURCE_DIR}/%.c: ${LIB_SOURCE_DIR}/%.c.m4 ${MACRO_INCLUDE}/%.m4
-	m4 -E -Imacro $< > $@
+${LIB_SOURCE_DIR}/%.c: ${LIB_SOURCE_DIR}/%.c.m4 ${M4_INCLUDE}/%.m4 ${M4_INCLUDE}/code_generator.m4
+	m4 ${M4_FLAGS} $< > $@
 
-${INCLUDE_DIR}/%.h: ${INCLUDE_SOURCE}/%.h.m4 ${MACRO_INCLUDE}/%.m4
-	m4 -E -Imacro $< > $@
+${INCLUDE_DIR}/%.h: ${INCLUDE_SOURCE}/%.h.m4 ${M4_INCLUDE}/%.m4 ${M4_INCLUDE}/code_generator.m4
+	m4 ${M4_FLAGS} $< > $@
+
+${M4_INCLUDE}/vector.m4: ${M4_INCLUDE}/types.m4
+${M4_INCLUDE}/filter.m4: ${M4_INCLUDE}/types.m4
 
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -1,20 +1,6 @@
 divert(-1)
 
-define(`macro_function_type_tag', 
-    `ifelse(
-        $1, `double complex', `complex_double',
-        $1, `double', `real_double',
-        $1, `float complex', `complex_float',
-        $1, `float', `real_float')')
-
-define(`macro_vector_type', 
-    `ifelse(
-        $1, `double complex', `VectorComplexDouble',
-        $1, `double', `VectorRealDouble',
-        $1, `float complex', `VectorComplexFloat',
-        $1, `float', `VectorRealFloat')')
-
-define(`macro_make_for_numeric_types', 
+define(`M4_MAKE_FOR_NUMERIC_TYPES', 
 `$1(`double complex')
 
 $1(`float complex')
@@ -23,6 +9,13 @@ $1(`double')
 
 $1(`float')')
 
-define(`macro_tagged_function_name', `$1`'_`'macro_function_type_tag($2)')
+define(`_M4_JOIN_DECLARATION_COMPONENTS',
+``$1'($`'1);')
+
+define(`M4_MAKE_FUNCTION_DECLARATIONS',
+`define(`_M4_MAKE_DECLARATION',
+`$2'
+_M4_JOIN_DECLARATION_COMPONENTS(`$1'))
+M4_MAKE_FOR_NUMERIC_TYPES(`_M4_MAKE_DECLARATION')')
 
 divert(0)
