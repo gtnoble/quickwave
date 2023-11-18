@@ -1,6 +1,9 @@
 include(`types.m4')dnl
 divert(-1)
 
+define(`M4_VECTOR_TYPE', 
+    `Vector`'M4_STRUCT_TYPE_TAG($1)')
+
 M4_MAKE_TAGGED_FUNCTION(`M4_TAGGED_VECTOR_ELEMENT_VALUE', `vector_element_value')
 
 define(`M4_MAKE_VECTOR_ELEMENT_VALUE_PROTOTYPE',

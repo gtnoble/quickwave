@@ -1,4 +1,6 @@
- #ifndef QUICKWAVE_BUFFER
+
+
+#ifndef QUICKWAVE_BUFFER
 #define QUICKWAVE_BUFFER
 
 #include <stdlib.h>
@@ -181,13 +183,13 @@ void vector_scale_real_double(double scalar, VectorRealDouble *vector);
 
 void vector_scale_real_float(float scalar, VectorRealFloat *vector);
 
-void vector_scale_complex_double(double complex scalar, VectorComplexDouble *vector);
+void vector_apply_complex_double(double complex (*operation)(double complex), VectorComplexDouble *vector);
 
-void vector_scale_complex_float(float complex scalar, VectorComplexFloat *vector);
+void vector_apply_complex_float(float complex (*operation)(float complex), VectorComplexFloat *vector);
 
-void vector_scale_real_double(double scalar, VectorRealDouble *vector);
+void vector_apply_real_double(double (*operation)(double), VectorRealDouble *vector);
 
-void vector_scale_real_float(float scalar, VectorRealFloat *vector);
+void vector_apply_real_float(float (*operation)(float), VectorRealFloat *vector);
 
 
 VectorComplexDouble *vector_from_array_complex_double(size_t size, const double complex elements[]);

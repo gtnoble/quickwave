@@ -13,7 +13,7 @@
  */
 typedef struct {
     Oscillator reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
-    MovingAverageComplex *fit_window; /** Window over which the sinusoid is fit */
+    MovingAverageComplexDouble *fit_window; /** Window over which the sinusoid is fit */
 } SinusoidFit;
 
 /**

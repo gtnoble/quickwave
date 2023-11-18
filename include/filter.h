@@ -19,7 +19,7 @@ typedef struct {
     VectorComplexDouble *previous_input;
     VectorComplexDouble *feedback; /** Feedback (IIR) terms of the filter */
     VectorComplexDouble *previous_output;
-} FilterComplexDouble;
+} DigitalFilterComplexDouble;
 
 /**
  * @brief 
@@ -30,7 +30,7 @@ typedef struct {
     VectorComplexFloat *previous_input;
     VectorComplexFloat *feedback; /** Feedback (IIR) terms of the filter */
     VectorComplexFloat *previous_output;
-} FilterComplexFloat;
+} DigitalFilterComplexFloat;
 
 /**
  * @brief 
@@ -41,7 +41,7 @@ typedef struct {
     VectorRealDouble *previous_input;
     VectorRealDouble *feedback; /** Feedback (IIR) terms of the filter */
     VectorRealDouble *previous_output;
-} FilterRealDouble;
+} DigitalFilterRealDouble;
 
 /**
  * @brief 
@@ -52,7 +52,7 @@ typedef struct {
     VectorRealFloat *previous_input;
     VectorRealFloat *feedback; /** Feedback (IIR) terms of the filter */
     VectorRealFloat *previous_output;
-} FilterRealFloat;
+} DigitalFilterRealFloat;
 
 /**
  * @brief 
@@ -68,45 +68,45 @@ enum FilterType {
  * @brief 
  * Evaluates a linear digital filter
  * @param input Next input signal value
- * @param filter Filter to apply
+ * @param filter Filter to evaluate
  * @return Filtered value
  */
-filter_evaluate_digital_filter_complex_double(
+double complex filter_evaluate_digital_filter_complex_double(
     double complex input, 
-    FilterComplexDouble *filter);
+    DigitalFilterComplexDouble *filter);
 
 /**
  * @brief 
  * Evaluates a linear digital filter
  * @param input Next input signal value
- * @param filter Filter to apply
+ * @param filter Filter to evaluate
  * @return Filtered value
  */
-filter_evaluate_digital_filter_complex_float(
+float complex filter_evaluate_digital_filter_complex_float(
     float complex input, 
-    FilterComplexFloat *filter);
+    DigitalFilterComplexFloat *filter);
 
 /**
  * @brief 
  * Evaluates a linear digital filter
  * @param input Next input signal value
- * @param filter Filter to apply
+ * @param filter Filter to evaluate
  * @return Filtered value
  */
-filter_evaluate_digital_filter_real_double(
+double filter_evaluate_digital_filter_real_double(
     double input, 
-    FilterRealDouble *filter);
+    DigitalFilterRealDouble *filter);
 
 /**
  * @brief 
  * Evaluates a linear digital filter
  * @param input Next input signal value
- * @param filter Filter to apply
+ * @param filter Filter to evaluate
  * @return Filtered value
  */
-filter_evaluate_digital_filter_real_float(
+float filter_evaluate_digital_filter_real_float(
     float input, 
-    FilterRealFloat *filter);
+    DigitalFilterRealFloat *filter);
 
 
 /**
@@ -116,7 +116,7 @@ filter_evaluate_digital_filter_real_float(
  * @param feedback Feedback coefficient values
  * @return Constucted filter
  */
-FilterComplexDouble *filter_make_digital_filter_complex_double(
+DigitalFilterComplexDouble *filter_make_digital_filter_complex_double(
     const VectorComplexDouble *feedforward,
     const VectorComplexDouble *feedback
 );
@@ -128,7 +128,7 @@ FilterComplexDouble *filter_make_digital_filter_complex_double(
  * @param feedback Feedback coefficient values
  * @return Constucted filter
  */
-FilterComplexFloat *filter_make_digital_filter_complex_float(
+DigitalFilterComplexFloat *filter_make_digital_filter_complex_float(
     const VectorComplexFloat *feedforward,
     const VectorComplexFloat *feedback
 );
@@ -140,7 +140,7 @@ FilterComplexFloat *filter_make_digital_filter_complex_float(
  * @param feedback Feedback coefficient values
  * @return Constucted filter
  */
-FilterRealDouble *filter_make_digital_filter_real_double(
+DigitalFilterRealDouble *filter_make_digital_filter_real_double(
     const VectorRealDouble *feedforward,
     const VectorRealDouble *feedback
 );
@@ -152,7 +152,7 @@ FilterRealDouble *filter_make_digital_filter_real_double(
  * @param feedback Feedback coefficient values
  * @return Constucted filter
  */
-FilterRealFloat *filter_make_digital_filter_real_float(
+DigitalFilterRealFloat *filter_make_digital_filter_real_float(
     const VectorRealFloat *feedforward,
     const VectorRealFloat *feedback
 );
@@ -164,7 +164,7 @@ FilterRealFloat *filter_make_digital_filter_real_float(
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-FilterComplexDouble *filter_make_ewma_complex_double(double complex alpha);
+DigitalFilterComplexDouble *filter_make_ewma_complex_double(double alpha);
 
 /**
  * @brief 
@@ -172,7 +172,7 @@ FilterComplexDouble *filter_make_ewma_complex_double(double complex alpha);
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-FilterComplexFloat *filter_make_ewma_complex_float(float complex alpha);
+DigitalFilterComplexFloat *filter_make_ewma_complex_float(float alpha);
 
 /**
  * @brief 
@@ -180,7 +180,7 @@ FilterComplexFloat *filter_make_ewma_complex_float(float complex alpha);
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-FilterRealDouble *filter_make_ewma_real_double(double alpha);
+DigitalFilterRealDouble *filter_make_ewma_real_double(double alpha);
 
 /**
  * @brief 
@@ -188,7 +188,7 @@ FilterRealDouble *filter_make_ewma_real_double(double alpha);
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-FilterRealFloat *filter_make_ewma_real_float(float alpha);
+DigitalFilterRealFloat *filter_make_ewma_real_float(float alpha);
 
 
 /**
@@ -197,7 +197,7 @@ FilterRealFloat *filter_make_ewma_real_float(float alpha);
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-FilterComplexDouble *filter_make_first_order_iir_complex_double(double complex cutoff_frequency);
+DigitalFilterComplexDouble *filter_make_first_order_iir_complex_double(double cutoff_frequency);
 
 /**
  * @brief 
@@ -205,7 +205,7 @@ FilterComplexDouble *filter_make_first_order_iir_complex_double(double complex c
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-FilterComplexFloat *filter_make_first_order_iir_complex_float(float complex cutoff_frequency);
+DigitalFilterComplexFloat *filter_make_first_order_iir_complex_float(float cutoff_frequency);
 
 /**
  * @brief 
@@ -213,7 +213,7 @@ FilterComplexFloat *filter_make_first_order_iir_complex_float(float complex cuto
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-FilterRealDouble *filter_make_first_order_iir_real_double(double cutoff_frequency);
+DigitalFilterRealDouble *filter_make_first_order_iir_real_double(double cutoff_frequency);
 
 /**
  * @brief 
@@ -221,7 +221,7 @@ FilterRealDouble *filter_make_first_order_iir_real_double(double cutoff_frequenc
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-FilterRealFloat *filter_make_first_order_iir_real_float(float cutoff_frequency);
+DigitalFilterRealFloat *filter_make_first_order_iir_real_float(float cutoff_frequency);
 
 
 /**
@@ -233,7 +233,7 @@ FilterRealFloat *filter_make_first_order_iir_real_float(float cutoff_frequency);
  * @param window Windowing function
  * @return Constructed filter
  */
-FilterComplexDouble *filter_make_sinc_complex_double(
+DigitalFilterComplexDouble *filter_make_sinc_complex_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
@@ -249,7 +249,23 @@ FilterComplexDouble *filter_make_sinc_complex_double(
  * @param window Windowing function
  * @return Constructed filter
  */
-FilterComplexFloat *filter_make_sinc_complex_float(
+DigitalFilterComplexFloat *filter_make_sinc_complex_float(
+    float cutoff_frequency, 
+    size_t length, 
+    enum FilterType filter_type,
+    WindowFunction window
+);
+
+/**
+ * @brief 
+ * Makes and allocates a windowed-sinc low-pass filter
+ * @param cutoff_frequency Normalized cutoff frequency
+ * @param length Number of filter coefficients
+ * @param filter_type The type of the filter. Can be low-pass or high-pass
+ * @param window Windowing function
+ * @return Constructed filter
+ */
+DigitalFilterRealDouble *filter_make_sinc_real_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
@@ -265,24 +281,8 @@ FilterComplexFloat *filter_make_sinc_complex_float(
  * @param window Windowing function
  * @return Constructed filter
  */
-FilterRealDouble *filter_make_sinc_real_double(
-    double cutoff_frequency, 
-    size_t length, 
-    enum FilterType filter_type,
-    WindowFunction window
-);
-
-/**
- * @brief 
- * Makes and allocates a windowed-sinc low-pass filter
- * @param cutoff_frequency Normalized cutoff frequency
- * @param length Number of filter coefficients
- * @param filter_type The type of the filter. Can be low-pass or high-pass
- * @param window Windowing function
- * @return Constructed filter
- */
-FilterRealFloat *filter_make_sinc_real_float(
-    double cutoff_frequency, 
+DigitalFilterRealFloat *filter_make_sinc_real_float(
+    float cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
     WindowFunction window
@@ -297,7 +297,7 @@ FilterRealFloat *filter_make_sinc_real_float(
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-FilterComplexDouble *filter_make_savgol_complex_double(size_t window_length, int deriv, int polyorder);
+DigitalFilterComplexDouble *filter_make_savgol_complex_double(size_t filter_length, int derivative, int polynomial_order);
 
 /**
  * @brief 
@@ -307,7 +307,7 @@ FilterComplexDouble *filter_make_savgol_complex_double(size_t window_length, int
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-FilterComplexFloat *filter_make_savgol_complex_float(size_t window_length, int deriv, int polyorder);
+DigitalFilterComplexFloat *filter_make_savgol_complex_float(size_t filter_length, int derivative, int polynomial_order);
 
 /**
  * @brief 
@@ -317,7 +317,7 @@ FilterComplexFloat *filter_make_savgol_complex_float(size_t window_length, int d
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-FilterRealDouble *filter_make_savgol_real_double(size_t window_length, int deriv, int polyorder);
+DigitalFilterRealDouble *filter_make_savgol_real_double(size_t filter_length, int derivative, int polynomial_order);
 
 /**
  * @brief 
@@ -327,7 +327,7 @@ FilterRealDouble *filter_make_savgol_real_double(size_t window_length, int deriv
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-FilterRealFloat *filter_make_savgol_real_float(size_t window_length, int deriv, int polyorder);
+DigitalFilterRealFloat *filter_make_savgol_real_float(size_t filter_length, int derivative, int polynomial_order);
 
 
 /**
@@ -335,28 +335,28 @@ FilterRealFloat *filter_make_savgol_real_float(size_t window_length, int deriv, 
  * Resets a linear filter to its initial state
  * @param filter Filter to be reset
  */
-void filter_reset_digital_filter_complex_double(FilterComplexDouble *filter);
+void filter_reset_digital_filter_complex_double(DigitalFilterComplexDouble *filter);
 
 /**
  * @brief 
  * Resets a linear filter to its initial state
  * @param filter Filter to be reset
  */
-void filter_reset_digital_filter_complex_float(FilterComplexFloat *filter);
+void filter_reset_digital_filter_complex_float(DigitalFilterComplexFloat *filter);
 
 /**
  * @brief 
  * Resets a linear filter to its initial state
  * @param filter Filter to be reset
  */
-void filter_reset_digital_filter_real_double(FilterRealDouble *filter);
+void filter_reset_digital_filter_real_double(DigitalFilterRealDouble *filter);
 
 /**
  * @brief 
  * Resets a linear filter to its initial state
  * @param filter Filter to be reset
  */
-void filter_reset_digital_filter_real_float(FilterRealFloat *filter);
+void filter_reset_digital_filter_real_float(DigitalFilterRealFloat *filter);
 
 
 /**
@@ -364,27 +364,27 @@ void filter_reset_digital_filter_real_float(FilterRealFloat *filter);
  * Frees memory associated with a linear filter
  * @param filter Filter to be freed
  */
-void filter_free_digital_filter_complex_double(FilterComplexDouble *filter);
+void filter_free_digital_filter_complex_double(DigitalFilterComplexDouble *filter);
 
 /**
  * @brief 
  * Frees memory associated with a linear filter
  * @param filter Filter to be freed
  */
-void filter_free_digital_filter_complex_float(FilterComplexFloat *filter);
+void filter_free_digital_filter_complex_float(DigitalFilterComplexFloat *filter);
 
 /**
  * @brief 
  * Frees memory associated with a linear filter
  * @param filter Filter to be freed
  */
-void filter_free_digital_filter_real_double(FilterRealDouble *filter);
+void filter_free_digital_filter_real_double(DigitalFilterRealDouble *filter);
 
 /**
  * @brief 
  * Frees memory associated with a linear filter
  * @param filter Filter to be freed
  */
-void filter_free_digital_filter_real_float(FilterRealFloat *filter);
+void filter_free_digital_filter_real_float(DigitalFilterRealFloat *filter);
 
 #endif

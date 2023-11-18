@@ -12,7 +12,7 @@ SinusoidFit *sinusoid_fit_make(size_t window_length, double frequency) {
         return NULL;
     }
 
-    model->fit_window = moving_average_complex_make(window_length);
+    model->fit_window = moving_average_make_complex_double(window_length);
     if (model->fit_window == NULL) {
         free(model); 
         return NULL;
@@ -23,7 +23,7 @@ SinusoidFit *sinusoid_fit_make(size_t window_length, double frequency) {
 }
 
 void sinusoid_fit_free(SinusoidFit *model) {
-    moving_average_complex_free(model->fit_window);
+    moving_average_free_complex_double(model->fit_window);
     free(model);
 }
 
@@ -48,7 +48,7 @@ Oscillator sinusoid_fit_evaluate(double input, SinusoidFit *model) {
      * except those with the same frequency as the reference.
      */
     double complex average_relative_phase_and_amplitude = 
-        moving_average_complex_evaluate(
+        moving_average_evaluate_complex_double(
             phase_and_amplitude_relative_to_reference, 
             model->fit_window
         );

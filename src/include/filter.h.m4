@@ -37,7 +37,7 @@ M4_MAKE_FUNCTION_DECLARATIONS(
  * @brief 
  * Evaluates a linear digital filter
  * @param input Next input signal value
- * @param filter Filter to apply
+ * @param filter Filter to evaluate
  * @return Filtered value
  */')
 

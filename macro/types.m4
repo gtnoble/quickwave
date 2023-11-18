@@ -5,7 +5,7 @@ define(`M4_REAL_TYPE',
     $1, `double complex', `double',
     $1, `float complex', `float',
     $1, `float', `float',
-    $1, `double', `double')`)
+    $1, `double', `double')')
 
 define(`M4_STRUCT_TYPE_TAG',
     `ifelse(
@@ -13,12 +13,6 @@ define(`M4_STRUCT_TYPE_TAG',
         $1, `double', `RealDouble',
         $1, `float complex', `ComplexFloat',
         $1, `float', `RealFloat')')
-
-define(`M4_VECTOR_TYPE', 
-    `Vector`'M4_STRUCT_TYPE_TAG($1)')
-
-define(`M4_DIGITAL_FILTER_TYPE', 
-    `Filter`'M4_STRUCT_TYPE_TAG($1)')
 
 define(`M4_FUNCTION_TYPE_TAG', 
     `ifelse(

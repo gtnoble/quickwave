@@ -18,8 +18,8 @@ typedef struct {
  * Stores the state for a running linear fit.
  */
 typedef struct {
-    MovingAverageReal *intercept_estimator; /** Estimates the y-intercept of the linear fit */
-    DigitalFilterReal *slope_estimator; /** Estimates the slope of the linear fit. This is a first-order, first-derivative Savitzky-Golay filterA. */
+    MovingAverageRealDouble *intercept_estimator; /** Estimates the y-intercept of the linear fit */
+    DigitalFilterRealDouble *slope_estimator; /** Estimates the slope of the linear fit. This is a first-order, first-derivative Savitzky-Golay filterA. */
     double intercept_x_offset; /** Number of samples estimator values are delayed. Used to adjust the returned fit to be relative to the most recent sample. */
 } LinearEstimator;
 

@@ -1,99 +1,211 @@
+
+
 #ifndef QUICKWAVE_MOVING_AVERAGE
 #define QUICKWAVE_MOVING_AVERAGE
 
 #include <complex.h>
 #include "vector.h"
 
-/**
- * @brief 
- * Simple real-valued moving average.
- * While the simple moving average is a linear filter,
- * this is a more optimized O(1) implementation than a naive linear filter.
- */
-typedef struct {
-    double moving_sum;
-    VectorRealDouble *previous_input;
-} MovingAverageReal;
+
 
 /**
  * @brief 
- * Simple complex-valued moving average.
+ * Simple moving average.
  * While the simple moving average is a linear filter,
  * this is a more optimized O(1) implementation than a naive linear filter.
  */
 typedef struct {
     double complex moving_sum;
     VectorComplexDouble *previous_input;
-} MovingAverageComplex;
+} MovingAverageComplexDouble;
 
 /**
  * @brief 
- * Makes and allocates a real-valued simple moving average filter
+ * Simple moving average.
+ * While the simple moving average is a linear filter,
+ * this is a more optimized O(1) implementation than a naive linear filter.
+ */
+typedef struct {
+    float complex moving_sum;
+    VectorComplexFloat *previous_input;
+} MovingAverageComplexFloat;
+
+/**
+ * @brief 
+ * Simple moving average.
+ * While the simple moving average is a linear filter,
+ * this is a more optimized O(1) implementation than a naive linear filter.
+ */
+typedef struct {
+    double moving_sum;
+    VectorRealDouble *previous_input;
+} MovingAverageRealDouble;
+
+/**
+ * @brief 
+ * Simple moving average.
+ * While the simple moving average is a linear filter,
+ * this is a more optimized O(1) implementation than a naive linear filter.
+ */
+typedef struct {
+    float moving_sum;
+    VectorRealFloat *previous_input;
+} MovingAverageRealFloat;
+
+
+/**
+ * @brief 
+ * Makes and allocates a moving average filter
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageReal *moving_average_real_make(size_t length);
+MovingAverageComplexDouble *moving_average_make_complex_double(size_t length);
 
 /**
  * @brief 
- * Makes and allocates a complex-valued simple moving average filter
+ * Makes and allocates a moving average filter
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageComplex *moving_average_complex_make(size_t length);
-
-size_t moving_average_complex_length(MovingAverageComplex *filter);
+MovingAverageComplexFloat *moving_average_make_complex_float(size_t length);
 
 /**
  * @brief 
- * Evaluates a real-valued moving average filter
+ * Makes and allocates a moving average filter
+ * @param length Number of sequential elements to average
+ * @return Constructed filter
+ */
+MovingAverageRealDouble *moving_average_make_real_double(size_t length);
+
+/**
+ * @brief 
+ * Makes and allocates a moving average filter
+ * @param length Number of sequential elements to average
+ * @return Constructed filter
+ */
+MovingAverageRealFloat *moving_average_make_real_float(size_t length);
+
+
+
+
+size_t moving_average_length_complex_double(MovingAverageComplexDouble *filter);
+
+
+size_t moving_average_length_complex_float(MovingAverageComplexFloat *filter);
+
+
+size_t moving_average_length_real_double(MovingAverageRealDouble *filter);
+
+
+size_t moving_average_length_real_float(MovingAverageRealFloat *filter);
+
+
+/**
+ * @brief 
+ * Evaluates a moving average filter
  * @param input Next input signal value
  * @param filter Moving average filter
  * @return Filtered value
  */
-double moving_average_real_evaluate(
-    double input, 
-    MovingAverageReal *filter
-);
-
-/**
- * @brief 
- * Evaluates a complex-valued moving average filter
- * @param input Next input signal value
- * @param filter Moving average filter
- * @return Filtered value
- */
-double complex moving_average_complex_evaluate(
+double complex moving_average_evaluate_complex_double(
     double complex input, 
-    MovingAverageComplex *filter
+    MovingAverageComplexDouble *filter
 );
 
 /**
  * @brief 
- * Resets real-valued moving average filter to initial state
+ * Evaluates a moving average filter
+ * @param input Next input signal value
+ * @param filter Moving average filter
+ * @return Filtered value
+ */
+float complex moving_average_evaluate_complex_float(
+    float complex input, 
+    MovingAverageComplexFloat *filter
+);
+
+/**
+ * @brief 
+ * Evaluates a moving average filter
+ * @param input Next input signal value
+ * @param filter Moving average filter
+ * @return Filtered value
+ */
+double moving_average_evaluate_real_double(
+    double input, 
+    MovingAverageRealDouble *filter
+);
+
+/**
+ * @brief 
+ * Evaluates a moving average filter
+ * @param input Next input signal value
+ * @param filter Moving average filter
+ * @return Filtered value
+ */
+float moving_average_evaluate_real_float(
+    float input, 
+    MovingAverageRealFloat *filter
+);
+
+
+
+/**
+ * @brief 
+ * Resets a moving average filter to initial state
  * @param filter Filter to reset
  */
-void moving_average_real_reset(MovingAverageReal *filter);
+void moving_average_reset_complex_double(MovingAverageComplexDouble *filter);
 
 /**
  * @brief 
- * Resets complex-valued moving average filter to initial state
+ * Resets a moving average filter to initial state
  * @param filter Filter to reset
  */
-void moving_average_complex_reset(MovingAverageComplex *filter);
+void moving_average_reset_complex_float(MovingAverageComplexFloat *filter);
 
 /**
  * @brief 
- * Frees the memory assicated with a real-valued moving average filter
- * @param filter Filter to be freed
+ * Resets a moving average filter to initial state
+ * @param filter Filter to reset
  */
-void moving_average_real_free(MovingAverageReal *filter);
+void moving_average_reset_real_double(MovingAverageRealDouble *filter);
 
 /**
  * @brief 
- * Frees the memory assicated with a complex-valued moving average filter
+ * Resets a moving average filter to initial state
+ * @param filter Filter to reset
+ */
+void moving_average_reset_real_float(MovingAverageRealFloat *filter);
+
+
+
+/**
+ * @brief 
+ * Frees the memory assicated with a moving average filter
  * @param filter Filter to be freed
  */
-void moving_average_complex_free(MovingAverageComplex *filter);
+void moving_average_free_complex_double(MovingAverageComplexDouble *filter);
+
+/**
+ * @brief 
+ * Frees the memory assicated with a moving average filter
+ * @param filter Filter to be freed
+ */
+void moving_average_free_complex_float(MovingAverageComplexFloat *filter);
+
+/**
+ * @brief 
+ * Frees the memory assicated with a moving average filter
+ * @param filter Filter to be freed
+ */
+void moving_average_free_real_double(MovingAverageRealDouble *filter);
+
+/**
+ * @brief 
+ * Frees the memory assicated with a moving average filter
+ * @param filter Filter to be freed
+ */
+void moving_average_free_real_float(MovingAverageRealFloat *filter);
 
 #endif

@@ -54,14 +54,14 @@ void fft_free_fft_complex(FftComplex *fft) {
 
 void fft_fft(VectorComplexDouble *data, FftComplex *fft) {
     assert_not_null(data);
-    assert(is_power_of_two(vector_length_generic(data)));
+    assert(is_power_of_two(vector_length_complex_double(data)));
     assert_not_null(fft);
 
     double *in_data = fft->in_out_data;
     double *out_data = fft->in_out_data; //+ fft->length / 2;
 
-    for (size_t i = 0; i < vector_length_generic(data); i++) {
-        double complex input_element = *vector_element_generic(i, data);
+    for (size_t i = 0; i < vector_length_complex_double(data); i++) {
+        double complex input_element = *vector_element_complex_double(i, data);
         in_data[i * 2] = creal(input_element);
         in_data[i * 2 + 1] = cimag(input_element);
     }
@@ -74,17 +74,17 @@ void fft_fft(VectorComplexDouble *data, FftComplex *fft) {
         fft->wave_table
     );
 
-    for (size_t i = 0; i < vector_length_generic(data); i++) {
-        *vector_element_generic(i, data) = 
+    for (size_t i = 0; i < vector_length_complex_double(data); i++) {
+        *vector_element_complex_double(i, data) = 
             CMPLX(out_data[2 * i], out_data[2 * i + 1]);
     }
 }
 
 void fft_ifft(VectorComplexDouble *data, FftComplex *fft) {
-    vector_complex_apply(conj, data);
+    vector_apply_complex_double(conj, data);
     fft_fft(data, fft);
-    vector_complex_apply(conj, data);
-    vector_complex_scale(1.0 / vector_length_generic(data), data);
+    vector_apply_complex_double(conj, data);
+    vector_scale_complex_double(1.0 / vector_length_complex_double(data), data);
 }
 
 static bool is_power_of_two(int n) {

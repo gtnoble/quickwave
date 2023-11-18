@@ -2,7 +2,6 @@
 #include <complex.h>
 
 #include "oscillator.h"
-#include "vector.h"
 #include "constants.h"
 #include "phasor.h"
 
