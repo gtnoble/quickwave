@@ -12,7 +12,7 @@ typedef struct {
 
 FftComplex *fft_make_fft_complex(int length);
 void fft_free_fft_complex(FftComplex *fft);
-void fft_fft(VectorComplexDouble *data, FftComplex *fft);
-void fft_ifft(VectorComplexDouble *data, FftComplex *fft);
+void fft_fft(const VectorComplexDouble *data, VectorComplexDouble *spectrum, FftComplex *fft);
+void fft_ifft(const VectorComplexDouble *spectrum, VectorComplexDouble *data, FftComplex *fft);
 
 #endif

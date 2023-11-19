@@ -9,9 +9,6 @@ M4_MAKE_TAGGED_FUNCTION(`M4_TAGGED_VECTOR_ELEMENT_VALUE', `vector_element_value'
 define(`M4_MAKE_VECTOR_ELEMENT_VALUE_PROTOTYPE',
 `$1 M4_TAGGED_VECTOR_ELEMENT_VALUE($1)(int index, const M4_VECTOR_TYPE($1) *buf)')
 
-define(`M4_MAKE_VECTOR_ELEMENT_VALUE_DECLARATION',
-`M4_MAKE_VECTOR_ELEMENT_PROTOTYPE($1);')
-
 define(`M4_MAKE_VECTOR_ELEMENT_VALUE',
 `M4_MAKE_VECTOR_ELEMENT_VALUE_PROTOTYPE($1) {
     return *M4_TAGGED_VECTOR_ELEMENT($1)(index, (M4_VECTOR_TYPE($1)*) buf);
@@ -100,13 +97,14 @@ define(`M4_MAKE_VECTOR_SCALE',
 M4_MAKE_TAGGED_FUNCTION(`M4_TAGGED_VECTOR_APPLY', `vector_apply')
 
 define(`M4_MAKE_VECTOR_APPLY_PROTOTYPE',
-`void M4_TAGGED_VECTOR_APPLY($1)($1 (*operation)($1), M4_VECTOR_TYPE($1) *vector)')
+`void M4_TAGGED_VECTOR_APPLY($1)($1 (*operation)($1), const M4_VECTOR_TYPE($1) *input, M4_VECTOR_TYPE($1) *output)')
 
 define(`M4_MAKE_VECTOR_APPLY',
 `M4_MAKE_VECTOR_APPLY_PROTOTYPE($1) {
-    for (size_t i = 0; i < M4_TAGGED_VECTOR_LENGTH($1)(vector); i++) {
-        *M4_TAGGED_VECTOR_ELEMENT($1)(i, vector) = 
-            operation(*M4_TAGGED_VECTOR_ELEMENT($1)(i, vector));
+    assert(M4_TAGGED_VECTOR_LENGTH($1)(input) == M4_TAGGED_VECTOR_LENGTH($1)(output));
+    for (size_t i = 0; i < M4_TAGGED_VECTOR_LENGTH($1)(input); i++) {
+        *M4_TAGGED_VECTOR_ELEMENT($1)(i, output) = 
+            operation(M4_TAGGED_VECTOR_ELEMENT_VALUE($1)(i, input));
     }
 }')
 

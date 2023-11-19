@@ -52,8 +52,14 @@ void fft_free_fft_complex(FftComplex *fft) {
     free(fft);
 }
 
-void fft_fft(VectorComplexDouble *data, FftComplex *fft) {
+void fft_fft(
+    const VectorComplexDouble *data, 
+    VectorComplexDouble *spectrum, 
+    FftComplex *fft
+) {
     assert_not_null(data);
+    assert_not_null(spectrum);
+    assert(vector_length_complex_double(data) == vector_length_complex_double(spectrum));
     assert(is_power_of_two(vector_length_complex_double(data)));
     assert_not_null(fft);
 
@@ -61,7 +67,7 @@ void fft_fft(VectorComplexDouble *data, FftComplex *fft) {
     double *out_data = fft->in_out_data; //+ fft->length / 2;
 
     for (size_t i = 0; i < vector_length_complex_double(data); i++) {
-        double complex input_element = *vector_element_complex_double(i, data);
+        double complex input_element = vector_element_value_complex_double(i, data);
         in_data[i * 2] = creal(input_element);
         in_data[i * 2 + 1] = cimag(input_element);
     }
@@ -74,16 +80,20 @@ void fft_fft(VectorComplexDouble *data, FftComplex *fft) {
         fft->wave_table
     );
 
-    for (size_t i = 0; i < vector_length_complex_double(data); i++) {
-        *vector_element_complex_double(i, data) = 
+    for (size_t i = 0; i < vector_length_complex_double(spectrum); i++) {
+        *vector_element_complex_double(i, spectrum) = 
             CMPLX(out_data[2 * i], out_data[2 * i + 1]);
     }
 }
 
-void fft_ifft(VectorComplexDouble *data, FftComplex *fft) {
-    vector_apply_complex_double(conj, data);
-    fft_fft(data, fft);
-    vector_apply_complex_double(conj, data);
+void fft_ifft(
+    const VectorComplexDouble *spectrum, 
+    VectorComplexDouble *data, 
+    FftComplex *fft
+) {
+    vector_apply_complex_double(conj, spectrum, data);
+    fft_fft(data, data, fft);
+    vector_apply_complex_double(conj, data, data);
     vector_scale_complex_double(1.0 / vector_length_complex_double(data), data);
 }
 

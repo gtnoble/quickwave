@@ -7,8 +7,6 @@ include(`code_generator.m4')
 #include <assert.h>
 #include "vector.h"
 
-M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_ELEMENT_VALUE_DECLARATION')
-
 M4_MAKE_FOR_NUMERIC_TYPES(`make_vector_shift')
 
 M4_MAKE_FOR_NUMERIC_TYPES(`M4_MAKE_VECTOR_ELEMENT')

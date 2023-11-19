@@ -7,14 +7,6 @@
 #include <assert.h>
 #include "vector.h"
 
-double complex *vector_element_complex_double(int index, VectorComplexDouble *buf);
-
-float complex *vector_element_complex_float(int index, VectorComplexFloat *buf);
-
-double *vector_element_real_double(int index, VectorRealDouble *buf);
-
-float *vector_element_real_float(int index, VectorRealFloat *buf);
-
 double complex vector_shift_complex_double(double complex element, VectorComplexDouble *buf) {
     assert(buf != NULL);
     assert(buf->elements != NULL);
@@ -207,31 +199,35 @@ void vector_scale_real_float(float scalar, VectorRealFloat *vector) {
     }
 }
 
-void vector_apply_complex_double(double complex (*operation)(double complex), VectorComplexDouble *vector) {
-    for (size_t i = 0; i < vector_length_complex_double(vector); i++) {
-        *vector_element_complex_double(i, vector) = 
-            operation(*vector_element_complex_double(i, vector));
+void vector_apply_complex_double(double complex (*operation)(double complex), const VectorComplexDouble *input, VectorComplexDouble *output) {
+    assert(vector_length_complex_double(input) == vector_length_complex_double(output));
+    for (size_t i = 0; i < vector_length_complex_double(input); i++) {
+        *vector_element_complex_double(i, output) = 
+            operation(vector_element_value_complex_double(i, input));
     }
 }
 
-void vector_apply_complex_float(float complex (*operation)(float complex), VectorComplexFloat *vector) {
-    for (size_t i = 0; i < vector_length_complex_float(vector); i++) {
-        *vector_element_complex_float(i, vector) = 
-            operation(*vector_element_complex_float(i, vector));
+void vector_apply_complex_float(float complex (*operation)(float complex), const VectorComplexFloat *input, VectorComplexFloat *output) {
+    assert(vector_length_complex_float(input) == vector_length_complex_float(output));
+    for (size_t i = 0; i < vector_length_complex_float(input); i++) {
+        *vector_element_complex_float(i, output) = 
+            operation(vector_element_value_complex_float(i, input));
     }
 }
 
-void vector_apply_real_double(double (*operation)(double), VectorRealDouble *vector) {
-    for (size_t i = 0; i < vector_length_real_double(vector); i++) {
-        *vector_element_real_double(i, vector) = 
-            operation(*vector_element_real_double(i, vector));
+void vector_apply_real_double(double (*operation)(double), const VectorRealDouble *input, VectorRealDouble *output) {
+    assert(vector_length_real_double(input) == vector_length_real_double(output));
+    for (size_t i = 0; i < vector_length_real_double(input); i++) {
+        *vector_element_real_double(i, output) = 
+            operation(vector_element_value_real_double(i, input));
     }
 }
 
-void vector_apply_real_float(float (*operation)(float), VectorRealFloat *vector) {
-    for (size_t i = 0; i < vector_length_real_float(vector); i++) {
-        *vector_element_real_float(i, vector) = 
-            operation(*vector_element_real_float(i, vector));
+void vector_apply_real_float(float (*operation)(float), const VectorRealFloat *input, VectorRealFloat *output) {
+    assert(vector_length_real_float(input) == vector_length_real_float(output));
+    for (size_t i = 0; i < vector_length_real_float(input); i++) {
+        *vector_element_real_float(i, output) = 
+            operation(vector_element_value_real_float(i, input));
     }
 }
 
