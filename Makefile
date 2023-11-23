@@ -4,12 +4,16 @@ LIB_SOURCE_DIR=src/lib
 LIB_SOURCE=${wildcard ${LIB_SOURCE_DIR}/*.c}
 LIB_OBJECTS=$(patsubst %.c,%.o,${LIB_SOURCE})
 INCLUDE_DIR=include
+INCLUDE_SOURCE_DIR=src/include
 
 FFT_BIN_DIR=ext/fft
 FFT_SOURCE_DIR=ext/fft/src
 FFT_INCLUDE_DIR=ext/fft/include
 
 TEST_SOURCE_DIR=src/test
+
+GUILE_SOURCE_DIR=scheme
+export GUILE_LOAD_PATH=${GUILE_SOURCE_DIR}
 
 lib/libquickwave.a: ${LIB_OBJECTS} ${FFT_BIN_DIR}/ooura_fft.o
 	ar rcs $@ $^
@@ -28,6 +32,12 @@ ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 
 ${FFT_BIN_DIR}/ooura_fft.o: ${FFT_SOURCE_DIR}/fft4g.c ${FFT_INCLUDE_DIR}/fftg.h
 	$(CC) $(CFLAGS) -c $< -o $@
+
+${LIB_SOURCE_DIR}/%.c: ${LIB_SOURCE_DIR}/%.c.scm ${GUILE_SOURCE_DIR}/%.scm ${GUILE_SOURCE_DIR}/template.scm
+	guile -s $< > $@
+
+${INCLUDE_DIR}/%.h: ${INCLUDE_SOURCE_DIR}/%.h.scm ${GUILE_SOURCE_DIR}/%.scm ${GUILE_SOURCE_DIR}/template.scm
+	guile -s $< > $@
 
 tests/iq.csv tests/const_freq.csv tests/sweep.csv &: tests/test_pll
 	./tests/test_pll
