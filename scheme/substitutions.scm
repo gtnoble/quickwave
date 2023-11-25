@@ -1,48 +1,55 @@
 (load-from-path "template.scm")
 
-(define make-number-substitution
-    (lambda (type-tag number-type real-number-type function-tag documentation-number-type)
-        (make-substitution 
-            type-tag
-            (list
-                (make-rule 'number-type number-type) 
-                (make-rule 'real-number-type real-number-type)
-                (make-rule 'function-tag function-tag)
-                (make-rule 'documentation-number-type documentation-number-type)))))
 
-(define make-real-number-substitution
-    (lambda (type-tag number-type function-tag documentation-number-type)
-        (make-substitution 
-            type-tag
-            (list
-                (make-rule 'number-type number-type)
-                (make-rule 'function-tag function-tag)
-                (make-rule 'documentation-number-type documentation-number-type)))))
+(define vector-rule
+  '(vector-type . "Vector${struct-type-suffix}"))
 
-(define real-number-substitutions
-    (list
-        (make-real-number-substitution 'double "double" "_real_double" "real double-precision" )
-        (make-real-number-substitution 'float "float" "_real_float" "real single-precision")))
+(define double-schema
+  (lambda* (#:optional edges) 
+           (make-chained-nodes 
+             #:rules '((number-base-type . "double") 
+                       (struct-type-precision . "Double")) 
+             #:prerequisites edges)))
 
-(define complex-number-substitutions
-    (list 
-        (make-complex-number-substitution 'double "double" "double" "_real_double" "real double-precision")
-        (make-complex-number-substitution 'complex-double "double complex" "double" "_complex_double" "complex double-precision")
-        (make-complex-number-substitution 'float "float" "float" "_real_float" "real single-precision")
-        (make-complex-number-substitution 'complex-float "float complex" "float" "_complex_float" "complex single-precision")))
+(define float-schema
+  (lambda* (#:optional edges) 
+           (make-chained-nodes 
+             #:rules '((number-base-type . "float") 
+                       (struct-type-precision . "Float")) 
+             #:prerequisites edges)))
 
-(define make-vector-substitution
-    (lambda (type-tag vector-type)
-        (make-substitution 
-            type-tag 
-            (list (make-rule 'vector-type vector-type)))))
-            
+(define number-schema
+  (lambda* (#:optional edges) 
+           (make-schema-node 
+             #:prerequisites (list 
+                               (double-schema edges)
+                               (float-schema edges)))))
 
-(define vector-substitutions
-    (list 
-        (make-vector-substitution 'double "VectorRealDouble")
-        (make-vector-substitution 'complex-double "VectorComplexDouble")
-        (make-vector-substitution 'float "VectorRealFloat")
-        (make-vector-substitution 'complex-float "VectorComplexFloat")))
+(define complex-number-schema
+  (lambda* (#:optional edges) 
+           (make-chained-nodes 
+             #:rules '((number-type . "${number-base-type} complex") 
+                       (struct-type-suffix . "Complex${struct-type-precision}")
+                       (function-tag . "_complex_${number-base-type}"))
+             #:prerequisites (number-schema edges))))
 
+(define real-number-schema
+  (lambda* (#:optional edges) 
+           (make-chained-nodes 
+             #:rules '((number-type . "${number-base-type}") 
+                       (struct-type-suffix . "Real${struct-type-precision}")
+                       (function-tag . "_real_${number-base-type}"))
+             #:prerequisites (number-schema edges))))
 
+(define numeric-schema
+  (lambda* (#:optional edges)
+           (make-schema-node
+             #:prerequisites (list 
+                               (complex-number-schema edges) 
+                               (real-number-schema edges)))))
+
+(define vector-schema
+  (lambda* (#:optional edges)
+           (make-schema-node 
+             #:rule vector-rule 
+             #:prerequisites (numeric-schema edges))))

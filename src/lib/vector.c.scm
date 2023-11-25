@@ -1,8 +1,8 @@
 (load-from-path "template.scm")
-(load-from-path "vector.scm")
+(load-from-path "substitutions.scm")
 
 (generate-code
-vector-substitutions
+vector-schema
 "#include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -12,18 +12,18 @@ vector-substitutions
 
 "
 
-${element-type} vector_element_value${function-tag}(int index, const ${vector-type} *buf);
+${number-type} vector_element_value${function-tag}(int index, const ${vector-type} *buf);
 
-${element-type} vector_shift${function-tag}(${element-type} element, ${vector-type} *buf) {
+${number-type} vector_shift${function-tag}(${number-type} element, ${vector-type} *buf) {
     assert(buf != NULL);
     assert(buf->elements != NULL);
     buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    ${element-type} last_element = buf->elements[buf->last_element_index];
+    ${number-type} last_element = buf->elements[buf->last_element_index];
     buf->elements[buf->last_element_index] = element;
     return last_element;
 }
 
-${element-type} *vector_element${function-tag}(int index, ${vector-type} *buf) {
+${number-type} *vector_element${function-tag}(int index, ${vector-type} *buf) {
     return &buf->elements[
         modular_add( 
             index * (buf->is_reversed ? -1 : 1), 
@@ -32,34 +32,34 @@ ${element-type} *vector_element${function-tag}(int index, ${vector-type} *buf) {
     ];
 }
 
-${element-type} vector_element_value${function-tag}(int index, const ${vector-type} *buf) {
+${number-type} vector_element_value${function-tag}(int index, const ${vector-type} *buf) {
     return *vector_element${function-tag}(index, (${vector-type}*) buf);
 }
 
-${element-type} vector_interpolated_element${function-tag}(${real-number-type} index, const ${vector-type} *buf) {
-    ${real-number-type} fraction_between_elements = index - floor(index);
+${number-type} vector_interpolated_element${function-tag}(${number-base-type} index, const ${vector-type} *buf) {
+    ${number-base-type} fraction_between_elements = index - floor(index);
     return 
         vector_element_value${function-tag}((int) floor(index), buf) * (1 - fraction_between_elements) + 
         vector_element_value${function-tag}((int) ceil(index), buf) * fraction_between_elements;
 }
 
-${element-type} vector_dot${function-tag}(const ${vector-type} *a, const ${vector-type} *b) {
+${number-type} vector_dot${function-tag}(const ${vector-type} *a, const ${vector-type} *b) {
     assert(vector_length${function-tag}(a) == vector_length${function-tag}(b));
-    ${element-type} sum = 0;
+    ${number-type} sum = 0;
     for (size_t i = 0; i < vector_length${function-tag}(a); i++) {
         sum += vector_element_value${function-tag}(i, a) * vector_element_value${function-tag}(i, b);
     }
     return sum;
 }
 
-void vector_scale${function-tag}(${element-type} scalar, ${vector-type} *vector) {
+void vector_scale${function-tag}(${number-type} scalar, ${vector-type} *vector) {
     for (size_t i = 0; i < vector_length${function-tag}(vector); i++) {
         *vector_element${function-tag}(i, vector) *= scalar;
     }
 }
 
 void vector_apply${function-tag}(
-    ${element-type} (*operation)(${element-type}), 
+    ${number-type} (*operation)(${number-type}), 
     ${vector-type} *vector
 ) {
     for (size_t i = 0; i < vector_length${function-tag}(vector); i++) {
@@ -70,7 +70,7 @@ void vector_apply${function-tag}(
 
 ${vector-type} *vector_new${function-tag}(size_t size) {
     ${vector-type} *circbuf = malloc(
-        sizeof(${vector-type}) + sizeof(${element-type}) * size);
+        sizeof(${vector-type}) + sizeof(${number-type}) * size);
     if (circbuf == NULL)
         return NULL;
 
@@ -80,7 +80,7 @@ ${vector-type} *vector_new${function-tag}(size_t size) {
     return circbuf;
 }
 
-${vector-type} *vector_from_array${function-tag}(size_t size, const ${element-type} elements[]) {
+${vector-type} *vector_from_array${function-tag}(size_t size, const ${number-type} elements[]) {
     ${vector-type} *vector = vector_new${function-tag}(size);
     if (vector == NULL) {
         return NULL;
@@ -102,7 +102,7 @@ ${vector-type} *vector_duplicate${function-tag}(const ${vector-type} *vector) {
     memcpy(
         new_vector->elements, 
         vector->elements, 
-        sizeof(${element-type}) * vector_length
+        sizeof(${number-type}) * vector_length
     );
     return new_vector;
 }

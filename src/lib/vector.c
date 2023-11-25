@@ -5,125 +5,6 @@
 #include <assert.h>
 #include "vector.h"
 
-double vector_element_value_real_double(int index, const VectorRealDouble *buf);
-
-double vector_shift_real_double(double element, VectorRealDouble *buf) {
-    assert(buf != NULL);
-    assert(buf->elements != NULL);
-    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    double last_element = buf->elements[buf->last_element_index];
-    buf->elements[buf->last_element_index] = element;
-    return last_element;
-}
-
-double *vector_element_real_double(int index, VectorRealDouble *buf) {
-    return &buf->elements[
-        modular_add( 
-            index * (buf->is_reversed ? -1 : 1), 
-            buf->last_element_index + ! buf->is_reversed,
-            buf->n_elements)
-    ];
-}
-
-double vector_element_value_real_double(int index, const VectorRealDouble *buf) {
-    return *vector_element_real_double(index, (VectorRealDouble*) buf);
-}
-
-double vector_interpolated_element_real_double(double index, const VectorRealDouble *buf) {
-    double fraction_between_elements = index - floor(index);
-    return 
-        vector_element_value_real_double((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_real_double((int) ceil(index), buf) * fraction_between_elements;
-}
-
-double vector_dot_real_double(const VectorRealDouble *a, const VectorRealDouble *b) {
-    assert(vector_length_real_double(a) == vector_length_real_double(b));
-    double sum = 0;
-    for (size_t i = 0; i < vector_length_real_double(a); i++) {
-        sum += vector_element_value_real_double(i, a) * vector_element_value_real_double(i, b);
-    }
-    return sum;
-}
-
-void vector_scale_real_double(double scalar, VectorRealDouble *vector) {
-    for (size_t i = 0; i < vector_length_real_double(vector); i++) {
-        *vector_element_real_double(i, vector) *= scalar;
-    }
-}
-
-void vector_apply_real_double(
-    double (*operation)(double), 
-    VectorRealDouble *vector
-) {
-    for (size_t i = 0; i < vector_length_real_double(vector); i++) {
-        *vector_element_real_double(i, vector) = 
-            operation(*vector_element_real_double(i, vector));
-    }
-}
-
-VectorRealDouble *vector_new_real_double(size_t size) {
-    VectorRealDouble *circbuf = malloc(
-        sizeof(VectorRealDouble) + sizeof(double) * size);
-    if (circbuf == NULL)
-        return NULL;
-
-    circbuf->n_elements = size;
-
-    vector_reset_real_double(circbuf);
-    return circbuf;
-}
-
-VectorRealDouble *vector_from_array_real_double(size_t size, const double elements[]) {
-    VectorRealDouble *vector = vector_new_real_double(size);
-    if (vector == NULL) {
-        return NULL;
-    }
-
-    for (size_t i = 0; i < size; i++) {
-        *vector_element_real_double(i, vector) = elements[i];
-    }
-
-    return vector;
-}
-
-VectorRealDouble *vector_duplicate_real_double(const VectorRealDouble *vector) {
-    size_t vector_length = vector_length_real_double(vector);
-    VectorRealDouble *new_vector = vector_new_real_double(vector_length);
-    if (new_vector == NULL) {
-        return NULL;
-    }
-    memcpy(
-        new_vector->elements, 
-        vector->elements, 
-        sizeof(double) * vector_length
-    );
-    return new_vector;
-}
-
-size_t vector_length_real_double(const VectorRealDouble *buf) {
-    return buf->n_elements;
-}
-
-void vector_reverse_real_double(VectorRealDouble *vector) {
-    vector->is_reversed = ! vector->is_reversed;
-}
-
-void vector_reset_real_double(VectorRealDouble *buf) {
-    if (buf == NULL)
-        return;
-    for (size_t ii = 0; ii < buf->n_elements; ii++) {
-        buf->elements[ii] = 0.0;
-    }
-    buf->last_element_index = 0;
-    buf->is_reversed = false;
-}
-
-void vector_free_real_double(VectorRealDouble *buf) {
-    free(buf);
-}
-
-
-
 double complex vector_element_value_complex_double(int index, const VectorComplexDouble *buf);
 
 double complex vector_shift_complex_double(double complex element, VectorComplexDouble *buf) {
@@ -238,125 +119,6 @@ void vector_reset_complex_double(VectorComplexDouble *buf) {
 }
 
 void vector_free_complex_double(VectorComplexDouble *buf) {
-    free(buf);
-}
-
-
-
-float vector_element_value_real_float(int index, const VectorRealFloat *buf);
-
-float vector_shift_real_float(float element, VectorRealFloat *buf) {
-    assert(buf != NULL);
-    assert(buf->elements != NULL);
-    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
-    float last_element = buf->elements[buf->last_element_index];
-    buf->elements[buf->last_element_index] = element;
-    return last_element;
-}
-
-float *vector_element_real_float(int index, VectorRealFloat *buf) {
-    return &buf->elements[
-        modular_add( 
-            index * (buf->is_reversed ? -1 : 1), 
-            buf->last_element_index + ! buf->is_reversed,
-            buf->n_elements)
-    ];
-}
-
-float vector_element_value_real_float(int index, const VectorRealFloat *buf) {
-    return *vector_element_real_float(index, (VectorRealFloat*) buf);
-}
-
-float vector_interpolated_element_real_float(float index, const VectorRealFloat *buf) {
-    float fraction_between_elements = index - floor(index);
-    return 
-        vector_element_value_real_float((int) floor(index), buf) * (1 - fraction_between_elements) + 
-        vector_element_value_real_float((int) ceil(index), buf) * fraction_between_elements;
-}
-
-float vector_dot_real_float(const VectorRealFloat *a, const VectorRealFloat *b) {
-    assert(vector_length_real_float(a) == vector_length_real_float(b));
-    float sum = 0;
-    for (size_t i = 0; i < vector_length_real_float(a); i++) {
-        sum += vector_element_value_real_float(i, a) * vector_element_value_real_float(i, b);
-    }
-    return sum;
-}
-
-void vector_scale_real_float(float scalar, VectorRealFloat *vector) {
-    for (size_t i = 0; i < vector_length_real_float(vector); i++) {
-        *vector_element_real_float(i, vector) *= scalar;
-    }
-}
-
-void vector_apply_real_float(
-    float (*operation)(float), 
-    VectorRealFloat *vector
-) {
-    for (size_t i = 0; i < vector_length_real_float(vector); i++) {
-        *vector_element_real_float(i, vector) = 
-            operation(*vector_element_real_float(i, vector));
-    }
-}
-
-VectorRealFloat *vector_new_real_float(size_t size) {
-    VectorRealFloat *circbuf = malloc(
-        sizeof(VectorRealFloat) + sizeof(float) * size);
-    if (circbuf == NULL)
-        return NULL;
-
-    circbuf->n_elements = size;
-
-    vector_reset_real_float(circbuf);
-    return circbuf;
-}
-
-VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[]) {
-    VectorRealFloat *vector = vector_new_real_float(size);
-    if (vector == NULL) {
-        return NULL;
-    }
-
-    for (size_t i = 0; i < size; i++) {
-        *vector_element_real_float(i, vector) = elements[i];
-    }
-
-    return vector;
-}
-
-VectorRealFloat *vector_duplicate_real_float(const VectorRealFloat *vector) {
-    size_t vector_length = vector_length_real_float(vector);
-    VectorRealFloat *new_vector = vector_new_real_float(vector_length);
-    if (new_vector == NULL) {
-        return NULL;
-    }
-    memcpy(
-        new_vector->elements, 
-        vector->elements, 
-        sizeof(float) * vector_length
-    );
-    return new_vector;
-}
-
-size_t vector_length_real_float(const VectorRealFloat *buf) {
-    return buf->n_elements;
-}
-
-void vector_reverse_real_float(VectorRealFloat *vector) {
-    vector->is_reversed = ! vector->is_reversed;
-}
-
-void vector_reset_real_float(VectorRealFloat *buf) {
-    if (buf == NULL)
-        return;
-    for (size_t ii = 0; ii < buf->n_elements; ii++) {
-        buf->elements[ii] = 0.0;
-    }
-    buf->last_element_index = 0;
-    buf->is_reversed = false;
-}
-
-void vector_free_real_float(VectorRealFloat *buf) {
     free(buf);
 }
 
@@ -481,7 +243,241 @@ void vector_free_complex_float(VectorComplexFloat *buf) {
 
 
 
+double vector_element_value_real_double(int index, const VectorRealDouble *buf);
 
+double vector_shift_real_double(double element, VectorRealDouble *buf) {
+    assert(buf != NULL);
+    assert(buf->elements != NULL);
+    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
+    double last_element = buf->elements[buf->last_element_index];
+    buf->elements[buf->last_element_index] = element;
+    return last_element;
+}
+
+double *vector_element_real_double(int index, VectorRealDouble *buf) {
+    return &buf->elements[
+        modular_add( 
+            index * (buf->is_reversed ? -1 : 1), 
+            buf->last_element_index + ! buf->is_reversed,
+            buf->n_elements)
+    ];
+}
+
+double vector_element_value_real_double(int index, const VectorRealDouble *buf) {
+    return *vector_element_real_double(index, (VectorRealDouble*) buf);
+}
+
+double vector_interpolated_element_real_double(double index, const VectorRealDouble *buf) {
+    double fraction_between_elements = index - floor(index);
+    return 
+        vector_element_value_real_double((int) floor(index), buf) * (1 - fraction_between_elements) + 
+        vector_element_value_real_double((int) ceil(index), buf) * fraction_between_elements;
+}
+
+double vector_dot_real_double(const VectorRealDouble *a, const VectorRealDouble *b) {
+    assert(vector_length_real_double(a) == vector_length_real_double(b));
+    double sum = 0;
+    for (size_t i = 0; i < vector_length_real_double(a); i++) {
+        sum += vector_element_value_real_double(i, a) * vector_element_value_real_double(i, b);
+    }
+    return sum;
+}
+
+void vector_scale_real_double(double scalar, VectorRealDouble *vector) {
+    for (size_t i = 0; i < vector_length_real_double(vector); i++) {
+        *vector_element_real_double(i, vector) *= scalar;
+    }
+}
+
+void vector_apply_real_double(
+    double (*operation)(double), 
+    VectorRealDouble *vector
+) {
+    for (size_t i = 0; i < vector_length_real_double(vector); i++) {
+        *vector_element_real_double(i, vector) = 
+            operation(*vector_element_real_double(i, vector));
+    }
+}
+
+VectorRealDouble *vector_new_real_double(size_t size) {
+    VectorRealDouble *circbuf = malloc(
+        sizeof(VectorRealDouble) + sizeof(double) * size);
+    if (circbuf == NULL)
+        return NULL;
+
+    circbuf->n_elements = size;
+
+    vector_reset_real_double(circbuf);
+    return circbuf;
+}
+
+VectorRealDouble *vector_from_array_real_double(size_t size, const double elements[]) {
+    VectorRealDouble *vector = vector_new_real_double(size);
+    if (vector == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        *vector_element_real_double(i, vector) = elements[i];
+    }
+
+    return vector;
+}
+
+VectorRealDouble *vector_duplicate_real_double(const VectorRealDouble *vector) {
+    size_t vector_length = vector_length_real_double(vector);
+    VectorRealDouble *new_vector = vector_new_real_double(vector_length);
+    if (new_vector == NULL) {
+        return NULL;
+    }
+    memcpy(
+        new_vector->elements, 
+        vector->elements, 
+        sizeof(double) * vector_length
+    );
+    return new_vector;
+}
+
+size_t vector_length_real_double(const VectorRealDouble *buf) {
+    return buf->n_elements;
+}
+
+void vector_reverse_real_double(VectorRealDouble *vector) {
+    vector->is_reversed = ! vector->is_reversed;
+}
+
+void vector_reset_real_double(VectorRealDouble *buf) {
+    if (buf == NULL)
+        return;
+    for (size_t ii = 0; ii < buf->n_elements; ii++) {
+        buf->elements[ii] = 0.0;
+    }
+    buf->last_element_index = 0;
+    buf->is_reversed = false;
+}
+
+void vector_free_real_double(VectorRealDouble *buf) {
+    free(buf);
+}
+
+
+
+float vector_element_value_real_float(int index, const VectorRealFloat *buf);
+
+float vector_shift_real_float(float element, VectorRealFloat *buf) {
+    assert(buf != NULL);
+    assert(buf->elements != NULL);
+    buf->last_element_index = modular_add(buf->last_element_index, 1, buf->n_elements);
+    float last_element = buf->elements[buf->last_element_index];
+    buf->elements[buf->last_element_index] = element;
+    return last_element;
+}
+
+float *vector_element_real_float(int index, VectorRealFloat *buf) {
+    return &buf->elements[
+        modular_add( 
+            index * (buf->is_reversed ? -1 : 1), 
+            buf->last_element_index + ! buf->is_reversed,
+            buf->n_elements)
+    ];
+}
+
+float vector_element_value_real_float(int index, const VectorRealFloat *buf) {
+    return *vector_element_real_float(index, (VectorRealFloat*) buf);
+}
+
+float vector_interpolated_element_real_float(float index, const VectorRealFloat *buf) {
+    float fraction_between_elements = index - floor(index);
+    return 
+        vector_element_value_real_float((int) floor(index), buf) * (1 - fraction_between_elements) + 
+        vector_element_value_real_float((int) ceil(index), buf) * fraction_between_elements;
+}
+
+float vector_dot_real_float(const VectorRealFloat *a, const VectorRealFloat *b) {
+    assert(vector_length_real_float(a) == vector_length_real_float(b));
+    float sum = 0;
+    for (size_t i = 0; i < vector_length_real_float(a); i++) {
+        sum += vector_element_value_real_float(i, a) * vector_element_value_real_float(i, b);
+    }
+    return sum;
+}
+
+void vector_scale_real_float(float scalar, VectorRealFloat *vector) {
+    for (size_t i = 0; i < vector_length_real_float(vector); i++) {
+        *vector_element_real_float(i, vector) *= scalar;
+    }
+}
+
+void vector_apply_real_float(
+    float (*operation)(float), 
+    VectorRealFloat *vector
+) {
+    for (size_t i = 0; i < vector_length_real_float(vector); i++) {
+        *vector_element_real_float(i, vector) = 
+            operation(*vector_element_real_float(i, vector));
+    }
+}
+
+VectorRealFloat *vector_new_real_float(size_t size) {
+    VectorRealFloat *circbuf = malloc(
+        sizeof(VectorRealFloat) + sizeof(float) * size);
+    if (circbuf == NULL)
+        return NULL;
+
+    circbuf->n_elements = size;
+
+    vector_reset_real_float(circbuf);
+    return circbuf;
+}
+
+VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[]) {
+    VectorRealFloat *vector = vector_new_real_float(size);
+    if (vector == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        *vector_element_real_float(i, vector) = elements[i];
+    }
+
+    return vector;
+}
+
+VectorRealFloat *vector_duplicate_real_float(const VectorRealFloat *vector) {
+    size_t vector_length = vector_length_real_float(vector);
+    VectorRealFloat *new_vector = vector_new_real_float(vector_length);
+    if (new_vector == NULL) {
+        return NULL;
+    }
+    memcpy(
+        new_vector->elements, 
+        vector->elements, 
+        sizeof(float) * vector_length
+    );
+    return new_vector;
+}
+
+size_t vector_length_real_float(const VectorRealFloat *buf) {
+    return buf->n_elements;
+}
+
+void vector_reverse_real_float(VectorRealFloat *vector) {
+    vector->is_reversed = ! vector->is_reversed;
+}
+
+void vector_reset_real_float(VectorRealFloat *buf) {
+    if (buf == NULL)
+        return;
+    for (size_t ii = 0; ii < buf->n_elements; ii++) {
+        buf->elements[ii] = 0.0;
+    }
+    buf->last_element_index = 0;
+    buf->is_reversed = false;
+}
+
+void vector_free_real_float(VectorRealFloat *buf) {
+    free(buf);
+}
 
 int modular_add(int a, int b, int max) {
     int sum = a + b;
