@@ -1,15 +1,17 @@
 (load-from-path "template.scm")
 (load-from-path "substitutions.scm")
 
-(generate-code
-vector-schema
+(define headers
 "#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <complex.h>
 #include <assert.h>
-#include \"vector.h\""
+#include \"vector.h\"")
 
+(define body 
+    (generate-text
+    vector-schema
 "
 
 ${number-type} vector_element_value${function-tag}(int index, const ${vector-type} *buf);
@@ -127,8 +129,9 @@ void vector_reset${function-tag}(${vector-type} *buf) {
 
 void vector_free${function-tag}(${vector-type} *buf) {
     free(buf);
-}"
+}"))
 
+(define common-functions
 "
 
 int modular_add(int a, int b, int max) {
@@ -143,3 +146,5 @@ int modulo_euclidean(int a, int b) {
   }
   return m;
 }")
+
+(output-text headers body common-functions)

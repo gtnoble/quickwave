@@ -48,38 +48,44 @@
     (symbol? (rule-key rule))))
 
 (define make-schema-node
-  (lambda* (#:key rule prerequisites)
-           (lambda (input-document)
-             (let ((processed-document 
-                     (if rule
-                         (let ((rules 
-                                 (map 
-                                   (lambda (rule) 
-                                     (if (template-rule? rule)
-                                         (template-rule->macro-rule rule)
-                                         rule))
-                                   (if (list? rule)
-                                       rule
-                                       (list rule))))) 
-                           (fold substitute-rule input-document rules))
-                         input-document)))
-               (if prerequisites 
-                   (concatenate 
-                     (map 
-                       (lambda (edge) (edge processed-document))
-                       (if (list? prerequisites) 
-                           prerequisites 
-                           (list prerequisites))))
-                   (list processed-document))))))
+  (lambda* (#:key rule dependent-nodes)
+           (let* ((substitute-document
+                    (lambda (rule document) 
+                      (let ((rules 
+                              (map 
+                                (lambda (rule) 
+                                  (if (template-rule? rule)
+                                      (template-rule->macro-rule rule)
+                                      rule))
+                                (if (list? rule)
+                                    rule
+                                    (list rule))))) 
+                        (fold substitute-rule document rules))))
+                  (gather-processed-documents 
+                    (lambda (output-document dependent-nodes)
+                      (if dependent-nodes 
+                          (concatenate 
+                            (map 
+                              (lambda (dependent-node) (dependent-node output-document))
+                              (if (list? dependent-nodes) 
+                                  dependent-nodes 
+                                  (list dependent-nodes))))
+                          (list output-document)))))
+             (lambda (input-document) 
+               (gather-processed-documents 
+                 (if rule
+                        (substitute-document rule input-document)
+                        input-document)
+                 dependent-nodes)))))
 
-(define generate-body-code
-  (lambda (root-schema-node body-template)
-    (let ((generated-documents ((root-schema-node) body-template))) 
+(define generate-text
+  (lambda (schema template)
+    (let ((generated-documents (schema template))) 
      (string-join generated-documents "\n\n"))))
 
-(define generate-code
-  (lambda (schema-root-node headers body-template tail)
-    (simple-format #t "~A" headers)
-    (simple-format #t "~A" (generate-body-code schema-root-node body-template))
-    (simple-format #t "~A" tail)))
+(define output-text
+  (lambda (. text-blocks)
+    (map 
+      (lambda (text-block) (simple-format #t "~A" text-block))
+      text-blocks)))
 

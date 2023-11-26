@@ -1,51 +1,61 @@
 (load-from-path "template.scm")
 
-(define make-schema
-  (lambda* (#:key rules prerequisites)
-    (lambda* (#:optional edges)
-      (make-schema-node 
-        #:rule rules 
-        #:prerequisites (if prerequisites
-                            (map 
-                              (lambda (prerequisite)
-                                (prerequisite edges))
-                              prerequisites)
-                            edges)))))
+(define make-precursor-node
+  (lambda* (nodes precursors #:optional rules)
+           (let ((nodes-dependencies
+                   (map 
+                     (lambda (make-precursor-node)
+                       (make-precursor-node nodes))
+                     precursors))) 
+             (make-schema-node 
+               #:rule rules 
+               #:dependent-nodes nodes-dependencies))))
 
-(define double-schema
-  (make-schema
+
+(define make-precursor
+  (lambda* (#:key rules precursors)
+           (lambda* (#:optional nodes)
+                    (if precursors
+                        (make-precursor-node nodes precursors rules)
+                        (make-schema-node #:rule rules #:dependent-nodes nodes)))))
+
+(define double-precursor
+  (make-precursor
     #:rules '((number-base-type . "double") 
               (struct-type-precision . "Double"))))
 
-(define float-schema
-  (make-schema
+(define float-precursor
+  (make-precursor
     #:rules '((number-base-type . "float") 
               (struct-type-precision . "Float"))))
 
-(define number-schema
-  (make-schema
-    #:prerequisites (list double-schema float-schema)))
+(define number-precursor
+  (make-precursor
+    #:precursors (list double-precursor float-precursor)))
 
-(define complex-number-schema
-  (make-schema
+(define complex-number-precursor
+  (make-precursor
     #:rules '((number-type . "${number-base-type} complex") 
               (struct-type-suffix . "Complex${struct-type-precision}")
               (function-tag . "_complex_${number-base-type}"))
-    #:prerequisites (list number-schema)))
+    #:precursors (list number-precursor)))
 
-(define real-number-schema
-  (make-schema
+(define real-number-precursor
+  (make-precursor
     #:rules '((number-type . "${number-base-type}") 
               (struct-type-suffix . "Real${struct-type-precision}")
               (function-tag . "_real_${number-base-type}"))
-    #:prerequisites (list number-schema)))
+    #:precursors (list number-precursor)))
 
-(define numeric-schema
-  (make-schema
-    #:prerequisites (list complex-number-schema  
-                          real-number-schema)))
+(define numeric-precursor
+  (make-precursor
+    #:precursors (list complex-number-precursor  
+                          real-number-precursor)))
+
+(define vector-precursor
+  (make-precursor
+    #:rules '((vector-type . "Vector${struct-type-suffix}"))
+    #:precursors (list numeric-precursor)))
 
 (define vector-schema
-  (make-schema
-    #:rules '((vector-type . "Vector${struct-type-suffix}"))
-    #:prerequisites (list numeric-schema)))
+  (vector-precursor))
