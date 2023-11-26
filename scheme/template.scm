@@ -49,31 +49,28 @@
 
 (define make-schema-node
   (lambda* (#:key rule prerequisites)
-    (lambda (input-document)
-      (let ((processed-document 
-              (if rule
-                  (substitute-rule 
-                    (if (template-rule? rule) 
-                        (template-rule->macro-rule rule)
-                        rule)
-                    input-document)
-                  input-document)))
-        (if prerequisites 
-            (concatenate 
-              (map 
-                (lambda (edge) (edge processed-document))
-                (if (list? prerequisites) 
-                    prerequisites 
-                    (list prerequisites))))
-            (list processed-document))))))
-
-(define make-chained-nodes
-  (lambda* (#:key rules prerequisites)
-           (fold 
-             (lambda (rule chained-nodes)
-               (make-schema-node #:rule rule #:prerequisites chained-nodes))
-             prerequisites
-             rules)))
+           (lambda (input-document)
+             (let ((processed-document 
+                     (if rule
+                         (let ((rules 
+                                 (map 
+                                   (lambda (rule) 
+                                     (if (template-rule? rule)
+                                         (template-rule->macro-rule rule)
+                                         rule))
+                                   (if (list? rule)
+                                       rule
+                                       (list rule))))) 
+                           (fold substitute-rule input-document rules))
+                         input-document)))
+               (if prerequisites 
+                   (concatenate 
+                     (map 
+                       (lambda (edge) (edge processed-document))
+                       (if (list? prerequisites) 
+                           prerequisites 
+                           (list prerequisites))))
+                   (list processed-document))))))
 
 (define generate-body-code
   (lambda (root-schema-node body-template)
