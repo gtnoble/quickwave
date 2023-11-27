@@ -1,8 +1,6 @@
-(load-from-path "template.scm")
-(load-from-path "vector.scm")
+(load-from-path "substitutions.scm")
 
-(generate-code
-vector-substitutions
+(output-text
 
 "#ifndef QUICKWAVE_BUFFER
 #define QUICKWAVE_BUFFER
@@ -12,8 +10,9 @@ vector-substitutions
 #include \"assertions.h\"
 #include <stdbool.h>"
 
+    (generate-text 
+        vector-schema
 "
-
 /**
  * @brief 
  * ${documentation-number-type} element type circular buffer. Stores the `n_elements` most recently inserted elements.
@@ -23,7 +22,7 @@ typedef struct {
     size_t n_elements; /** Number of elements in the buffer */
     size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
     bool is_reversed;
-    ${element-type} elements[]; /** Buffer elements */
+    ${number-type} elements[]; /** Buffer elements */
 } ${vector-type};
 
 /**
@@ -34,7 +33,7 @@ typedef struct {
  * @param buf Buffer to be operated on
  * @return Last element in the buffer, before being overwritten
  */
-${element-type} vector_shift${function-tag}(${element-type} element, ${vector-type} *buf);
+${number-type} vector_shift${function-tag}(${number-type} element, ${vector-type} *buf);
 
 
 /**
@@ -44,7 +43,7 @@ ${element-type} vector_shift${function-tag}(${element-type} element, ${vector-ty
  * @param buf Vector to be accessed
  * @return Indexed element
  */
-${element-type} *vector_element${function-tag}(int index, ${vector-type} *buf);
+${number-type} *vector_element${function-tag}(int index, ${vector-type} *buf);
 
 /**
  * @brief 
@@ -53,18 +52,18 @@ ${element-type} *vector_element${function-tag}(int index, ${vector-type} *buf);
  * @param buf Vector to be accessed
  * @return Interpolated element
  */
-${element-type} vector_interpolated_element${function-tag}(${real-number-type} index, const ${vector-type} *buf);
+${number-type} vector_interpolated_element${function-tag}(${number-base-type} index, const ${vector-type} *buf);
 
-${element-type} vector_dot${function-tag}(const ${vector-type} *a, const ${vector-type} *b);
+${number-type} vector_dot${function-tag}(const ${vector-type} *a, const ${vector-type} *b);
 
-void vector_scale${function-tag}(${element-type} scalar, ${vector-type} *vector);
+void vector_scale${function-tag}(${number-type} scalar, ${vector-type} *vector);
 
 void vector_apply${function-tag}(
-    ${element-type} (*operation)(${element-type}), 
+    ${number-type} (*operation)(${number-type}), 
     ${vector-type} *vector
 );
 
-${vector-type} *vector_from_array${function-tag}(size_t size, const ${element-type} elements[]);
+${vector-type} *vector_from_array${function-tag}(size_t size, const ${number-type} elements[]);
 
 /**
  * @brief 
@@ -93,7 +92,7 @@ void vector_reset${function-tag}(${vector-type} *buf);
  * Frees vector memory allocations
  * @param buf Vector to be freed
  */
-void vector_free${function-tag}(${vector-type} *buf);"
+void vector_free${function-tag}(${vector-type} *buf);")
 
 "
 

@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
@@ -6,13 +7,14 @@
 #include "constants.h"
 #include "assertions.h"
 
+
 /**
  * @brief 
  * Normalized sinc function
  * @param x input
  * @return result
  */
-double sinc(double x);
+double sinc_real_double(double x);
 
 /**
  * @brief 
@@ -20,72 +22,89 @@ double sinc(double x);
  * @param x Input
  * @return Result 
  */
-double dirac_delta(double x);
+double dirac_delta_real_double(double x);
 
-double filter_evaluate_digital_filter_real(double input, DigitalFilterReal *filter) {
-    assert_not_null(filter);
-    assert_not_null(filter->feedforward);
-
-    double accumulate = 0.0;
-    vector_shift_generic(input, filter->previous_input);
-    accumulate +=
-        vector_dot_generic(
-            filter->feedforward,
-            filter->previous_input
-        );
-    if (filter->feedback != NULL) {
-        accumulate += vector_dot_generic(filter->feedback, filter->previous_output);
-        vector_shift_generic(accumulate, filter->previous_output);
-    }
-    return accumulate;
+double sinc_real_double(double x) {
+    return x == 0.0 ? 1.0 : sin(M_PI * x) / (M_PI * x);
 }
 
-double complex filter_evaluate_digital_filter_complex(double complex input, DigitalFilterComplex *filter) {
+double dirac_delta_real_double(double x) {
+    return x == 0.0 ? 1.0 : 0.0;
+}
+
+
+
+/**
+ * @brief 
+ * Normalized sinc function
+ * @param x input
+ * @return result
+ */
+float sinc_real_float(float x);
+
+/**
+ * @brief 
+ * Dirac delta function
+ * @param x Input
+ * @return Result 
+ */
+float dirac_delta_real_float(float x);
+
+float sinc_real_float(float x) {
+    return x == 0.0 ? 1.0 : sin(M_PI * x) / (M_PI * x);
+}
+
+float dirac_delta_real_float(float x) {
+    return x == 0.0 ? 1.0 : 0.0;
+}
+
+
+double complex filter_evaluate_digital_filter_complex_double(double complex input, DigitalFilterComplexDouble *filter) {
     assert_not_null(filter);
     assert_not_null(filter->feedforward);
 
     double complex accumulate = 0.0;
-    vector_shift_generic(input, filter->previous_input);
+    vector_shift_complex_double(input, filter->previous_input);
     accumulate +=
-        vector_dot_generic(
+        vector_dot_complex_double(
             filter->feedforward,
             filter->previous_input
         );
     if (filter->feedback != NULL) {
-        accumulate += vector_dot_generic(filter->feedback, filter->previous_output);
-        vector_shift_generic(accumulate, filter->previous_output);
+        accumulate += vector_dot_complex_double(filter->feedback, filter->previous_output);
+        vector_shift_complex_double(accumulate, filter->previous_output);
     }
     return accumulate;
 }
 
-DigitalFilterComplex *filter_make_digital_filter_complex(
-    const VectorComplex *feedforward,
-    const VectorComplex *feedback
+DigitalFilterComplexDouble *filter_make_digital_filter_complex_double(
+    const VectorComplexDouble *feedforward,
+    const VectorComplexDouble *feedback
 ) {
-    DigitalFilterComplex *filter = malloc(sizeof(DigitalFilterComplex));
+    DigitalFilterComplexDouble *filter = malloc(sizeof(DigitalFilterComplexDouble));
     if (filter == NULL)
         return NULL;
     
     assert_valid_vector(feedforward);
-    filter->feedforward = vector_duplicate_generic(feedforward);
+    filter->feedforward = vector_duplicate_complex_double(feedforward);
     if (filter->feedforward == NULL) {
         goto fail_allocate_feedforward;
     }
     
-    filter->previous_input = vector_complex_new(vector_length_generic(feedforward));
+    filter->previous_input = vector_new_complex_double(vector_length_complex_double(feedforward));
     if (filter->previous_input == NULL) {
         goto fail_allocate_previous_input;
     }
     
     if (feedback != NULL) {
         assert_valid_vector(feedback);
-        filter->feedback = vector_duplicate_generic(feedback);
+        filter->feedback = vector_duplicate_complex_double(feedback);
         if (filter->feedback == NULL) {
             goto fail_allocate_feedback;
         }
         
         filter->previous_output = 
-            vector_complex_new(vector_length_generic(feedback));
+            vector_complex_new(vector_length_complex_double(feedback));
         if (filter->previous_output == NULL) {
             goto fail_allocate_previous_output;
         }
@@ -97,118 +116,45 @@ DigitalFilterComplex *filter_make_digital_filter_complex(
     return filter;
     
     fail_allocate_previous_output:
-        vector_free_generic(filter->feedback);
+        vector_free_complex_double(filter->feedback);
     fail_allocate_feedback:
-        vector_free_generic(filter->previous_input);
+        vector_free_complex_double(filter->previous_input);
     fail_allocate_previous_input:
-        vector_free_generic(filter->feedforward);
+        vector_free_complex_double(filter->feedforward);
     fail_allocate_feedforward:
         free(filter);
         return NULL;
 
 }
 
-DigitalFilterReal *filter_make_digital_filter_real(
-    const VectorReal *feedforward,
-    const VectorReal *feedback
-) {
-    DigitalFilterReal *filter = malloc(sizeof(DigitalFilterReal));
-    if (filter == NULL)
-        return NULL;
-    
-    assert_valid_vector(feedforward);
-    filter->feedforward = vector_duplicate_generic(feedforward);
-    if (filter->feedforward == NULL) {
-        goto fail_allocate_feedforward;
-    }
-    
-    filter->previous_input = vector_real_new(vector_length_generic(feedforward));
-    if (filter->previous_input == NULL) {
-        goto fail_allocate_previous_input;
-    }
-    
-    if (feedback != NULL) {
-        assert_valid_vector(feedback);
-        filter->feedback = vector_duplicate_generic(feedback);
-        if (filter->feedback == NULL) {
-            goto fail_allocate_feedback;
-        }
-        
-        filter->previous_output = 
-            vector_real_new(vector_length_generic(feedback));
-        if (filter->previous_output == NULL) {
-            goto fail_allocate_previous_output;
-        }
-    }
-    else {
-        filter->feedback = NULL;
-    }
-    
-    return filter;
-    
-    fail_allocate_previous_output:
-        vector_free_generic(filter->feedback);
-    fail_allocate_feedback:
-        vector_free_generic(filter->previous_input);
-    fail_allocate_previous_input:
-        vector_free_generic(filter->feedforward);
-    fail_allocate_feedforward:
-        free(filter);
-        return NULL;
 
-}
-
-void filter_reset_digital_filter_complex(DigitalFilterComplex *filter) {
+void filter_reset_digital_filter_complex_double(DigitalFilterComplexDouble *filter) {
     assert_not_null(filter);
     
-    vector_reset_generic(filter->previous_input);
+    vector_reset_complex_double(filter->previous_input);
     if (filter->previous_output)
-        vector_reset_generic(filter->previous_output);
+        vector_reset_complex_double(filter->previous_output);
 }
 
-void filter_reset_digital_filter_real(DigitalFilterReal *filter) {
-    assert_not_null(filter);
-    
-    vector_reset_generic(filter->previous_input);
-    if (filter->previous_output)
-        vector_reset_generic(filter->previous_output);
-}
 
-void filter_free_digital_filter_complex(DigitalFilterComplex *filter) {
+void filter_free_digital_filter_complex_double(DigitalFilterComplexDouble *filter) {
     assert_not_null(filter);
     
     assert_not_null(filter->feedforward);
-    vector_free_generic(filter->feedforward);
+    vector_free_complex_double(filter->feedforward);
 
     assert_not_null(filter->previous_input);
-    vector_free_generic(filter->previous_input);
+    vector_free_complex_double(filter->previous_input);
 
     if (filter->feedback != NULL) {
-        vector_free_generic(filter->feedback);
+        vector_free_complex_double(filter->feedback);
         assert_not_null(filter->previous_output);
-        vector_free_generic(filter->previous_output);
+        vector_free_complex_double(filter->previous_output);
     }
     free(filter);
 }
 
-void filter_free_digital_filter_real(DigitalFilterReal *filter) {
-    assert_not_null(filter);
-    
-    assert_not_null(filter->feedforward);
-    vector_free_generic(filter->feedforward);
-
-    assert_not_null(filter->previous_input);
-    vector_free_generic(filter->previous_input);
-
-    if (filter->feedback != NULL) {
-        vector_free_generic(filter->feedback);
-        assert_not_null(filter->previous_output);
-        vector_free_generic(filter->previous_output);
-    }
-    free(filter);
-}
-
-DigitalFilterReal *filter_make_savgol(
+DigitalFilterComplexDouble *filter_make_savgol_complex_double(
     size_t filter_length, 
     int derivative, 
     int polynomial_order
@@ -220,13 +166,13 @@ DigitalFilterReal *filter_make_savgol(
     assert(derivative <= polynomial_order);
 
     int center = 0;
-    VectorReal *feedforward = vector_real_new(filter_length);
+    VectorComplexDouble *feedforward = vector_new_complex_double(filter_length);
     if (feedforward == NULL) {
         return NULL;
     }
 
     for (size_t i = 1; i <= filter_length; i++) {
-        *vector_real_element(- i, feedforward) = savgol_weight(
+        *vector_element_complex_double(- i, feedforward) = savgol_weight(
             i, 
             center, 
             filter_length, 
@@ -235,40 +181,40 @@ DigitalFilterReal *filter_make_savgol(
         );
     }
 
-    DigitalFilterReal *filter = filter_make_digital_filter_real(feedforward, NULL);
-    vector_real_free(feedforward);
+    DigitalFilterComplexDouble *filter = filter_make_digital_filter_complex_double(feedforward, NULL);
+    vector_free_complex_double(feedforward);
     return filter;
 }
 
-DigitalFilterComplex *filter_make_ewma(double alpha) {
+DigitalFilterComplexDouble *filter_make_ewma_complex_double(double alpha) {
     assert(alpha >= 0.0);
     assert(alpha <= 1.0);
 
-    VectorComplex *feedforward = vector_complex_new(1);
+    VectorComplexDouble *feedforward = vector_new_complex_double(1);
     if (feedforward == NULL)
         goto feedforward_allocation_failed;
-    *vector_complex_element(0, feedforward) = alpha;
+    *vector_element_complex_double(0, feedforward) = alpha;
 
-    VectorComplex *feedback = vector_complex_new(1);
+    VectorComplexDouble *feedback = vector_complex_new(1);
     if (feedback == NULL)
         goto feedback_allocation_failed;
-    *vector_complex_element(0, feedback) = 1 - alpha;
+    *vector_element_complex_double(0, feedback) = 1 - alpha;
 
-    DigitalFilterComplex *filter = 
-        filter_make_digital_filter_complex(feedforward, feedback);
+    DigitalFilterComplexDouble *filter = 
+        filter_make_digital_filter_complex_double(feedforward, feedback);
 
-    vector_complex_free(feedforward);
-    vector_complex_free(feedback);
+    vector_free_complex_double(feedforward);
+    vector_free_complex_double(feedback);
     
     return filter;
 
     feedback_allocation_failed:
-        vector_complex_free(feedforward);
+        vector_free_complex_double(feedforward);
     feedforward_allocation_failed:
         return NULL;
 }
 
-DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency) {
+DigitalFilterComplexDouble *filter_make_first_order_iir_complex_double(double cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
     double angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
@@ -281,7 +227,7 @@ DigitalFilterComplex *filter_make_first_order_iir(double cutoff_frequency) {
     );
 }
 
-DigitalFilterReal *filter_make_sinc(
+DigitalFilterComplexDouble *filter_make_sinc_complex_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
@@ -294,7 +240,441 @@ DigitalFilterReal *filter_make_sinc(
     if (window == NULL)
         window = window_rectangular;
 
-    VectorReal *filter_coefficients = vector_real_new(length);
+    VectorComplexDouble *filter_coefficients = vector_new_complex_double(length);
+    if (filter_coefficients == NULL) {
+        return NULL;
+    }
+
+    double kernel_shift = ((int) length - 1) / 2.0;
+    double complex uncorrected_dc_gain = 0;
+
+    for (size_t i = 0; i < length; i++) {
+        *vector_element_complex_double(i, filter_coefficients) = 
+            sinc_real_double(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            window(i, length);
+        
+        uncorrected_dc_gain += *vector_element_complex_double(i, filter_coefficients);
+    }
+
+    for (size_t i = 0; i < length; i++) {
+        double complex dc_corrected_coefficient = 
+            *vector_element_complex_double(i, filter_coefficients) / uncorrected_dc_gain;
+        *vector_element_complex_double(i, filter_coefficients) = 
+            filter_type == LOW_PASS ? 
+            dc_corrected_coefficient : 
+            dirac_delta_double(i - length / 2) - dc_corrected_coefficient;
+    }
+    DigitalFilterComplexDouble *filter = 
+        filter_make_digital_filter_complex_double(filter_coefficients, NULL);
+    
+    vector_free_complex_double(filter_coefficients);
+
+    return filter;
+}
+
+
+
+
+
+float complex filter_evaluate_digital_filter_complex_float(float complex input, DigitalFilterComplexFloat *filter) {
+    assert_not_null(filter);
+    assert_not_null(filter->feedforward);
+
+    float complex accumulate = 0.0;
+    vector_shift_complex_float(input, filter->previous_input);
+    accumulate +=
+        vector_dot_complex_float(
+            filter->feedforward,
+            filter->previous_input
+        );
+    if (filter->feedback != NULL) {
+        accumulate += vector_dot_complex_float(filter->feedback, filter->previous_output);
+        vector_shift_complex_float(accumulate, filter->previous_output);
+    }
+    return accumulate;
+}
+
+DigitalFilterComplexFloat *filter_make_digital_filter_complex_float(
+    const VectorComplexFloat *feedforward,
+    const VectorComplexFloat *feedback
+) {
+    DigitalFilterComplexFloat *filter = malloc(sizeof(DigitalFilterComplexFloat));
+    if (filter == NULL)
+        return NULL;
+    
+    assert_valid_vector(feedforward);
+    filter->feedforward = vector_duplicate_complex_float(feedforward);
+    if (filter->feedforward == NULL) {
+        goto fail_allocate_feedforward;
+    }
+    
+    filter->previous_input = vector_new_complex_float(vector_length_complex_float(feedforward));
+    if (filter->previous_input == NULL) {
+        goto fail_allocate_previous_input;
+    }
+    
+    if (feedback != NULL) {
+        assert_valid_vector(feedback);
+        filter->feedback = vector_duplicate_complex_float(feedback);
+        if (filter->feedback == NULL) {
+            goto fail_allocate_feedback;
+        }
+        
+        filter->previous_output = 
+            vector_complex_new(vector_length_complex_float(feedback));
+        if (filter->previous_output == NULL) {
+            goto fail_allocate_previous_output;
+        }
+    }
+    else {
+        filter->feedback = NULL;
+    }
+    
+    return filter;
+    
+    fail_allocate_previous_output:
+        vector_free_complex_float(filter->feedback);
+    fail_allocate_feedback:
+        vector_free_complex_float(filter->previous_input);
+    fail_allocate_previous_input:
+        vector_free_complex_float(filter->feedforward);
+    fail_allocate_feedforward:
+        free(filter);
+        return NULL;
+
+}
+
+
+void filter_reset_digital_filter_complex_float(DigitalFilterComplexFloat *filter) {
+    assert_not_null(filter);
+    
+    vector_reset_complex_float(filter->previous_input);
+    if (filter->previous_output)
+        vector_reset_complex_float(filter->previous_output);
+}
+
+
+void filter_free_digital_filter_complex_float(DigitalFilterComplexFloat *filter) {
+    assert_not_null(filter);
+    
+    assert_not_null(filter->feedforward);
+    vector_free_complex_float(filter->feedforward);
+
+    assert_not_null(filter->previous_input);
+    vector_free_complex_float(filter->previous_input);
+
+    if (filter->feedback != NULL) {
+        vector_free_complex_float(filter->feedback);
+        assert_not_null(filter->previous_output);
+        vector_free_complex_float(filter->previous_output);
+    }
+    free(filter);
+}
+
+DigitalFilterComplexFloat *filter_make_savgol_complex_float(
+    size_t filter_length, 
+    int derivative, 
+    int polynomial_order
+) {
+    // Window length must be odd
+    assert((filter_length & 0x1) == 1);
+    assert(filter_length > 0);
+    assert(derivative >= 0);
+    assert(derivative <= polynomial_order);
+
+    int center = 0;
+    VectorComplexFloat *feedforward = vector_new_complex_float(filter_length);
+    if (feedforward == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 1; i <= filter_length; i++) {
+        *vector_element_complex_float(- i, feedforward) = savgol_weight(
+            i, 
+            center, 
+            filter_length, 
+            polynomial_order, 
+            derivative
+        );
+    }
+
+    DigitalFilterComplexFloat *filter = filter_make_digital_filter_complex_float(feedforward, NULL);
+    vector_free_complex_float(feedforward);
+    return filter;
+}
+
+DigitalFilterComplexFloat *filter_make_ewma_complex_float(float alpha) {
+    assert(alpha >= 0.0);
+    assert(alpha <= 1.0);
+
+    VectorComplexFloat *feedforward = vector_new_complex_float(1);
+    if (feedforward == NULL)
+        goto feedforward_allocation_failed;
+    *vector_element_complex_float(0, feedforward) = alpha;
+
+    VectorComplexFloat *feedback = vector_complex_new(1);
+    if (feedback == NULL)
+        goto feedback_allocation_failed;
+    *vector_element_complex_float(0, feedback) = 1 - alpha;
+
+    DigitalFilterComplexFloat *filter = 
+        filter_make_digital_filter_complex_float(feedforward, feedback);
+
+    vector_free_complex_float(feedforward);
+    vector_free_complex_float(feedback);
+    
+    return filter;
+
+    feedback_allocation_failed:
+        vector_free_complex_float(feedforward);
+    feedforward_allocation_failed:
+        return NULL;
+}
+
+DigitalFilterComplexFloat *filter_make_first_order_iir_complex_float(float cutoff_frequency) {
+    assert(cutoff_frequency < 0.5);
+    assert(cutoff_frequency >= 0);
+    float angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
+    return filter_make_ewma(
+        cos(angular_frequency) -
+        1 +
+        sqrt(
+            pow(cos(angular_frequency), 2) - 4 * cos(angular_frequency) + 3
+        )
+    );
+}
+
+DigitalFilterComplexFloat *filter_make_sinc_complex_float(
+    float cutoff_frequency, 
+    size_t length, 
+    enum FilterType filter_type,
+    WindowFunction window
+) {
+    assert(cutoff_frequency >= 0);
+    assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
+    assert((length & 0x1) == 1);
+
+    if (window == NULL)
+        window = window_rectangular;
+
+    VectorComplexFloat *filter_coefficients = vector_new_complex_float(length);
+    if (filter_coefficients == NULL) {
+        return NULL;
+    }
+
+    float kernel_shift = ((int) length - 1) / 2.0;
+    float complex uncorrected_dc_gain = 0;
+
+    for (size_t i = 0; i < length; i++) {
+        *vector_element_complex_float(i, filter_coefficients) = 
+            sinc_real_float(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            window(i, length);
+        
+        uncorrected_dc_gain += *vector_element_complex_float(i, filter_coefficients);
+    }
+
+    for (size_t i = 0; i < length; i++) {
+        float complex dc_corrected_coefficient = 
+            *vector_element_complex_float(i, filter_coefficients) / uncorrected_dc_gain;
+        *vector_element_complex_float(i, filter_coefficients) = 
+            filter_type == LOW_PASS ? 
+            dc_corrected_coefficient : 
+            dirac_delta_float(i - length / 2) - dc_corrected_coefficient;
+    }
+    DigitalFilterComplexFloat *filter = 
+        filter_make_digital_filter_complex_float(filter_coefficients, NULL);
+    
+    vector_free_complex_float(filter_coefficients);
+
+    return filter;
+}
+
+
+
+
+
+double filter_evaluate_digital_filter_real_double(double input, DigitalFilterRealDouble *filter) {
+    assert_not_null(filter);
+    assert_not_null(filter->feedforward);
+
+    double accumulate = 0.0;
+    vector_shift_real_double(input, filter->previous_input);
+    accumulate +=
+        vector_dot_real_double(
+            filter->feedforward,
+            filter->previous_input
+        );
+    if (filter->feedback != NULL) {
+        accumulate += vector_dot_real_double(filter->feedback, filter->previous_output);
+        vector_shift_real_double(accumulate, filter->previous_output);
+    }
+    return accumulate;
+}
+
+DigitalFilterRealDouble *filter_make_digital_filter_real_double(
+    const VectorRealDouble *feedforward,
+    const VectorRealDouble *feedback
+) {
+    DigitalFilterRealDouble *filter = malloc(sizeof(DigitalFilterRealDouble));
+    if (filter == NULL)
+        return NULL;
+    
+    assert_valid_vector(feedforward);
+    filter->feedforward = vector_duplicate_real_double(feedforward);
+    if (filter->feedforward == NULL) {
+        goto fail_allocate_feedforward;
+    }
+    
+    filter->previous_input = vector_new_real_double(vector_length_real_double(feedforward));
+    if (filter->previous_input == NULL) {
+        goto fail_allocate_previous_input;
+    }
+    
+    if (feedback != NULL) {
+        assert_valid_vector(feedback);
+        filter->feedback = vector_duplicate_real_double(feedback);
+        if (filter->feedback == NULL) {
+            goto fail_allocate_feedback;
+        }
+        
+        filter->previous_output = 
+            vector_complex_new(vector_length_real_double(feedback));
+        if (filter->previous_output == NULL) {
+            goto fail_allocate_previous_output;
+        }
+    }
+    else {
+        filter->feedback = NULL;
+    }
+    
+    return filter;
+    
+    fail_allocate_previous_output:
+        vector_free_real_double(filter->feedback);
+    fail_allocate_feedback:
+        vector_free_real_double(filter->previous_input);
+    fail_allocate_previous_input:
+        vector_free_real_double(filter->feedforward);
+    fail_allocate_feedforward:
+        free(filter);
+        return NULL;
+
+}
+
+
+void filter_reset_digital_filter_real_double(DigitalFilterRealDouble *filter) {
+    assert_not_null(filter);
+    
+    vector_reset_real_double(filter->previous_input);
+    if (filter->previous_output)
+        vector_reset_real_double(filter->previous_output);
+}
+
+
+void filter_free_digital_filter_real_double(DigitalFilterRealDouble *filter) {
+    assert_not_null(filter);
+    
+    assert_not_null(filter->feedforward);
+    vector_free_real_double(filter->feedforward);
+
+    assert_not_null(filter->previous_input);
+    vector_free_real_double(filter->previous_input);
+
+    if (filter->feedback != NULL) {
+        vector_free_real_double(filter->feedback);
+        assert_not_null(filter->previous_output);
+        vector_free_real_double(filter->previous_output);
+    }
+    free(filter);
+}
+
+DigitalFilterRealDouble *filter_make_savgol_real_double(
+    size_t filter_length, 
+    int derivative, 
+    int polynomial_order
+) {
+    // Window length must be odd
+    assert((filter_length & 0x1) == 1);
+    assert(filter_length > 0);
+    assert(derivative >= 0);
+    assert(derivative <= polynomial_order);
+
+    int center = 0;
+    VectorRealDouble *feedforward = vector_new_real_double(filter_length);
+    if (feedforward == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 1; i <= filter_length; i++) {
+        *vector_element_real_double(- i, feedforward) = savgol_weight(
+            i, 
+            center, 
+            filter_length, 
+            polynomial_order, 
+            derivative
+        );
+    }
+
+    DigitalFilterRealDouble *filter = filter_make_digital_filter_real_double(feedforward, NULL);
+    vector_free_real_double(feedforward);
+    return filter;
+}
+
+DigitalFilterRealDouble *filter_make_ewma_real_double(double alpha) {
+    assert(alpha >= 0.0);
+    assert(alpha <= 1.0);
+
+    VectorRealDouble *feedforward = vector_new_real_double(1);
+    if (feedforward == NULL)
+        goto feedforward_allocation_failed;
+    *vector_element_real_double(0, feedforward) = alpha;
+
+    VectorRealDouble *feedback = vector_complex_new(1);
+    if (feedback == NULL)
+        goto feedback_allocation_failed;
+    *vector_element_real_double(0, feedback) = 1 - alpha;
+
+    DigitalFilterRealDouble *filter = 
+        filter_make_digital_filter_real_double(feedforward, feedback);
+
+    vector_free_real_double(feedforward);
+    vector_free_real_double(feedback);
+    
+    return filter;
+
+    feedback_allocation_failed:
+        vector_free_real_double(feedforward);
+    feedforward_allocation_failed:
+        return NULL;
+}
+
+DigitalFilterRealDouble *filter_make_first_order_iir_real_double(double cutoff_frequency) {
+    assert(cutoff_frequency < 0.5);
+    assert(cutoff_frequency >= 0);
+    double angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
+    return filter_make_ewma(
+        cos(angular_frequency) -
+        1 +
+        sqrt(
+            pow(cos(angular_frequency), 2) - 4 * cos(angular_frequency) + 3
+        )
+    );
+}
+
+DigitalFilterRealDouble *filter_make_sinc_real_double(
+    double cutoff_frequency, 
+    size_t length, 
+    enum FilterType filter_type,
+    WindowFunction window
+) {
+    assert(cutoff_frequency >= 0);
+    assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
+    assert((length & 0x1) == 1);
+
+    if (window == NULL)
+        window = window_rectangular;
+
+    VectorRealDouble *filter_coefficients = vector_new_real_double(length);
     if (filter_coefficients == NULL) {
         return NULL;
     }
@@ -303,33 +683,243 @@ DigitalFilterReal *filter_make_sinc(
     double uncorrected_dc_gain = 0;
 
     for (size_t i = 0; i < length; i++) {
-        *vector_real_element(i, filter_coefficients) = 
-            sinc(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+        *vector_element_real_double(i, filter_coefficients) = 
+            sinc_real_double(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
         
-        uncorrected_dc_gain += *vector_real_element(i, filter_coefficients);
+        uncorrected_dc_gain += *vector_element_real_double(i, filter_coefficients);
     }
 
     for (size_t i = 0; i < length; i++) {
         double dc_corrected_coefficient = 
-            *vector_real_element(i, filter_coefficients) / uncorrected_dc_gain;
-        *vector_real_element(i, filter_coefficients) = 
+            *vector_element_real_double(i, filter_coefficients) / uncorrected_dc_gain;
+        *vector_element_real_double(i, filter_coefficients) = 
             filter_type == LOW_PASS ? 
             dc_corrected_coefficient : 
-            dirac_delta(i - length / 2) - dc_corrected_coefficient;
+            dirac_delta_double(i - length / 2) - dc_corrected_coefficient;
     }
-    DigitalFilterReal *filter = 
-        filter_make_digital_filter_real(filter_coefficients, NULL);
+    DigitalFilterRealDouble *filter = 
+        filter_make_digital_filter_real_double(filter_coefficients, NULL);
     
-    vector_real_free(filter_coefficients);
+    vector_free_real_double(filter_coefficients);
 
     return filter;
 }
 
-double sinc(double x) {
-    return x == 0.0 ? 1.0 : sin(M_PI * x) / (M_PI * x);
+
+
+
+
+float filter_evaluate_digital_filter_real_float(float input, DigitalFilterRealFloat *filter) {
+    assert_not_null(filter);
+    assert_not_null(filter->feedforward);
+
+    float accumulate = 0.0;
+    vector_shift_real_float(input, filter->previous_input);
+    accumulate +=
+        vector_dot_real_float(
+            filter->feedforward,
+            filter->previous_input
+        );
+    if (filter->feedback != NULL) {
+        accumulate += vector_dot_real_float(filter->feedback, filter->previous_output);
+        vector_shift_real_float(accumulate, filter->previous_output);
+    }
+    return accumulate;
 }
 
-double dirac_delta(double x) {
-    return x == 0.0 ? 1.0 : 0.0;
+DigitalFilterRealFloat *filter_make_digital_filter_real_float(
+    const VectorRealFloat *feedforward,
+    const VectorRealFloat *feedback
+) {
+    DigitalFilterRealFloat *filter = malloc(sizeof(DigitalFilterRealFloat));
+    if (filter == NULL)
+        return NULL;
+    
+    assert_valid_vector(feedforward);
+    filter->feedforward = vector_duplicate_real_float(feedforward);
+    if (filter->feedforward == NULL) {
+        goto fail_allocate_feedforward;
+    }
+    
+    filter->previous_input = vector_new_real_float(vector_length_real_float(feedforward));
+    if (filter->previous_input == NULL) {
+        goto fail_allocate_previous_input;
+    }
+    
+    if (feedback != NULL) {
+        assert_valid_vector(feedback);
+        filter->feedback = vector_duplicate_real_float(feedback);
+        if (filter->feedback == NULL) {
+            goto fail_allocate_feedback;
+        }
+        
+        filter->previous_output = 
+            vector_complex_new(vector_length_real_float(feedback));
+        if (filter->previous_output == NULL) {
+            goto fail_allocate_previous_output;
+        }
+    }
+    else {
+        filter->feedback = NULL;
+    }
+    
+    return filter;
+    
+    fail_allocate_previous_output:
+        vector_free_real_float(filter->feedback);
+    fail_allocate_feedback:
+        vector_free_real_float(filter->previous_input);
+    fail_allocate_previous_input:
+        vector_free_real_float(filter->feedforward);
+    fail_allocate_feedforward:
+        free(filter);
+        return NULL;
+
 }
+
+
+void filter_reset_digital_filter_real_float(DigitalFilterRealFloat *filter) {
+    assert_not_null(filter);
+    
+    vector_reset_real_float(filter->previous_input);
+    if (filter->previous_output)
+        vector_reset_real_float(filter->previous_output);
+}
+
+
+void filter_free_digital_filter_real_float(DigitalFilterRealFloat *filter) {
+    assert_not_null(filter);
+    
+    assert_not_null(filter->feedforward);
+    vector_free_real_float(filter->feedforward);
+
+    assert_not_null(filter->previous_input);
+    vector_free_real_float(filter->previous_input);
+
+    if (filter->feedback != NULL) {
+        vector_free_real_float(filter->feedback);
+        assert_not_null(filter->previous_output);
+        vector_free_real_float(filter->previous_output);
+    }
+    free(filter);
+}
+
+DigitalFilterRealFloat *filter_make_savgol_real_float(
+    size_t filter_length, 
+    int derivative, 
+    int polynomial_order
+) {
+    // Window length must be odd
+    assert((filter_length & 0x1) == 1);
+    assert(filter_length > 0);
+    assert(derivative >= 0);
+    assert(derivative <= polynomial_order);
+
+    int center = 0;
+    VectorRealFloat *feedforward = vector_new_real_float(filter_length);
+    if (feedforward == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 1; i <= filter_length; i++) {
+        *vector_element_real_float(- i, feedforward) = savgol_weight(
+            i, 
+            center, 
+            filter_length, 
+            polynomial_order, 
+            derivative
+        );
+    }
+
+    DigitalFilterRealFloat *filter = filter_make_digital_filter_real_float(feedforward, NULL);
+    vector_free_real_float(feedforward);
+    return filter;
+}
+
+DigitalFilterRealFloat *filter_make_ewma_real_float(float alpha) {
+    assert(alpha >= 0.0);
+    assert(alpha <= 1.0);
+
+    VectorRealFloat *feedforward = vector_new_real_float(1);
+    if (feedforward == NULL)
+        goto feedforward_allocation_failed;
+    *vector_element_real_float(0, feedforward) = alpha;
+
+    VectorRealFloat *feedback = vector_complex_new(1);
+    if (feedback == NULL)
+        goto feedback_allocation_failed;
+    *vector_element_real_float(0, feedback) = 1 - alpha;
+
+    DigitalFilterRealFloat *filter = 
+        filter_make_digital_filter_real_float(feedforward, feedback);
+
+    vector_free_real_float(feedforward);
+    vector_free_real_float(feedback);
+    
+    return filter;
+
+    feedback_allocation_failed:
+        vector_free_real_float(feedforward);
+    feedforward_allocation_failed:
+        return NULL;
+}
+
+DigitalFilterRealFloat *filter_make_first_order_iir_real_float(float cutoff_frequency) {
+    assert(cutoff_frequency < 0.5);
+    assert(cutoff_frequency >= 0);
+    float angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
+    return filter_make_ewma(
+        cos(angular_frequency) -
+        1 +
+        sqrt(
+            pow(cos(angular_frequency), 2) - 4 * cos(angular_frequency) + 3
+        )
+    );
+}
+
+DigitalFilterRealFloat *filter_make_sinc_real_float(
+    float cutoff_frequency, 
+    size_t length, 
+    enum FilterType filter_type,
+    WindowFunction window
+) {
+    assert(cutoff_frequency >= 0);
+    assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
+    assert((length & 0x1) == 1);
+
+    if (window == NULL)
+        window = window_rectangular;
+
+    VectorRealFloat *filter_coefficients = vector_new_real_float(length);
+    if (filter_coefficients == NULL) {
+        return NULL;
+    }
+
+    float kernel_shift = ((int) length - 1) / 2.0;
+    float uncorrected_dc_gain = 0;
+
+    for (size_t i = 0; i < length; i++) {
+        *vector_element_real_float(i, filter_coefficients) = 
+            sinc_real_float(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            window(i, length);
+        
+        uncorrected_dc_gain += *vector_element_real_float(i, filter_coefficients);
+    }
+
+    for (size_t i = 0; i < length; i++) {
+        float dc_corrected_coefficient = 
+            *vector_element_real_float(i, filter_coefficients) / uncorrected_dc_gain;
+        *vector_element_real_float(i, filter_coefficients) = 
+            filter_type == LOW_PASS ? 
+            dc_corrected_coefficient : 
+            dirac_delta_float(i - length / 2) - dc_corrected_coefficient;
+    }
+    DigitalFilterRealFloat *filter = 
+        filter_make_digital_filter_real_float(filter_coefficients, NULL);
+    
+    vector_free_real_float(filter_coefficients);
+
+    return filter;
+}
+

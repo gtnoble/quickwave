@@ -47,6 +47,9 @@
               (function-tag . "_real_${number-base-type}"))
     #:precursors (list number-precursor)))
 
+(define real-number-schema
+  (real-number-precursor))
+
 (define numeric-precursor
   (make-precursor
     #:precursors (list complex-number-precursor  
@@ -59,3 +62,11 @@
 
 (define vector-schema
   (vector-precursor))
+
+(define filter-precursor
+  (make-precursor
+    #:rules '((filter-type . "DigitalFilter${struct-type-suffix}"))
+    #:precursors (list vector-precursor)))
+
+(define filter-schema
+  (filter-precursor))
