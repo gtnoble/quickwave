@@ -1,83 +1,181 @@
+
 #include "moving_average.h"
 #include "assertions.h"
 
-#define MOVING_AVERAGE_MAKE(moving_average_type, circbuf_constructor) \
-    moving_average_type *filter = malloc(sizeof(moving_average_type)); \
-    \
-    if (filter == NULL) { \
-        return NULL; \
-    } \
-    \
-    filter->previous_input = circbuf_constructor(length); \
-    if (filter->previous_input == NULL) { \
-        free(filter); \
-        return NULL; \
-    } \
-    \
-    filter->moving_sum = 0; \
-    \
-    return filter;
-
-
-MovingAverageReal *moving_average_real_make(size_t length) {
-    MOVING_AVERAGE_MAKE(MovingAverageReal, vector_real_new)
-}
-
-MovingAverageComplex *moving_average_complex_make(size_t length) {
-    MOVING_AVERAGE_MAKE(MovingAverageComplex, vector_complex_new)
-}
-
-size_t moving_average_complex_length(MovingAverageComplex *filter) {
-    return vector_complex_length(filter->previous_input);
-}
-
-#define MOVING_AVERAGE_EVALUATE(circbuf_shifter) \
-    assert_not_null(filter); \
-    \
-    filter->moving_sum += input; \
-    filter->moving_sum -= circbuf_shifter(input, filter->previous_input); \
-    return filter->moving_sum / filter->previous_input->n_elements; 
-
-double moving_average_real_evaluate(
-    double input, 
-    MovingAverageReal *filter
-) {
-    MOVING_AVERAGE_EVALUATE(vector_real_shift)
-}
-
-double complex moving_average_complex_evaluate(
-    double complex input, 
-    MovingAverageComplex *filter
-) {
-    MOVING_AVERAGE_EVALUATE(vector_complex_shift)
-}
-
-#define MOVING_AVERAGE_RESET(circbuf_resetter) \
-    assert_not_null(filter); \
-    \
-    circbuf_resetter(filter->previous_input); \
+MovingAverageComplexDouble *moving_average_complex_make_complex_double(size_t length) {
+    MovingAverageComplexDouble *filter = malloc(sizeof(MovingAverageComplexDouble)); 
+    
+    if (filter == NULL) { 
+        return NULL; 
+    } 
+    
+    filter->previous_input = vector_new_complex_double(length); 
+    if (filter->previous_input == NULL) { 
+        free(filter); 
+        return NULL; 
+    } 
+    
     filter->moving_sum = 0; 
-
-
-void moving_average_real_reset(MovingAverageReal *filter) {
-    MOVING_AVERAGE_RESET(vector_real_reset)
+    
+    return filter;
 }
 
-void moving_average_complex_reset(MovingAverageComplex *filter) {
-    MOVING_AVERAGE_RESET(vector_complex_reset)
+double complex moving_average_complex_evaluate_complex_double(
+    double complex input, 
+    MovingAverageComplexDouble *filter
+) {
+    assert_not_null(filter); 
+    
+    filter->moving_sum += input; 
+    filter->moving_sum -= vector_shift_complex_double(input, filter->previous_input); 
+    return filter->moving_sum / vector_length_complex_double(filter->previous_input); 
 }
 
-#define MOVING_AVERAGE_FREE \
-    assert_not_null(filter); \
-    \
-    free(filter->previous_input); \
+void moving_average_complex_reset_complex_double(MovingAverageComplexDouble *filter) {
+    assert_not_null(filter); 
+    
+    vector_reset_complex_double(filter->previous_input); 
+    filter->moving_sum = 0; 
+}
+
+void moving_average_complex_free_complex_double(MovingAverageComplexDouble *filter) {
+    assert_not_null(filter); 
+    
+    vector_free_complex_double(filter->previous_input); 
     free(filter); 
-
-
-void moving_average_real_free(MovingAverageReal *filter) {
-    MOVING_AVERAGE_FREE
 }
 
-void moving_average_complex_free(MovingAverageComplex *filter) {
-    MOVING_AVERAGE_FREE
+
+
+MovingAverageComplexFloat *moving_average_complex_make_complex_float(size_t length) {
+    MovingAverageComplexFloat *filter = malloc(sizeof(MovingAverageComplexFloat)); 
+    
+    if (filter == NULL) { 
+        return NULL; 
+    } 
+    
+    filter->previous_input = vector_new_complex_float(length); 
+    if (filter->previous_input == NULL) { 
+        free(filter); 
+        return NULL; 
+    } 
+    
+    filter->moving_sum = 0; 
+    
+    return filter;
+}
+
+double complex moving_average_complex_evaluate_complex_float(
+    float complex input, 
+    MovingAverageComplexFloat *filter
+) {
+    assert_not_null(filter); 
+    
+    filter->moving_sum += input; 
+    filter->moving_sum -= vector_shift_complex_float(input, filter->previous_input); 
+    return filter->moving_sum / vector_length_complex_float(filter->previous_input); 
+}
+
+void moving_average_complex_reset_complex_float(MovingAverageComplexFloat *filter) {
+    assert_not_null(filter); 
+    
+    vector_reset_complex_float(filter->previous_input); 
+    filter->moving_sum = 0; 
+}
+
+void moving_average_complex_free_complex_float(MovingAverageComplexFloat *filter) {
+    assert_not_null(filter); 
+    
+    vector_free_complex_float(filter->previous_input); 
+    free(filter); 
+}
+
+
+
+MovingAverageRealDouble *moving_average_complex_make_real_double(size_t length) {
+    MovingAverageRealDouble *filter = malloc(sizeof(MovingAverageRealDouble)); 
+    
+    if (filter == NULL) { 
+        return NULL; 
+    } 
+    
+    filter->previous_input = vector_new_real_double(length); 
+    if (filter->previous_input == NULL) { 
+        free(filter); 
+        return NULL; 
+    } 
+    
+    filter->moving_sum = 0; 
+    
+    return filter;
+}
+
+double complex moving_average_complex_evaluate_real_double(
+    double input, 
+    MovingAverageRealDouble *filter
+) {
+    assert_not_null(filter); 
+    
+    filter->moving_sum += input; 
+    filter->moving_sum -= vector_shift_real_double(input, filter->previous_input); 
+    return filter->moving_sum / vector_length_real_double(filter->previous_input); 
+}
+
+void moving_average_complex_reset_real_double(MovingAverageRealDouble *filter) {
+    assert_not_null(filter); 
+    
+    vector_reset_real_double(filter->previous_input); 
+    filter->moving_sum = 0; 
+}
+
+void moving_average_complex_free_real_double(MovingAverageRealDouble *filter) {
+    assert_not_null(filter); 
+    
+    vector_free_real_double(filter->previous_input); 
+    free(filter); 
+}
+
+
+
+MovingAverageRealFloat *moving_average_complex_make_real_float(size_t length) {
+    MovingAverageRealFloat *filter = malloc(sizeof(MovingAverageRealFloat)); 
+    
+    if (filter == NULL) { 
+        return NULL; 
+    } 
+    
+    filter->previous_input = vector_new_real_float(length); 
+    if (filter->previous_input == NULL) { 
+        free(filter); 
+        return NULL; 
+    } 
+    
+    filter->moving_sum = 0; 
+    
+    return filter;
+}
+
+double complex moving_average_complex_evaluate_real_float(
+    float input, 
+    MovingAverageRealFloat *filter
+) {
+    assert_not_null(filter); 
+    
+    filter->moving_sum += input; 
+    filter->moving_sum -= vector_shift_real_float(input, filter->previous_input); 
+    return filter->moving_sum / vector_length_real_float(filter->previous_input); 
+}
+
+void moving_average_complex_reset_real_float(MovingAverageRealFloat *filter) {
+    assert_not_null(filter); 
+    
+    vector_reset_real_float(filter->previous_input); 
+    filter->moving_sum = 0; 
+}
+
+void moving_average_complex_free_real_float(MovingAverageRealFloat *filter) {
+    assert_not_null(filter); 
+    
+    vector_free_real_float(filter->previous_input); 
+    free(filter); 
 }

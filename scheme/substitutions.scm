@@ -22,28 +22,35 @@
 (define double-precursor
   (make-precursor
     #:rules '((number-base-type . "double") 
-              (struct-type-precision . "Double"))))
+              (math-function-suffix . "")
+              (function-tag . "_double")
+              (struct-type-suffix . "Double"))))
 
 (define float-precursor
   (make-precursor
     #:rules '((number-base-type . "float") 
-              (struct-type-precision . "Float"))))
+              (math-function-suffix . "f")
+              (function-tag . "_float")
+              (struct-type-suffix . "Float"))))
 
 (define number-precursor
   (make-precursor
     #:precursors (list double-precursor float-precursor)))
 
+(define number-schema
+  (number-precursor))
+
 (define complex-number-precursor
   (make-precursor
     #:rules '((number-type . "${number-base-type} complex") 
-              (struct-type-suffix . "Complex${struct-type-precision}")
+              (struct-type-suffix . "Complex${struct-type-suffix}")
               (function-tag . "_complex_${number-base-type}"))
     #:precursors (list number-precursor)))
 
 (define real-number-precursor
   (make-precursor
     #:rules '((number-type . "${number-base-type}") 
-              (struct-type-suffix . "Real${struct-type-precision}")
+              (struct-type-suffix . "Real${struct-type-suffix}")
               (function-tag . "_real_${number-base-type}"))
     #:precursors (list number-precursor)))
 
@@ -70,3 +77,19 @@
 
 (define filter-schema
   (filter-precursor))
+
+(define moving-average-precursor
+  (make-precursor
+    #:rules '((moving-average-type . "MovingAverage${struct-type-suffix}"))
+    #:precursors (list vector-precursor)))
+
+(define moving-average-schema
+  (moving-average-precursor))
+
+(define oscillator-precursor
+  (make-precursor
+    #:rules '((oscillator-type . "Oscillator${struct-type-suffix}"))
+    #:precursors (list number-precursor)))
+
+(define oscillator-schema
+  (oscillator-precursor))

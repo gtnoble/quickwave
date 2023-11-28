@@ -1,7 +1,9 @@
+
 #ifndef QUICKWAVE_OSCILLATOR
 #define QUICKWAVE_OSCILLATOR
 
 #include <complex.h>
+
 
 /**
  * @brief 
@@ -10,7 +12,7 @@
 typedef struct {
     double complex complex_frequency; /** Frequency (phase velocity) of numerically-controlled oscillator */
     double complex phasor; /** Amplitude and phase of numerically-controlled oscillator */
-} Oscillator;
+} OscillatorDouble;
 
 /**
  * @brief 
@@ -19,7 +21,7 @@ typedef struct {
  * @param normalized_frequency Normalized frequency
  * @return Constructed numerically-controlled oscillator 
  */
-Oscillator oscillator_make(double phase_degrees, double normalized_frequency);
+OscillatorDouble oscillator_make_double(double phase_degrees, double normalized_frequency);
 
 /**
  * @brief 
@@ -28,7 +30,7 @@ Oscillator oscillator_make(double phase_degrees, double normalized_frequency);
  * @param x Oscillator to be phase-shifted
  * @return Phase-shifted numerically-controlled oscillator 
  */
-Oscillator nco_shift_phase(double angle, Oscillator x);
+OscillatorDouble nco_shift_phase_double(double angle, OscillatorDouble x);
 
 /**
  * @brief 
@@ -36,7 +38,7 @@ Oscillator nco_shift_phase(double angle, Oscillator x);
  * @param x Oscillator
  * @return In-phase component value
  */
-double oscillator_inphase(Oscillator x);
+double oscillator_inphase_double(OscillatorDouble x);
 
 /**
  * @brief 
@@ -44,9 +46,9 @@ double oscillator_inphase(Oscillator x);
  * @param x Oscillator
  * @return Quadrature component value 
  */
-double oscillator_quadrature(Oscillator x);
+double oscillator_quadrature_double(OscillatorDouble x);
 
-double complex oscillator_phase(Oscillator osc);
+double complex oscillator_phase_double(OscillatorDouble osc);
 
 /**
  * @brief 
@@ -54,9 +56,9 @@ double complex oscillator_phase(Oscillator osc);
  * @param x Oscillator
  * @return Phase 
  */
-double oscillator_angular_phase(Oscillator x);
+double oscillator_angular_phase_double(OscillatorDouble x);
 
-double complex oscillator_frequency(Oscillator osc);
+double complex oscillator_frequency_double(OscillatorDouble osc);
 
 /**
  * @brief 
@@ -64,7 +66,7 @@ double complex oscillator_frequency(Oscillator osc);
  * @param x Oscillator
  * @return Angular frequency 
  */
-double oscillator_angular_freq(Oscillator x);
+double oscillator_angular_freq_double(OscillatorDouble x);
 
 /**
  * @brief 
@@ -73,17 +75,100 @@ double oscillator_angular_freq(Oscillator x);
  * @param x Initial numerically-controlled oscillator
  * @return Updated numerically-controlled oscillator 
  */
-Oscillator oscillator_predict(double delta_time, Oscillator x);
+OscillatorDouble oscillator_predict_double(double delta_time, OscillatorDouble x);
 
 /**
  * @brief 
  * Updates frequency and phase of a Numerically-controlled osciallator (NCO) for the next time step.
  * @param update_frequency Next frequency
- * @param nco NCO to update
- * @return Updated NCO state
+ * @param nco Oscillator to update
+ * @return Updated oscillator state
  */
-Oscillator oscillator_update(double complex complex_freq, Oscillator *nco);
+OscillatorDouble oscillator_update_double(double complex complex_freq, OscillatorDouble *nco);
+
+
+
+
+/**
+ * @brief 
+ * A numerically-controlled oscillator with a specified phase and frequency
+ */
+typedef struct {
+    float complex complex_frequency; /** Frequency (phase velocity) of numerically-controlled oscillator */
+    float complex phasor; /** Amplitude and phase of numerically-controlled oscillator */
+} OscillatorFloat;
+
+/**
+ * @brief 
+ * Constructs a numerically-controlled oscillator
+ * @param phase_degrees Phase in degrees
+ * @param normalized_frequency Normalized frequency
+ * @return Constructed numerically-controlled oscillator 
+ */
+OscillatorFloat oscillator_make_float(float phase_degrees, float normalized_frequency);
+
+/**
+ * @brief 
+ * Shifts the phase of a numerically-controlled oscillator
+ * @param angle_radians Angle to shift phase by, in radians
+ * @param x Oscillator to be phase-shifted
+ * @return Phase-shifted numerically-controlled oscillator 
+ */
+OscillatorFloat nco_shift_phase_float(float angle, OscillatorFloat x);
+
+/**
+ * @brief 
+ * In-phase (real) component of a numerically-controlled oscillator
+ * @param x Oscillator
+ * @return In-phase component value
+ */
+float oscillator_inphase_float(OscillatorFloat x);
+
+/**
+ * @brief 
+ * Quadrature (imaginary) component of a numerically-controlled oscillator
+ * @param x Oscillator
+ * @return Quadrature component value 
+ */
+float oscillator_quadrature_float(OscillatorFloat x);
+
+float complex oscillator_phase_float(OscillatorFloat osc);
+
+/**
+ * @brief 
+ * Phase of a numerically-controlled oscillator, in radians
+ * @param x Oscillator
+ * @return Phase 
+ */
+float oscillator_angular_phase_float(OscillatorFloat x);
+
+float complex oscillator_frequency_float(OscillatorFloat osc);
+
+/**
+ * @brief 
+ * Angular frequency of a numerically-controlled oscillator, in radians per sample
+ * @param x Oscillator
+ * @return Angular frequency 
+ */
+float oscillator_angular_freq_float(OscillatorFloat x);
+
+/**
+ * @brief 
+ * Estimates the updated numerically-controlled oscillator after a change in time
+ * @param delta_time Change in time in samples
+ * @param x Initial numerically-controlled oscillator
+ * @return Updated numerically-controlled oscillator 
+ */
+OscillatorFloat oscillator_predict_float(float delta_time, OscillatorFloat x);
+
+/**
+ * @brief 
+ * Updates frequency and phase of a Numerically-controlled osciallator (NCO) for the next time step.
+ * @param update_frequency Next frequency
+ * @param nco Oscillator to update
+ * @return Updated oscillator state
+ */
+OscillatorFloat oscillator_update_float(float complex complex_freq, OscillatorFloat *nco);
+
 
 #endif
-
-
