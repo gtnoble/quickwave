@@ -1,95 +1,116 @@
 (load-from-path "template.scm")
 
-(define make-precursor-node
+(define make-schema-node
   (lambda* (nodes precursors #:optional rules)
            (let ((nodes-dependencies
                    (map 
-                     (lambda (make-precursor-node)
-                       (make-precursor-node nodes))
+                     (lambda (make-schema-node)
+                       (make-schema-node nodes))
                      precursors))) 
-             (make-schema-node 
+             (make-dependency-node 
                #:rule rules 
                #:dependent-nodes nodes-dependencies))))
 
 
-(define make-precursor
+(define make-schema
   (lambda* (#:key rules precursors)
            (lambda* (#:optional nodes)
                     (if precursors
-                        (make-precursor-node nodes precursors rules)
-                        (make-schema-node #:rule rules #:dependent-nodes nodes)))))
+                        (make-schema-node nodes precursors rules)
+                        (make-dependency-node #:rule rules #:dependent-nodes nodes)))))
 
-(define double-precursor
-  (make-precursor
-    #:rules '((number-base-type . "double") 
+(define double-schema
+  (make-schema
+    #:rules '((number-type . "double") 
               (math-function-suffix . "")
               (function-tag . "_double")
               (struct-type-suffix . "Double"))))
 
-(define float-precursor
-  (make-precursor
-    #:rules '((number-base-type . "float") 
+(define float-schema
+  (make-schema
+    #:rules '((number-type . "float") 
               (math-function-suffix . "f")
               (function-tag . "_float")
               (struct-type-suffix . "Float"))))
 
-(define number-precursor
-  (make-precursor
-    #:precursors (list double-precursor float-precursor)))
-
 (define number-schema
-  (number-precursor))
+  (make-schema
+    #:rules '((number-base-type . "${number-type}"))
+    #:precursors (list double-schema float-schema)))
 
-(define complex-number-precursor
-  (make-precursor
-    #:rules '((number-type . "${number-base-type} complex") 
+
+(define complex-number-schema
+  (make-schema
+    #:rules '((number-type . "${number-type} complex") 
               (struct-type-suffix . "Complex${struct-type-suffix}")
               (function-tag . "_complex_${number-base-type}"))
-    #:precursors (list number-precursor)))
-
-(define real-number-precursor
-  (make-precursor
-    #:rules '((number-type . "${number-base-type}") 
-              (struct-type-suffix . "Real${struct-type-suffix}")
-              (function-tag . "_real_${number-base-type}"))
-    #:precursors (list number-precursor)))
+    #:precursors (list number-schema)))
 
 (define real-number-schema
-  (real-number-precursor))
+  (make-schema
+    #:rules '((number-type . "${number-type}") 
+              (struct-type-suffix . "Real${struct-type-suffix}")
+              (function-tag . "_real_${number-base-type}"))
+    #:precursors (list number-schema)))
 
-(define numeric-precursor
-  (make-precursor
-    #:precursors (list complex-number-precursor  
-                          real-number-precursor)))
 
-(define vector-precursor
-  (make-precursor
-    #:rules '((vector-type . "Vector${struct-type-suffix}"))
-    #:precursors (list numeric-precursor)))
+(define numeric-schema
+  (make-schema
+    #:precursors (list complex-number-schema  
+                          real-number-schema)))
 
 (define vector-schema
-  (vector-precursor))
+  (make-schema
+    #:rules '((vector-type . "Vector${struct-type-suffix}"))
+    #:precursors (list numeric-schema)))
 
-(define filter-precursor
-  (make-precursor
-    #:rules '((filter-type . "DigitalFilter${struct-type-suffix}"))
-    #:precursors (list vector-precursor)))
 
 (define filter-schema
-  (filter-precursor))
+  (make-schema
+    #:rules '((filter-type . "DigitalFilter${struct-type-suffix}"))
+    #:precursors (list vector-schema)))
 
-(define moving-average-precursor
-  (make-precursor
-    #:rules '((moving-average-type . "MovingAverage${struct-type-suffix}"))
-    #:precursors (list vector-precursor)))
+
+(define moving-average-rules
+  '((moving-average-type . "MovingAverage${struct-type-suffix}")))
 
 (define moving-average-schema
-  (moving-average-precursor))
+  (make-schema
+    #:rules moving-average-rules
+    #:precursors (list vector-schema)))
 
-(define oscillator-precursor
-  (make-precursor
-    #:rules '((oscillator-type . "Oscillator${struct-type-suffix}"))
-    #:precursors (list number-precursor)))
+(define oscillator-rules
+  '((oscillator-type . "Oscillator${struct-type-suffix}")))
 
 (define oscillator-schema
-  (oscillator-precursor))
+  (make-schema
+    #:rules oscillator-rules
+    #:precursors (list number-schema)))
+
+
+(define pid-rules
+  '((pid-type . "Pid${struct-type-suffix}")))
+
+(define pid-schema
+  (make-schema
+    #:rules pid-rules
+    #:precursors (list number-schema)))
+
+
+(define pll-schema
+  (make-schema
+    #:rules (append 
+              oscillator-rules 
+              pid-rules 
+              '((pll-type . "PhaseLockedLoop${struct-type-suffix}")))
+    #:precursors (list number-schema)))
+
+
+(define sinusoid-fit-rules
+  '((sinusoid-fit-type . "SinusoidFit${struct-type-suffix}")))
+
+(define sinusoid-fit-schema
+  (make-schema
+    #:rules (append oscillator-rules moving-average-rules sinusoid-fit-rules)
+    #:precursors (list number-schema)))
+

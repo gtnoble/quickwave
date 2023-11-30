@@ -1,12 +1,22 @@
-(use-modules (srfi srfi-1))
+(use-modules 
+  (srfi srfi-1) 
+  ((rnrs) :version (6)))
+
+(define assure
+  (lambda (predicate value)
+    (assert (if (predicate value) value #f))))
 
 (define string-join-spaces
     (lambda (. strings)
         (string-join strings)))
 
 (define make-rule
-    (lambda (key replacement)
-        (cons key replacement)))
+  (lambda (key replacement)
+    (cons (assure 
+            (lambda (value) 
+              (or (string? value) (symbol? value))) 
+            key) 
+          (assure string? replacement))))
 
 (define rule-key
     (lambda (rule) (car rule)))
@@ -18,7 +28,7 @@
   (lambda (rule string)
     (let* 
      ((template-substring (rule-key rule))
-      (template-start-index (string-contains string template-substring)))
+      (template-start-index (string-contains (assure string? string) template-substring)))
      (if template-start-index 
          (let 
           ((string-before-template 
@@ -47,7 +57,7 @@
   (lambda (rule)
     (symbol? (rule-key rule))))
 
-(define make-schema-node
+(define make-dependency-node
   (lambda* (#:key rule dependent-nodes)
            (let* ((substitute-document
                     (lambda (rule document) 
@@ -80,7 +90,7 @@
 
 (define generate-text
   (lambda (schema template)
-    (let ((generated-documents (schema template))) 
+    (let ((generated-documents (((assure thunk? schema)) (assure string? template)))) 
      (string-join generated-documents "\n\n"))))
 
 (define output-text
