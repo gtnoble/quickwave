@@ -6,16 +6,6 @@
 #include "vector.h"
 #include "window.h"
 
-/**
- * @brief 
- * Linear time-invariant digital filter. Can be IIR or FIR
- */
-typedef struct {
-    VectorComplexDouble *feedforward; /** Feedforward (FIR) terms of the filter */
-    VectorComplexDouble *previous_input;
-    VectorComplexDouble *feedback; /** Feedback (IIR) terms of the filter */
-    VectorComplexDouble *previous_output;
-} DigitalFilterComplexDouble;
 
 /**
  * @brief 
@@ -26,6 +16,17 @@ enum FilterType {
     HIGH_PASS /** High pass filter */
 };
 
+
+/**
+ * @brief 
+ * Linear time-invariant digital filter. Can be IIR or FIR
+ */
+typedef struct {
+    VectorComplexDouble *feedforward; /** Feedforward (FIR) terms of the filter */
+    VectorComplexDouble *previous_input;
+    VectorComplexDouble *feedback; /** Feedback (IIR) terms of the filter */
+    VectorComplexDouble *previous_output;
+} DigitalFilterComplexDouble;
 /**
  * @brief 
  * Evaluates a linear digital filter
@@ -77,7 +78,7 @@ DigitalFilterComplexDouble *filter_make_sinc_complex_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionDouble window
 );
 
 /**
@@ -117,16 +118,6 @@ typedef struct {
     VectorComplexFloat *feedback; /** Feedback (IIR) terms of the filter */
     VectorComplexFloat *previous_output;
 } DigitalFilterComplexFloat;
-
-/**
- * @brief 
- * Specifies the nature of the filter stop-band
- */
-enum FilterType {
-    LOW_PASS, /** Low pass filter */
-    HIGH_PASS /** High pass filter */
-};
-
 /**
  * @brief 
  * Evaluates a linear digital filter
@@ -178,7 +169,7 @@ DigitalFilterComplexFloat *filter_make_sinc_complex_float(
     float cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionFloat window
 );
 
 /**
@@ -218,16 +209,6 @@ typedef struct {
     VectorRealDouble *feedback; /** Feedback (IIR) terms of the filter */
     VectorRealDouble *previous_output;
 } DigitalFilterRealDouble;
-
-/**
- * @brief 
- * Specifies the nature of the filter stop-band
- */
-enum FilterType {
-    LOW_PASS, /** Low pass filter */
-    HIGH_PASS /** High pass filter */
-};
-
 /**
  * @brief 
  * Evaluates a linear digital filter
@@ -279,7 +260,7 @@ DigitalFilterRealDouble *filter_make_sinc_real_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionDouble window
 );
 
 /**
@@ -319,16 +300,6 @@ typedef struct {
     VectorRealFloat *feedback; /** Feedback (IIR) terms of the filter */
     VectorRealFloat *previous_output;
 } DigitalFilterRealFloat;
-
-/**
- * @brief 
- * Specifies the nature of the filter stop-band
- */
-enum FilterType {
-    LOW_PASS, /** Low pass filter */
-    HIGH_PASS /** High pass filter */
-};
-
 /**
  * @brief 
  * Evaluates a linear digital filter
@@ -380,7 +351,7 @@ DigitalFilterRealFloat *filter_make_sinc_real_float(
     float cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionFloat window
 );
 
 /**

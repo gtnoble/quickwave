@@ -9,6 +9,17 @@
 #include <complex.h>
 #include \"vector.h\"
 #include \"window.h\"
+
+
+/**
+ * @brief 
+ * Specifies the nature of the filter stop-band
+ */
+enum FilterType {
+    LOW_PASS, /** Low pass filter */
+    HIGH_PASS /** High pass filter */
+};
+
 "
 
 (generate-text
@@ -25,16 +36,6 @@ typedef struct {
     ${vector-type} *feedback; /** Feedback (IIR) terms of the filter */
     ${vector-type} *previous_output;
 } ${filter-type};
-
-/**
- * @brief 
- * Specifies the nature of the filter stop-band
- */
-enum FilterType {
-    LOW_PASS, /** Low pass filter */
-    HIGH_PASS /** High pass filter */
-};
-
 /**
  * @brief 
  * Evaluates a linear digital filter
@@ -86,7 +87,7 @@ ${filter-type} *filter_make_sinc${function-tag}(
     ${number-base-type} cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    ${window-function-type} window
 );
 
 /**

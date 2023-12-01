@@ -14,6 +14,7 @@ TEST_SOURCE_DIR=src/test
 
 GUILE_SOURCE_DIR=scheme
 export GUILE_LOAD_PATH=${GUILE_SOURCE_DIR}
+CODE_GENERATION_DEPENDENCIES=${GUILE_SOURCE_DIR}/substitutions.scm ${GUILE_SOURCE_DIR}/template.scm
 
 lib/libquickwave.a: ${LIB_OBJECTS} ${FFT_BIN_DIR}/ooura_fft.o
 	ar rcs $@ $^
@@ -30,13 +31,21 @@ ${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+#Code generation
+
+${FFT_INCLUDE_DIR}/%.h: ${FFT_INCLUDE_DIR}/%.h.scm ${CODE_GENERATION_DEPENDENCIES}
+	guile -s $< > $@
+
+${FFT_SOURCE_DIR}/%.c: ${FFT_SOURCE_DIR}/%.c.scm ${CODE_GENERATION_DEPENDENCIES}
+	guile -s $< > $@
+
 ${FFT_BIN_DIR}/ooura_fft.o: ${FFT_SOURCE_DIR}/fft4g.c ${FFT_INCLUDE_DIR}/fftg.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-${LIB_SOURCE_DIR}/%.c: ${LIB_SOURCE_DIR}/%.c.scm ${GUILE_SOURCE_DIR}/substitutions.scm ${GUILE_SOURCE_DIR}/template.scm
+${LIB_SOURCE_DIR}/%.c: ${LIB_SOURCE_DIR}/%.c.scm ${CODE_GENERATION_DEPENDENCIES}
 	guile -s $< > $@
 
-${INCLUDE_DIR}/%.h: ${INCLUDE_SOURCE_DIR}/%.h.scm ${GUILE_SOURCE_DIR}/substitutions.scm ${GUILE_SOURCE_DIR}/template.scm
+${INCLUDE_DIR}/%.h: ${INCLUDE_SOURCE_DIR}/%.h.scm ${CODE_GENERATION_DEPENDENCIES}
 	guile -s $< > $@
 
 tests/iq.csv tests/const_freq.csv tests/sweep.csv &: tests/test_pll

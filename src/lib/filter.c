@@ -14,7 +14,7 @@
  * @param x input
  * @return result
  */
-double sinc_real_double(double x);
+double sinc_double(double x);
 
 /**
  * @brief 
@@ -22,13 +22,13 @@ double sinc_real_double(double x);
  * @param x Input
  * @return Result 
  */
-double dirac_delta_real_double(double x);
+double dirac_delta_double(double x);
 
-double sinc_real_double(double x) {
+double sinc_double(double x) {
     return x == 0.0 ? 1.0 : sin(M_PI * x) / (M_PI * x);
 }
 
-double dirac_delta_real_double(double x) {
+double dirac_delta_double(double x) {
     return x == 0.0 ? 1.0 : 0.0;
 }
 
@@ -40,7 +40,7 @@ double dirac_delta_real_double(double x) {
  * @param x input
  * @return result
  */
-float sinc_real_float(float x);
+float sinc_float(float x);
 
 /**
  * @brief 
@@ -48,13 +48,13 @@ float sinc_real_float(float x);
  * @param x Input
  * @return Result 
  */
-float dirac_delta_real_float(float x);
+float dirac_delta_float(float x);
 
-float sinc_real_float(float x) {
+float sinc_float(float x) {
     return x == 0.0 ? 1.0 : sin(M_PI * x) / (M_PI * x);
 }
 
-float dirac_delta_real_float(float x) {
+float dirac_delta_float(float x) {
     return x == 0.0 ? 1.0 : 0.0;
 }
 
@@ -85,7 +85,6 @@ DigitalFilterComplexDouble *filter_make_digital_filter_complex_double(
     if (filter == NULL)
         return NULL;
     
-    assert_valid_vector(feedforward);
     filter->feedforward = vector_duplicate_complex_double(feedforward);
     if (filter->feedforward == NULL) {
         goto fail_allocate_feedforward;
@@ -97,14 +96,13 @@ DigitalFilterComplexDouble *filter_make_digital_filter_complex_double(
     }
     
     if (feedback != NULL) {
-        assert_valid_vector(feedback);
         filter->feedback = vector_duplicate_complex_double(feedback);
         if (filter->feedback == NULL) {
             goto fail_allocate_feedback;
         }
         
         filter->previous_output = 
-            vector_complex_new(vector_length_complex_double(feedback));
+            vector_new_complex_double(vector_length_complex_double(feedback));
         if (filter->previous_output == NULL) {
             goto fail_allocate_previous_output;
         }
@@ -195,7 +193,7 @@ DigitalFilterComplexDouble *filter_make_ewma_complex_double(double alpha) {
         goto feedforward_allocation_failed;
     *vector_element_complex_double(0, feedforward) = alpha;
 
-    VectorComplexDouble *feedback = vector_complex_new(1);
+    VectorComplexDouble *feedback = vector_new_complex_double(1);
     if (feedback == NULL)
         goto feedback_allocation_failed;
     *vector_element_complex_double(0, feedback) = 1 - alpha;
@@ -217,8 +215,8 @@ DigitalFilterComplexDouble *filter_make_ewma_complex_double(double alpha) {
 DigitalFilterComplexDouble *filter_make_first_order_iir_complex_double(double cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
-    double angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
-    return filter_make_ewma(
+    double angular_frequency = ordinary_frequency_to_angular_double(cutoff_frequency);
+    return filter_make_ewma_complex_double(
         cos(angular_frequency) -
         1 +
         sqrt(
@@ -231,14 +229,14 @@ DigitalFilterComplexDouble *filter_make_sinc_complex_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionDouble window
 ) {
     assert(cutoff_frequency >= 0);
     assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
     assert((length & 0x1) == 1);
 
     if (window == NULL)
-        window = window_rectangular;
+        window = window_rectangular_double;
 
     VectorComplexDouble *filter_coefficients = vector_new_complex_double(length);
     if (filter_coefficients == NULL) {
@@ -250,7 +248,7 @@ DigitalFilterComplexDouble *filter_make_sinc_complex_double(
 
     for (size_t i = 0; i < length; i++) {
         *vector_element_complex_double(i, filter_coefficients) = 
-            sinc_real_double(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            sinc_double(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
         
         uncorrected_dc_gain += *vector_element_complex_double(i, filter_coefficients);
@@ -302,7 +300,6 @@ DigitalFilterComplexFloat *filter_make_digital_filter_complex_float(
     if (filter == NULL)
         return NULL;
     
-    assert_valid_vector(feedforward);
     filter->feedforward = vector_duplicate_complex_float(feedforward);
     if (filter->feedforward == NULL) {
         goto fail_allocate_feedforward;
@@ -314,14 +311,13 @@ DigitalFilterComplexFloat *filter_make_digital_filter_complex_float(
     }
     
     if (feedback != NULL) {
-        assert_valid_vector(feedback);
         filter->feedback = vector_duplicate_complex_float(feedback);
         if (filter->feedback == NULL) {
             goto fail_allocate_feedback;
         }
         
         filter->previous_output = 
-            vector_complex_new(vector_length_complex_float(feedback));
+            vector_new_complex_float(vector_length_complex_float(feedback));
         if (filter->previous_output == NULL) {
             goto fail_allocate_previous_output;
         }
@@ -412,7 +408,7 @@ DigitalFilterComplexFloat *filter_make_ewma_complex_float(float alpha) {
         goto feedforward_allocation_failed;
     *vector_element_complex_float(0, feedforward) = alpha;
 
-    VectorComplexFloat *feedback = vector_complex_new(1);
+    VectorComplexFloat *feedback = vector_new_complex_float(1);
     if (feedback == NULL)
         goto feedback_allocation_failed;
     *vector_element_complex_float(0, feedback) = 1 - alpha;
@@ -434,8 +430,8 @@ DigitalFilterComplexFloat *filter_make_ewma_complex_float(float alpha) {
 DigitalFilterComplexFloat *filter_make_first_order_iir_complex_float(float cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
-    float angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
-    return filter_make_ewma(
+    float angular_frequency = ordinary_frequency_to_angular_float(cutoff_frequency);
+    return filter_make_ewma_complex_float(
         cos(angular_frequency) -
         1 +
         sqrt(
@@ -448,14 +444,14 @@ DigitalFilterComplexFloat *filter_make_sinc_complex_float(
     float cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionFloat window
 ) {
     assert(cutoff_frequency >= 0);
     assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
     assert((length & 0x1) == 1);
 
     if (window == NULL)
-        window = window_rectangular;
+        window = window_rectangular_float;
 
     VectorComplexFloat *filter_coefficients = vector_new_complex_float(length);
     if (filter_coefficients == NULL) {
@@ -467,7 +463,7 @@ DigitalFilterComplexFloat *filter_make_sinc_complex_float(
 
     for (size_t i = 0; i < length; i++) {
         *vector_element_complex_float(i, filter_coefficients) = 
-            sinc_real_float(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            sinc_float(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
         
         uncorrected_dc_gain += *vector_element_complex_float(i, filter_coefficients);
@@ -519,7 +515,6 @@ DigitalFilterRealDouble *filter_make_digital_filter_real_double(
     if (filter == NULL)
         return NULL;
     
-    assert_valid_vector(feedforward);
     filter->feedforward = vector_duplicate_real_double(feedforward);
     if (filter->feedforward == NULL) {
         goto fail_allocate_feedforward;
@@ -531,14 +526,13 @@ DigitalFilterRealDouble *filter_make_digital_filter_real_double(
     }
     
     if (feedback != NULL) {
-        assert_valid_vector(feedback);
         filter->feedback = vector_duplicate_real_double(feedback);
         if (filter->feedback == NULL) {
             goto fail_allocate_feedback;
         }
         
         filter->previous_output = 
-            vector_complex_new(vector_length_real_double(feedback));
+            vector_new_real_double(vector_length_real_double(feedback));
         if (filter->previous_output == NULL) {
             goto fail_allocate_previous_output;
         }
@@ -629,7 +623,7 @@ DigitalFilterRealDouble *filter_make_ewma_real_double(double alpha) {
         goto feedforward_allocation_failed;
     *vector_element_real_double(0, feedforward) = alpha;
 
-    VectorRealDouble *feedback = vector_complex_new(1);
+    VectorRealDouble *feedback = vector_new_real_double(1);
     if (feedback == NULL)
         goto feedback_allocation_failed;
     *vector_element_real_double(0, feedback) = 1 - alpha;
@@ -651,8 +645,8 @@ DigitalFilterRealDouble *filter_make_ewma_real_double(double alpha) {
 DigitalFilterRealDouble *filter_make_first_order_iir_real_double(double cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
-    double angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
-    return filter_make_ewma(
+    double angular_frequency = ordinary_frequency_to_angular_double(cutoff_frequency);
+    return filter_make_ewma_real_double(
         cos(angular_frequency) -
         1 +
         sqrt(
@@ -665,14 +659,14 @@ DigitalFilterRealDouble *filter_make_sinc_real_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionDouble window
 ) {
     assert(cutoff_frequency >= 0);
     assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
     assert((length & 0x1) == 1);
 
     if (window == NULL)
-        window = window_rectangular;
+        window = window_rectangular_double;
 
     VectorRealDouble *filter_coefficients = vector_new_real_double(length);
     if (filter_coefficients == NULL) {
@@ -684,7 +678,7 @@ DigitalFilterRealDouble *filter_make_sinc_real_double(
 
     for (size_t i = 0; i < length; i++) {
         *vector_element_real_double(i, filter_coefficients) = 
-            sinc_real_double(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            sinc_double(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
         
         uncorrected_dc_gain += *vector_element_real_double(i, filter_coefficients);
@@ -736,7 +730,6 @@ DigitalFilterRealFloat *filter_make_digital_filter_real_float(
     if (filter == NULL)
         return NULL;
     
-    assert_valid_vector(feedforward);
     filter->feedforward = vector_duplicate_real_float(feedforward);
     if (filter->feedforward == NULL) {
         goto fail_allocate_feedforward;
@@ -748,14 +741,13 @@ DigitalFilterRealFloat *filter_make_digital_filter_real_float(
     }
     
     if (feedback != NULL) {
-        assert_valid_vector(feedback);
         filter->feedback = vector_duplicate_real_float(feedback);
         if (filter->feedback == NULL) {
             goto fail_allocate_feedback;
         }
         
         filter->previous_output = 
-            vector_complex_new(vector_length_real_float(feedback));
+            vector_new_real_float(vector_length_real_float(feedback));
         if (filter->previous_output == NULL) {
             goto fail_allocate_previous_output;
         }
@@ -846,7 +838,7 @@ DigitalFilterRealFloat *filter_make_ewma_real_float(float alpha) {
         goto feedforward_allocation_failed;
     *vector_element_real_float(0, feedforward) = alpha;
 
-    VectorRealFloat *feedback = vector_complex_new(1);
+    VectorRealFloat *feedback = vector_new_real_float(1);
     if (feedback == NULL)
         goto feedback_allocation_failed;
     *vector_element_real_float(0, feedback) = 1 - alpha;
@@ -868,8 +860,8 @@ DigitalFilterRealFloat *filter_make_ewma_real_float(float alpha) {
 DigitalFilterRealFloat *filter_make_first_order_iir_real_float(float cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
-    float angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
-    return filter_make_ewma(
+    float angular_frequency = ordinary_frequency_to_angular_float(cutoff_frequency);
+    return filter_make_ewma_real_float(
         cos(angular_frequency) -
         1 +
         sqrt(
@@ -882,14 +874,14 @@ DigitalFilterRealFloat *filter_make_sinc_real_float(
     float cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    WindowFunctionFloat window
 ) {
     assert(cutoff_frequency >= 0);
     assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
     assert((length & 0x1) == 1);
 
     if (window == NULL)
-        window = window_rectangular;
+        window = window_rectangular_float;
 
     VectorRealFloat *filter_coefficients = vector_new_real_float(length);
     if (filter_coefficients == NULL) {
@@ -901,7 +893,7 @@ DigitalFilterRealFloat *filter_make_sinc_real_float(
 
     for (size_t i = 0; i < length; i++) {
         *vector_element_real_float(i, filter_coefficients) = 
-            sinc_real_float(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            sinc_float(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
         
         uncorrected_dc_gain += *vector_element_real_float(i, filter_coefficients);

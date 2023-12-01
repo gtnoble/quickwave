@@ -23,6 +23,7 @@
   (make-schema
     #:rules '((number-type . "double") 
               (math-function-suffix . "")
+              (math-macro-suffix . "")
               (function-tag . "_double")
               (struct-type-suffix . "Double"))))
 
@@ -30,12 +31,15 @@
   (make-schema
     #:rules '((number-type . "float") 
               (math-function-suffix . "f")
+              (math-macro-suffix . "F")
               (function-tag . "_float")
               (struct-type-suffix . "Float"))))
 
 (define number-schema
   (make-schema
-    #:rules '((number-base-type . "${number-type}"))
+    #:rules '((number-base-type . "${number-type}")
+              (real-struct-type-suffix . "${struct-type-suffix}")
+              (real-function-tag . "${function-tag}"))
     #:precursors (list double-schema float-schema)))
 
 
@@ -64,10 +68,10 @@
     #:rules '((vector-type . "Vector${struct-type-suffix}"))
     #:precursors (list numeric-schema)))
 
-
 (define filter-schema
   (make-schema
-    #:rules '((filter-type . "DigitalFilter${struct-type-suffix}"))
+    #:rules '((filter-type . "DigitalFilter${struct-type-suffix}")
+              (window-function-type . "WindowFunction${real-struct-type-suffix}"))
     #:precursors (list vector-schema)))
 
 
@@ -114,3 +118,15 @@
     #:rules (append oscillator-rules moving-average-rules sinusoid-fit-rules)
     #:precursors (list number-schema)))
 
+(define window-schema
+  (make-schema
+    #:rules '((window-function-type . "WindowFunction${struct-type-suffix}"))
+    #:precursors (list number-schema)))
+
+(define fft-schema 
+  (make-schema
+    #:rules '((fft-type . "FftComplex${struct-type-suffix}")
+              (vector-type . "VectorComplex${struct-type-suffix}")
+              (complex-function-tag . "_complex${function-tag}")
+              (complex-number-type . "${number-type} complex"))
+    #:precursors (list number-schema)))

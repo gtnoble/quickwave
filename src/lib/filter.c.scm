@@ -14,7 +14,7 @@
 "
 
 (generate-text
-    real-number-schema
+    number-schema
 "
 /**
  * @brief 
@@ -71,7 +71,6 @@ ${filter-type} *filter_make_digital_filter${function-tag}(
     if (filter == NULL)
         return NULL;
     
-    assert_valid_vector(feedforward);
     filter->feedforward = vector_duplicate${function-tag}(feedforward);
     if (filter->feedforward == NULL) {
         goto fail_allocate_feedforward;
@@ -83,14 +82,13 @@ ${filter-type} *filter_make_digital_filter${function-tag}(
     }
     
     if (feedback != NULL) {
-        assert_valid_vector(feedback);
         filter->feedback = vector_duplicate${function-tag}(feedback);
         if (filter->feedback == NULL) {
             goto fail_allocate_feedback;
         }
         
         filter->previous_output = 
-            vector_complex_new(vector_length${function-tag}(feedback));
+            vector_new${function-tag}(vector_length${function-tag}(feedback));
         if (filter->previous_output == NULL) {
             goto fail_allocate_previous_output;
         }
@@ -181,7 +179,7 @@ ${filter-type} *filter_make_ewma${function-tag}(${number-base-type} alpha) {
         goto feedforward_allocation_failed;
     *vector_element${function-tag}(0, feedforward) = alpha;
 
-    ${vector-type} *feedback = vector_complex_new(1);
+    ${vector-type} *feedback = vector_new${function-tag}(1);
     if (feedback == NULL)
         goto feedback_allocation_failed;
     *vector_element${function-tag}(0, feedback) = 1 - alpha;
@@ -203,8 +201,8 @@ ${filter-type} *filter_make_ewma${function-tag}(${number-base-type} alpha) {
 ${filter-type} *filter_make_first_order_iir${function-tag}(${number-base-type} cutoff_frequency) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
-    ${number-base-type} angular_frequency = ordinary_frequency_to_angular(cutoff_frequency);
-    return filter_make_ewma(
+    ${number-base-type} angular_frequency = ordinary_frequency_to_angular${real-function-tag}(cutoff_frequency);
+    return filter_make_ewma${function-tag}(
         cos(angular_frequency) -
         1 +
         sqrt(
@@ -217,14 +215,14 @@ ${filter-type} *filter_make_sinc${function-tag}(
     ${number-base-type} cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunction window
+    ${window-function-type} window
 ) {
     assert(cutoff_frequency >= 0);
     assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
     assert((length & 0x1) == 1);
 
     if (window == NULL)
-        window = window_rectangular;
+        window = window_rectangular${real-function-tag};
 
     ${vector-type} *filter_coefficients = vector_new${function-tag}(length);
     if (filter_coefficients == NULL) {
@@ -236,7 +234,7 @@ ${filter-type} *filter_make_sinc${function-tag}(
 
     for (size_t i = 0; i < length; i++) {
         *vector_element${function-tag}(i, filter_coefficients) = 
-            sinc_real_${number-base-type}(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
+            sinc${real-function-tag}(2 * cutoff_frequency * ((double) i - kernel_shift)) * 
             window(i, length);
         
         uncorrected_dc_gain += *vector_element${function-tag}(i, filter_coefficients);
