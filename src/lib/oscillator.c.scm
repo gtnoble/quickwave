@@ -20,7 +20,7 @@ ${oscillator-type} oscillator_make${function-tag}(${number-base-type} phase_degr
         .complex_frequency = angular_to_complex_frequency${function-tag}(
             ordinary_frequency_to_angular${function-tag}(normalized_frequency)
         ),
-        .phasor = rotate_phasor${function-tag}(zero_phase_phasor, degrees_to_radians${function-tag}(phase_degrees))
+        .phasor = rotate_phasor${function-tag}(zero_phase_phasor${function-tag}, degrees_to_radians${function-tag}(phase_degrees))
     };
     return result;
 }

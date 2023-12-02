@@ -10,7 +10,7 @@
     (generate-text 
     moving-average-schema
 "
-${moving-average-type} *moving_average_complex_make${function-tag}(size_t length) {
+${moving-average-type} *moving_average_make${function-tag}(size_t length) {
     ${moving-average-type} *filter = malloc(sizeof(${moving-average-type})); 
     
     if (filter == NULL) { 
@@ -28,7 +28,7 @@ ${moving-average-type} *moving_average_complex_make${function-tag}(size_t length
     return filter;
 }
 
-double complex moving_average_complex_evaluate${function-tag}(
+double complex moving_average_evaluate${function-tag}(
     ${number-type} input, 
     ${moving-average-type} *filter
 ) {
@@ -46,7 +46,7 @@ void moving_average_complex_reset${function-tag}(${moving-average-type} *filter)
     filter->moving_sum = 0; 
 }
 
-void moving_average_complex_free${function-tag}(${moving-average-type} *filter) {
+void moving_average_free${function-tag}(${moving-average-type} *filter) {
     assert_not_null(filter); 
     
     vector_free${function-tag}(filter->previous_input); 

@@ -13,7 +13,7 @@ OscillatorDouble oscillator_make_double(double phase_degrees, double normalized_
         .complex_frequency = angular_to_complex_frequency_double(
             ordinary_frequency_to_angular_double(normalized_frequency)
         ),
-        .phasor = rotate_phasor_double(zero_phase_phasor, degrees_to_radians_double(phase_degrees))
+        .phasor = rotate_phasor_double(zero_phase_phasor_double, degrees_to_radians_double(phase_degrees))
     };
     return result;
 }
@@ -76,7 +76,7 @@ OscillatorFloat oscillator_make_float(float phase_degrees, float normalized_freq
         .complex_frequency = angular_to_complex_frequency_float(
             ordinary_frequency_to_angular_float(normalized_frequency)
         ),
-        .phasor = rotate_phasor_float(zero_phase_phasor, degrees_to_radians_float(phase_degrees))
+        .phasor = rotate_phasor_float(zero_phase_phasor_float, degrees_to_radians_float(phase_degrees))
     };
     return result;
 }

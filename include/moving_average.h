@@ -22,7 +22,7 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageComplexDouble *moving_average_complex_make_complex_double(size_t length);
+MovingAverageComplexDouble *moving_average_make_complex_double(size_t length);
 
 /**
  * @brief 
@@ -31,7 +31,7 @@ MovingAverageComplexDouble *moving_average_complex_make_complex_double(size_t le
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_complex_evaluate_complex_double(
+double complex moving_average_evaluate_complex_double(
     double complex input, 
     MovingAverageComplexDouble *filter
 );
@@ -41,14 +41,14 @@ double complex moving_average_complex_evaluate_complex_double(
  * Resets moving average filter to initial state
  * @param filter Filter to reset
  */
-void moving_average_complex_reset_complex_double(MovingAverageComplexDouble *filter);
+void moving_average_reset_complex_double(MovingAverageComplexDouble *filter);
 
 /**
  * @brief 
  * Frees the memory assicated with a moving average filter
  * @param filter Filter to be freed
  */
-void moving_average_complex_free_complex_double(MovingAverageComplexDouble *filter);
+void moving_average_free_complex_double(MovingAverageComplexDouble *filter);
 
 
 
@@ -70,7 +70,7 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageComplexFloat *moving_average_complex_make_complex_float(size_t length);
+MovingAverageComplexFloat *moving_average_make_complex_float(size_t length);
 
 /**
  * @brief 
@@ -79,7 +79,7 @@ MovingAverageComplexFloat *moving_average_complex_make_complex_float(size_t leng
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_complex_evaluate_complex_float(
+double complex moving_average_evaluate_complex_float(
     float complex input, 
     MovingAverageComplexFloat *filter
 );
@@ -89,14 +89,14 @@ double complex moving_average_complex_evaluate_complex_float(
  * Resets moving average filter to initial state
  * @param filter Filter to reset
  */
-void moving_average_complex_reset_complex_float(MovingAverageComplexFloat *filter);
+void moving_average_reset_complex_float(MovingAverageComplexFloat *filter);
 
 /**
  * @brief 
  * Frees the memory assicated with a moving average filter
  * @param filter Filter to be freed
  */
-void moving_average_complex_free_complex_float(MovingAverageComplexFloat *filter);
+void moving_average_free_complex_float(MovingAverageComplexFloat *filter);
 
 
 
@@ -118,7 +118,7 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageRealDouble *moving_average_complex_make_real_double(size_t length);
+MovingAverageRealDouble *moving_average_make_real_double(size_t length);
 
 /**
  * @brief 
@@ -127,7 +127,7 @@ MovingAverageRealDouble *moving_average_complex_make_real_double(size_t length);
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_complex_evaluate_real_double(
+double complex moving_average_evaluate_real_double(
     double input, 
     MovingAverageRealDouble *filter
 );
@@ -137,14 +137,14 @@ double complex moving_average_complex_evaluate_real_double(
  * Resets moving average filter to initial state
  * @param filter Filter to reset
  */
-void moving_average_complex_reset_real_double(MovingAverageRealDouble *filter);
+void moving_average_reset_real_double(MovingAverageRealDouble *filter);
 
 /**
  * @brief 
  * Frees the memory assicated with a moving average filter
  * @param filter Filter to be freed
  */
-void moving_average_complex_free_real_double(MovingAverageRealDouble *filter);
+void moving_average_free_real_double(MovingAverageRealDouble *filter);
 
 
 
@@ -166,7 +166,7 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageRealFloat *moving_average_complex_make_real_float(size_t length);
+MovingAverageRealFloat *moving_average_make_real_float(size_t length);
 
 /**
  * @brief 
@@ -175,7 +175,7 @@ MovingAverageRealFloat *moving_average_complex_make_real_float(size_t length);
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_complex_evaluate_real_float(
+double complex moving_average_evaluate_real_float(
     float input, 
     MovingAverageRealFloat *filter
 );
@@ -185,14 +185,14 @@ double complex moving_average_complex_evaluate_real_float(
  * Resets moving average filter to initial state
  * @param filter Filter to reset
  */
-void moving_average_complex_reset_real_float(MovingAverageRealFloat *filter);
+void moving_average_reset_real_float(MovingAverageRealFloat *filter);
 
 /**
  * @brief 
  * Frees the memory assicated with a moving average filter
  * @param filter Filter to be freed
  */
-void moving_average_complex_free_real_float(MovingAverageRealFloat *filter);
+void moving_average_free_real_float(MovingAverageRealFloat *filter);
 
 
 #endif

@@ -21,7 +21,7 @@ ${sinusoid-fit-type} *sinusoid_fit_make${function-tag}(size_t window_length, ${n
         return NULL;
     }
 
-    model->fit_window = moving_average_complex_make${function-tag}(window_length);
+    model->fit_window = moving_average_make_complex${function-tag}(window_length);
     if (model->fit_window == NULL) {
         free(model); 
         return NULL;

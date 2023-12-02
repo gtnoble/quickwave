@@ -68,54 +68,58 @@
     #:rules '((vector-type . "Vector${struct-type-suffix}"))
     #:precursors (list numeric-schema)))
 
+(define filter-type-rule
+  '(filter-type . "DigitalFilter${struct-type-suffix}"))
+
 (define filter-schema
   (make-schema
-    #:rules '((filter-type . "DigitalFilter${struct-type-suffix}")
-              (window-function-type . "WindowFunction${real-struct-type-suffix}"))
+    #:rules (list 
+              filter-type-rule
+              '(window-function-type . "WindowFunction${real-struct-type-suffix}"))
     #:precursors (list vector-schema)))
 
 
-(define moving-average-rules
-  '((moving-average-type . "MovingAverage${struct-type-suffix}")))
+(define moving-average-type-rule
+  '(moving-average-type . "MovingAverage${struct-type-suffix}"))
 
 (define moving-average-schema
   (make-schema
-    #:rules moving-average-rules
+    #:rules (list moving-average-type-rule)
     #:precursors (list vector-schema)))
 
-(define oscillator-rules
-  '((oscillator-type . "Oscillator${struct-type-suffix}")))
+(define oscillator-type-rule
+  '(oscillator-type . "Oscillator${struct-type-suffix}"))
 
 (define oscillator-schema
   (make-schema
-    #:rules oscillator-rules
+    #:rules (list oscillator-type-rule)
     #:precursors (list number-schema)))
 
 
-(define pid-rules
-  '((pid-type . "Pid${struct-type-suffix}")))
+(define pid-type-rule
+  '(pid-type . "Pid${struct-type-suffix}"))
 
 (define pid-schema
   (make-schema
-    #:rules pid-rules
+    #:rules pid-type-rule
     #:precursors (list number-schema)))
 
 
 (define pll-schema
   (make-schema
-    #:rules (append 
-              oscillator-rules 
-              pid-rules 
-              '((pll-type . "PhaseLockedLoop${struct-type-suffix}")))
+    #:rules (list 
+              oscillator-type-rule 
+              pid-type-rule 
+              '(pll-type . "PhaseLockedLoop${struct-type-suffix}"))
     #:precursors (list number-schema)))
 
 
-(define sinusoid-fit-rules
-  '((sinusoid-fit-type . "SinusoidFit${struct-type-suffix}")))
+(define sinusoid-fit-type-rule
+  '(sinusoid-fit-type . "SinusoidFit${struct-type-suffix}"))
 
 (define sinusoid-fit-schema
   (make-schema
-    #:rules (append oscillator-rules moving-average-rules sinusoid-fit-rules)
+    #:rules (list oscillator-type-rule moving-average-type-rule sinusoid-fit-type-rule)
     #:precursors (list number-schema)))
 
 (define window-schema
@@ -129,4 +133,14 @@
               (vector-type . "VectorComplex${struct-type-suffix}")
               (complex-function-tag . "_complex${function-tag}")
               (complex-number-type . "${number-type} complex"))
+    #:precursors (list number-schema)))
+
+(define linear-estimator-schema
+  (make-schema
+    #:rules (list 
+              filter-type-rule 
+              moving-average-type-rule
+              '(struct-type-suffix . "Real${struct-type-suffix}")
+              '(linear-estimator-type . "LinearEstimator${struct-type-suffix}")
+              '(linear-model-type . "LinearModel${struct-type-suffix}"))
     #:precursors (list number-schema)))

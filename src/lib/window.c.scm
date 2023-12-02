@@ -33,6 +33,6 @@ ${number-type} generalized_hann_function${function-tag}(size_t element_index, si
 }
 
 ${number-type} window_hamming${function-tag}(size_t element_index, size_t window_size) {
-    return generalized_hann_function(element_index, window_size, 25.0/46.0);
+    return generalized_hann_function${function-tag}(element_index, window_size, 25.0/46.0);
 }
 "))

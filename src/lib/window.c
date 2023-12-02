@@ -26,7 +26,7 @@ double generalized_hann_function_double(size_t element_index, size_t window_size
 }
 
 double window_hamming_double(size_t element_index, size_t window_size) {
-    return generalized_hann_function(element_index, window_size, 25.0/46.0);
+    return generalized_hann_function_double(element_index, window_size, 25.0/46.0);
 }
 
 
@@ -52,5 +52,5 @@ float generalized_hann_function_float(size_t element_index, size_t window_size, 
 }
 
 float window_hamming_float(size_t element_index, size_t window_size) {
-    return generalized_hann_function(element_index, window_size, 25.0/46.0);
+    return generalized_hann_function_float(element_index, window_size, 25.0/46.0);
 }

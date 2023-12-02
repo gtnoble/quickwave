@@ -30,7 +30,7 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-${moving-average-type} *moving_average_complex_make${function-tag}(size_t length);
+${moving-average-type} *moving_average_make${function-tag}(size_t length);
 
 /**
  * @brief 
@@ -39,7 +39,7 @@ ${moving-average-type} *moving_average_complex_make${function-tag}(size_t length
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_complex_evaluate${function-tag}(
+double complex moving_average_evaluate${function-tag}(
     ${number-type} input, 
     ${moving-average-type} *filter
 );
@@ -49,14 +49,14 @@ double complex moving_average_complex_evaluate${function-tag}(
  * Resets moving average filter to initial state
  * @param filter Filter to reset
  */
-void moving_average_complex_reset${function-tag}(${moving-average-type} *filter);
+void moving_average_reset${function-tag}(${moving-average-type} *filter);
 
 /**
  * @brief 
  * Frees the memory assicated with a moving average filter
  * @param filter Filter to be freed
  */
-void moving_average_complex_free${function-tag}(${moving-average-type} *filter);
+void moving_average_free${function-tag}(${moving-average-type} *filter);
 
 ")
 

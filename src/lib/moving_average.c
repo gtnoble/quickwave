@@ -2,7 +2,7 @@
 #include "moving_average.h"
 #include "assertions.h"
 
-MovingAverageComplexDouble *moving_average_complex_make_complex_double(size_t length) {
+MovingAverageComplexDouble *moving_average_make_complex_double(size_t length) {
     MovingAverageComplexDouble *filter = malloc(sizeof(MovingAverageComplexDouble)); 
     
     if (filter == NULL) { 
@@ -20,7 +20,7 @@ MovingAverageComplexDouble *moving_average_complex_make_complex_double(size_t le
     return filter;
 }
 
-double complex moving_average_complex_evaluate_complex_double(
+double complex moving_average_evaluate_complex_double(
     double complex input, 
     MovingAverageComplexDouble *filter
 ) {
@@ -38,7 +38,7 @@ void moving_average_complex_reset_complex_double(MovingAverageComplexDouble *fil
     filter->moving_sum = 0; 
 }
 
-void moving_average_complex_free_complex_double(MovingAverageComplexDouble *filter) {
+void moving_average_free_complex_double(MovingAverageComplexDouble *filter) {
     assert_not_null(filter); 
     
     vector_free_complex_double(filter->previous_input); 
@@ -47,7 +47,7 @@ void moving_average_complex_free_complex_double(MovingAverageComplexDouble *filt
 
 
 
-MovingAverageComplexFloat *moving_average_complex_make_complex_float(size_t length) {
+MovingAverageComplexFloat *moving_average_make_complex_float(size_t length) {
     MovingAverageComplexFloat *filter = malloc(sizeof(MovingAverageComplexFloat)); 
     
     if (filter == NULL) { 
@@ -65,7 +65,7 @@ MovingAverageComplexFloat *moving_average_complex_make_complex_float(size_t leng
     return filter;
 }
 
-double complex moving_average_complex_evaluate_complex_float(
+double complex moving_average_evaluate_complex_float(
     float complex input, 
     MovingAverageComplexFloat *filter
 ) {
@@ -83,7 +83,7 @@ void moving_average_complex_reset_complex_float(MovingAverageComplexFloat *filte
     filter->moving_sum = 0; 
 }
 
-void moving_average_complex_free_complex_float(MovingAverageComplexFloat *filter) {
+void moving_average_free_complex_float(MovingAverageComplexFloat *filter) {
     assert_not_null(filter); 
     
     vector_free_complex_float(filter->previous_input); 
@@ -92,7 +92,7 @@ void moving_average_complex_free_complex_float(MovingAverageComplexFloat *filter
 
 
 
-MovingAverageRealDouble *moving_average_complex_make_real_double(size_t length) {
+MovingAverageRealDouble *moving_average_make_real_double(size_t length) {
     MovingAverageRealDouble *filter = malloc(sizeof(MovingAverageRealDouble)); 
     
     if (filter == NULL) { 
@@ -110,7 +110,7 @@ MovingAverageRealDouble *moving_average_complex_make_real_double(size_t length) 
     return filter;
 }
 
-double complex moving_average_complex_evaluate_real_double(
+double complex moving_average_evaluate_real_double(
     double input, 
     MovingAverageRealDouble *filter
 ) {
@@ -128,7 +128,7 @@ void moving_average_complex_reset_real_double(MovingAverageRealDouble *filter) {
     filter->moving_sum = 0; 
 }
 
-void moving_average_complex_free_real_double(MovingAverageRealDouble *filter) {
+void moving_average_free_real_double(MovingAverageRealDouble *filter) {
     assert_not_null(filter); 
     
     vector_free_real_double(filter->previous_input); 
@@ -137,7 +137,7 @@ void moving_average_complex_free_real_double(MovingAverageRealDouble *filter) {
 
 
 
-MovingAverageRealFloat *moving_average_complex_make_real_float(size_t length) {
+MovingAverageRealFloat *moving_average_make_real_float(size_t length) {
     MovingAverageRealFloat *filter = malloc(sizeof(MovingAverageRealFloat)); 
     
     if (filter == NULL) { 
@@ -155,7 +155,7 @@ MovingAverageRealFloat *moving_average_complex_make_real_float(size_t length) {
     return filter;
 }
 
-double complex moving_average_complex_evaluate_real_float(
+double complex moving_average_evaluate_real_float(
     float input, 
     MovingAverageRealFloat *filter
 ) {
@@ -173,7 +173,7 @@ void moving_average_complex_reset_real_float(MovingAverageRealFloat *filter) {
     filter->moving_sum = 0; 
 }
 
-void moving_average_complex_free_real_float(MovingAverageRealFloat *filter) {
+void moving_average_free_real_float(MovingAverageRealFloat *filter) {
     assert_not_null(filter); 
     
     vector_free_real_float(filter->previous_input); 
