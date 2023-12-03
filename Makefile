@@ -28,7 +28,7 @@ tests/test_%: ${TEST_SOURCE_DIR}/%.test.o lib/libquickwave.a ext/munit/munit.o
 ${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
 	$(CC) $(CFLAGS) -c -Iext/munit $< -o $@
 
-${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h
+${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h ${GENERATED_HEADERS}
 	$(CC) $(CFLAGS) -c $< -o $@
 
 ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
