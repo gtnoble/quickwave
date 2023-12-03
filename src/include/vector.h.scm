@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <complex.h>
 #include \"assertions.h\"
+#include \"memory.h\"
 #include <stdbool.h>"
 
     (generate-text 
@@ -22,6 +23,7 @@ typedef struct {
     size_t n_elements; /** Number of elements in the buffer */
     size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
     bool is_reversed;
+    Deallocator *free;
     ${number-type} elements[]; /** Buffer elements */
 } ${vector-type};
 
@@ -63,7 +65,7 @@ void vector_apply${function-tag}(
     ${vector-type} *vector
 );
 
-${vector-type} *vector_from_array${function-tag}(size_t size, const ${number-type} elements[]);
+${vector-type} *vector_from_array${function-tag}(size_t size, const ${number-type} elements[], const MemoryManager *manager);
 
 /**
  * @brief 
@@ -71,9 +73,9 @@ ${vector-type} *vector_from_array${function-tag}(size_t size, const ${number-typ
  * @param size Number of elements in the circular buffer
  * @return Vector
  */
-${vector-type} *vector_new${function-tag}(size_t size);
+${vector-type} *vector_new${function-tag}(size_t size, const MemoryManager *manager);
 
-${vector-type} *vector_duplicate${function-tag}(const ${vector-type} *vector);
+${vector-type} *vector_duplicate${function-tag}(const ${vector-type} *vector, const MemoryManager *manager);
 
 
 size_t vector_length${function-tag}(const ${vector-type} *buf);

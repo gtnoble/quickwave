@@ -7,6 +7,7 @@
 
 #include \"oscillator.h\"
 #include \"moving_average.h\"
+#include \"memory.h\"
 
 "
     (generate-text
@@ -20,8 +21,9 @@
  * over the window interval.
  */
 typedef struct {
-    ${oscillator-type} reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
+    ${oscillator-type} *reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
     MovingAverageComplex${struct-type-suffix} *fit_window; /** Window over which the sinusoid is fit */
+    Deallocator *free;
 } ${sinusoid-fit-type};
 
 /**
@@ -31,7 +33,11 @@ typedef struct {
  * @param frequency normalized frequency of the fit sinusoids
  * @return sinusoid fitter
  */
-${sinusoid-fit-type} *sinusoid_fit_make${function-tag}(size_t window_length, ${number-type} frequency);
+${sinusoid-fit-type} *sinusoid_fit_make${function-tag}(
+    size_t window_length, 
+    ${number-type} frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -46,9 +52,13 @@ void sinusoid_fit_free${function-tag}(${sinusoid-fit-type} *model);
  * The incoming sample is added to this window and the sinusoid fit is calculated.
  * @param input incoming sample
  * @param model sinusoid fit
- * @return resulting fit sinusoid 
+ * @output resulting fit sinusoid 
  */
-${oscillator-type} sinusoid_fit_evaluate${function-tag}(${number-type} input, ${sinusoid-fit-type} *model);
+void sinusoid_fit_evaluate${function-tag}(
+    ${number-type} input, 
+    ${oscillator-type} *output,
+    ${sinusoid-fit-type} *model
+);
 
 ")
 

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <complex.h>
 #include <assert.h>
+#include "memory.h"
 #include "vector.h"
 
 double complex vector_element_value_complex_double(int index, const VectorComplexDouble *buf);
@@ -61,20 +62,25 @@ void vector_apply_complex_double(
     }
 }
 
-VectorComplexDouble *vector_new_complex_double(size_t size) {
-    VectorComplexDouble *circbuf = malloc(
+VectorComplexDouble *vector_new_complex_double(size_t size, const MemoryManager *manager) {
+    VectorComplexDouble *circbuf = manager->allocate(
         sizeof(VectorComplexDouble) + sizeof(double complex) * size);
     if (circbuf == NULL)
         return NULL;
 
     circbuf->n_elements = size;
+    circbuf->free = manager->deallocate;
 
     vector_reset_complex_double(circbuf);
     return circbuf;
 }
 
-VectorComplexDouble *vector_from_array_complex_double(size_t size, const double complex elements[]) {
-    VectorComplexDouble *vector = vector_new_complex_double(size);
+VectorComplexDouble *vector_from_array_complex_double(
+    size_t size, 
+    const double complex elements[], 
+    const MemoryManager *manager
+) {
+    VectorComplexDouble *vector = vector_new_complex_double(size, manager);
     if (vector == NULL) {
         return NULL;
     }
@@ -86,9 +92,12 @@ VectorComplexDouble *vector_from_array_complex_double(size_t size, const double 
     return vector;
 }
 
-VectorComplexDouble *vector_duplicate_complex_double(const VectorComplexDouble *vector) {
+VectorComplexDouble *vector_duplicate_complex_double(
+    const VectorComplexDouble *vector, 
+    const MemoryManager *manager
+) {
     size_t vector_length = vector_length_complex_double(vector);
-    VectorComplexDouble *new_vector = vector_new_complex_double(vector_length);
+    VectorComplexDouble *new_vector = vector_new_complex_double(vector_length, manager);
     if (new_vector == NULL) {
         return NULL;
     }
@@ -119,7 +128,7 @@ void vector_reset_complex_double(VectorComplexDouble *buf) {
 }
 
 void vector_free_complex_double(VectorComplexDouble *buf) {
-    free(buf);
+    buf->free(buf);
 }
 
 
@@ -180,20 +189,25 @@ void vector_apply_complex_float(
     }
 }
 
-VectorComplexFloat *vector_new_complex_float(size_t size) {
-    VectorComplexFloat *circbuf = malloc(
+VectorComplexFloat *vector_new_complex_float(size_t size, const MemoryManager *manager) {
+    VectorComplexFloat *circbuf = manager->allocate(
         sizeof(VectorComplexFloat) + sizeof(float complex) * size);
     if (circbuf == NULL)
         return NULL;
 
     circbuf->n_elements = size;
+    circbuf->free = manager->deallocate;
 
     vector_reset_complex_float(circbuf);
     return circbuf;
 }
 
-VectorComplexFloat *vector_from_array_complex_float(size_t size, const float complex elements[]) {
-    VectorComplexFloat *vector = vector_new_complex_float(size);
+VectorComplexFloat *vector_from_array_complex_float(
+    size_t size, 
+    const float complex elements[], 
+    const MemoryManager *manager
+) {
+    VectorComplexFloat *vector = vector_new_complex_float(size, manager);
     if (vector == NULL) {
         return NULL;
     }
@@ -205,9 +219,12 @@ VectorComplexFloat *vector_from_array_complex_float(size_t size, const float com
     return vector;
 }
 
-VectorComplexFloat *vector_duplicate_complex_float(const VectorComplexFloat *vector) {
+VectorComplexFloat *vector_duplicate_complex_float(
+    const VectorComplexFloat *vector, 
+    const MemoryManager *manager
+) {
     size_t vector_length = vector_length_complex_float(vector);
-    VectorComplexFloat *new_vector = vector_new_complex_float(vector_length);
+    VectorComplexFloat *new_vector = vector_new_complex_float(vector_length, manager);
     if (new_vector == NULL) {
         return NULL;
     }
@@ -238,7 +255,7 @@ void vector_reset_complex_float(VectorComplexFloat *buf) {
 }
 
 void vector_free_complex_float(VectorComplexFloat *buf) {
-    free(buf);
+    buf->free(buf);
 }
 
 
@@ -299,20 +316,25 @@ void vector_apply_real_double(
     }
 }
 
-VectorRealDouble *vector_new_real_double(size_t size) {
-    VectorRealDouble *circbuf = malloc(
+VectorRealDouble *vector_new_real_double(size_t size, const MemoryManager *manager) {
+    VectorRealDouble *circbuf = manager->allocate(
         sizeof(VectorRealDouble) + sizeof(double) * size);
     if (circbuf == NULL)
         return NULL;
 
     circbuf->n_elements = size;
+    circbuf->free = manager->deallocate;
 
     vector_reset_real_double(circbuf);
     return circbuf;
 }
 
-VectorRealDouble *vector_from_array_real_double(size_t size, const double elements[]) {
-    VectorRealDouble *vector = vector_new_real_double(size);
+VectorRealDouble *vector_from_array_real_double(
+    size_t size, 
+    const double elements[], 
+    const MemoryManager *manager
+) {
+    VectorRealDouble *vector = vector_new_real_double(size, manager);
     if (vector == NULL) {
         return NULL;
     }
@@ -324,9 +346,12 @@ VectorRealDouble *vector_from_array_real_double(size_t size, const double elemen
     return vector;
 }
 
-VectorRealDouble *vector_duplicate_real_double(const VectorRealDouble *vector) {
+VectorRealDouble *vector_duplicate_real_double(
+    const VectorRealDouble *vector, 
+    const MemoryManager *manager
+) {
     size_t vector_length = vector_length_real_double(vector);
-    VectorRealDouble *new_vector = vector_new_real_double(vector_length);
+    VectorRealDouble *new_vector = vector_new_real_double(vector_length, manager);
     if (new_vector == NULL) {
         return NULL;
     }
@@ -357,7 +382,7 @@ void vector_reset_real_double(VectorRealDouble *buf) {
 }
 
 void vector_free_real_double(VectorRealDouble *buf) {
-    free(buf);
+    buf->free(buf);
 }
 
 
@@ -418,20 +443,25 @@ void vector_apply_real_float(
     }
 }
 
-VectorRealFloat *vector_new_real_float(size_t size) {
-    VectorRealFloat *circbuf = malloc(
+VectorRealFloat *vector_new_real_float(size_t size, const MemoryManager *manager) {
+    VectorRealFloat *circbuf = manager->allocate(
         sizeof(VectorRealFloat) + sizeof(float) * size);
     if (circbuf == NULL)
         return NULL;
 
     circbuf->n_elements = size;
+    circbuf->free = manager->deallocate;
 
     vector_reset_real_float(circbuf);
     return circbuf;
 }
 
-VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[]) {
-    VectorRealFloat *vector = vector_new_real_float(size);
+VectorRealFloat *vector_from_array_real_float(
+    size_t size, 
+    const float elements[], 
+    const MemoryManager *manager
+) {
+    VectorRealFloat *vector = vector_new_real_float(size, manager);
     if (vector == NULL) {
         return NULL;
     }
@@ -443,9 +473,12 @@ VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[
     return vector;
 }
 
-VectorRealFloat *vector_duplicate_real_float(const VectorRealFloat *vector) {
+VectorRealFloat *vector_duplicate_real_float(
+    const VectorRealFloat *vector, 
+    const MemoryManager *manager
+) {
     size_t vector_length = vector_length_real_float(vector);
-    VectorRealFloat *new_vector = vector_new_real_float(vector_length);
+    VectorRealFloat *new_vector = vector_new_real_float(vector_length, manager);
     if (new_vector == NULL) {
         return NULL;
     }
@@ -476,7 +509,7 @@ void vector_reset_real_float(VectorRealFloat *buf) {
 }
 
 void vector_free_real_float(VectorRealFloat *buf) {
-    free(buf);
+    buf->free(buf);
 }
 
 int modular_add(int a, int b, int max) {

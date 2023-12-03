@@ -8,6 +8,7 @@
 #include "filter.h"
 #include "oscillator.h"
 #include "pid.h"
+#include "memory.h"
 
 
 
@@ -20,6 +21,7 @@
 typedef struct {
     PidDouble loop_filter;
     OscillatorDouble nco;
+    Deallocator *free;
 } PhaseLockedLoopDouble;
 
 /**
@@ -30,9 +32,10 @@ typedef struct {
  * @param filter_context Context data to pass to loop filter when it is called. Can store filter state objects, etc.
  * @return Phase-locked loop
  */
-PhaseLockedLoopDouble pll_make_double(
-    OscillatorDouble vco_initial,
-    PidDouble loop_filter
+PhaseLockedLoopDouble *pll_make_double(
+    const OscillatorDouble *vco_initial,
+    const PidDouble *loop_filter,
+    const MemoryManager *manager
 );
 
 /**
@@ -40,9 +43,13 @@ PhaseLockedLoopDouble pll_make_double(
  * Evaluates a phase-locked loop (PLL)
  * @param input Next input signal value
  * @param pll PLL to evaluate
- * @return Numerically-controlled oscillator (NCO) state
+ * @poaram output Numerically-controlled oscillator (NCO) state
  */
-OscillatorDouble pll_evaluate_double(double input, PhaseLockedLoopDouble *pll);
+void pll_evaluate_double(
+    double input, 
+    OscillatorDouble *output,
+    PhaseLockedLoopDouble *pll
+);
 
 /**
  * @brief 
@@ -52,6 +59,8 @@ OscillatorDouble pll_evaluate_double(double input, PhaseLockedLoopDouble *pll);
  */
 void pll_reset_double(OscillatorDouble vco_initial, PhaseLockedLoopDouble *pll);
 
+void pll_free_double(PhaseLockedLoopDouble *pll);
+
 /**
  * @brief 
  * Creates a type 2 PLL loop filter
@@ -59,7 +68,10 @@ void pll_reset_double(OscillatorDouble vco_initial, PhaseLockedLoopDouble *pll);
  * @param damping_coefficient Damping coefficient
  * @return loop filter
  */
-PidDouble pll_loop_filter_make_double(double noise_bandwidth, double damping_coefficient);
+PidDouble *pll_loop_filter_make_double(
+    double noise_bandwidth, 
+    double damping_coefficient,
+    const MemoryManager *manager);
 
 
 
@@ -73,6 +85,7 @@ PidDouble pll_loop_filter_make_double(double noise_bandwidth, double damping_coe
 typedef struct {
     PidFloat loop_filter;
     OscillatorFloat nco;
+    Deallocator *free;
 } PhaseLockedLoopFloat;
 
 /**
@@ -83,9 +96,10 @@ typedef struct {
  * @param filter_context Context data to pass to loop filter when it is called. Can store filter state objects, etc.
  * @return Phase-locked loop
  */
-PhaseLockedLoopFloat pll_make_float(
-    OscillatorFloat vco_initial,
-    PidFloat loop_filter
+PhaseLockedLoopFloat *pll_make_float(
+    const OscillatorFloat *vco_initial,
+    const PidFloat *loop_filter,
+    const MemoryManager *manager
 );
 
 /**
@@ -93,9 +107,13 @@ PhaseLockedLoopFloat pll_make_float(
  * Evaluates a phase-locked loop (PLL)
  * @param input Next input signal value
  * @param pll PLL to evaluate
- * @return Numerically-controlled oscillator (NCO) state
+ * @poaram output Numerically-controlled oscillator (NCO) state
  */
-OscillatorFloat pll_evaluate_float(float input, PhaseLockedLoopFloat *pll);
+void pll_evaluate_float(
+    float input, 
+    OscillatorFloat *output,
+    PhaseLockedLoopFloat *pll
+);
 
 /**
  * @brief 
@@ -105,6 +123,8 @@ OscillatorFloat pll_evaluate_float(float input, PhaseLockedLoopFloat *pll);
  */
 void pll_reset_float(OscillatorFloat vco_initial, PhaseLockedLoopFloat *pll);
 
+void pll_free_float(PhaseLockedLoopFloat *pll);
+
 /**
  * @brief 
  * Creates a type 2 PLL loop filter
@@ -112,7 +132,10 @@ void pll_reset_float(OscillatorFloat vco_initial, PhaseLockedLoopFloat *pll);
  * @param damping_coefficient Damping coefficient
  * @return loop filter
  */
-PidFloat pll_loop_filter_make_float(float noise_bandwidth, float damping_coefficient);
+PidFloat *pll_loop_filter_make_float(
+    float noise_bandwidth, 
+    float damping_coefficient,
+    const MemoryManager *manager);
 
 
 #endif

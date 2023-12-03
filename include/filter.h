@@ -5,6 +5,7 @@
 #include <complex.h>
 #include "vector.h"
 #include "window.h"
+#include "memory.h"
 
 
 /**
@@ -26,6 +27,7 @@ typedef struct {
     VectorComplexDouble *previous_input;
     VectorComplexDouble *feedback; /** Feedback (IIR) terms of the filter */
     VectorComplexDouble *previous_output;
+    Deallocator *free;
 } DigitalFilterComplexDouble;
 /**
  * @brief 
@@ -45,7 +47,8 @@ double complex filter_evaluate_digital_filter_complex_double(double complex inpu
  */
 DigitalFilterComplexDouble *filter_make_digital_filter_complex_double(
     const VectorComplexDouble *feedforward,
-    const VectorComplexDouble *feedback
+    const VectorComplexDouble *feedback,
+    const MemoryManager *manager
 );
 
 
@@ -55,7 +58,10 @@ DigitalFilterComplexDouble *filter_make_digital_filter_complex_double(
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-DigitalFilterComplexDouble *filter_make_ewma_complex_double(double alpha);
+DigitalFilterComplexDouble *filter_make_ewma_complex_double(
+    double alpha,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -63,7 +69,10 @@ DigitalFilterComplexDouble *filter_make_ewma_complex_double(double alpha);
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-DigitalFilterComplexDouble *filter_make_first_order_iir_complex_double(double cutoff_frequency);
+DigitalFilterComplexDouble *filter_make_first_order_iir_complex_double(
+    double cutoff_frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -78,7 +87,8 @@ DigitalFilterComplexDouble *filter_make_sinc_complex_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunctionDouble window
+    WindowFunctionDouble window,
+    const MemoryManager *manager
 );
 
 /**
@@ -89,7 +99,12 @@ DigitalFilterComplexDouble *filter_make_sinc_complex_double(
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-DigitalFilterComplexDouble *filter_make_savgol_complex_double(size_t window_length, int deriv, int polyorder);
+DigitalFilterComplexDouble *filter_make_savgol_complex_double(
+    size_t window_length, 
+    int deriv, 
+    int polyorder,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -117,6 +132,7 @@ typedef struct {
     VectorComplexFloat *previous_input;
     VectorComplexFloat *feedback; /** Feedback (IIR) terms of the filter */
     VectorComplexFloat *previous_output;
+    Deallocator *free;
 } DigitalFilterComplexFloat;
 /**
  * @brief 
@@ -136,7 +152,8 @@ float complex filter_evaluate_digital_filter_complex_float(float complex input, 
  */
 DigitalFilterComplexFloat *filter_make_digital_filter_complex_float(
     const VectorComplexFloat *feedforward,
-    const VectorComplexFloat *feedback
+    const VectorComplexFloat *feedback,
+    const MemoryManager *manager
 );
 
 
@@ -146,7 +163,10 @@ DigitalFilterComplexFloat *filter_make_digital_filter_complex_float(
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-DigitalFilterComplexFloat *filter_make_ewma_complex_float(float alpha);
+DigitalFilterComplexFloat *filter_make_ewma_complex_float(
+    float alpha,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -154,7 +174,10 @@ DigitalFilterComplexFloat *filter_make_ewma_complex_float(float alpha);
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-DigitalFilterComplexFloat *filter_make_first_order_iir_complex_float(float cutoff_frequency);
+DigitalFilterComplexFloat *filter_make_first_order_iir_complex_float(
+    float cutoff_frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -169,7 +192,8 @@ DigitalFilterComplexFloat *filter_make_sinc_complex_float(
     float cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunctionFloat window
+    WindowFunctionFloat window,
+    const MemoryManager *manager
 );
 
 /**
@@ -180,7 +204,12 @@ DigitalFilterComplexFloat *filter_make_sinc_complex_float(
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-DigitalFilterComplexFloat *filter_make_savgol_complex_float(size_t window_length, int deriv, int polyorder);
+DigitalFilterComplexFloat *filter_make_savgol_complex_float(
+    size_t window_length, 
+    int deriv, 
+    int polyorder,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -208,6 +237,7 @@ typedef struct {
     VectorRealDouble *previous_input;
     VectorRealDouble *feedback; /** Feedback (IIR) terms of the filter */
     VectorRealDouble *previous_output;
+    Deallocator *free;
 } DigitalFilterRealDouble;
 /**
  * @brief 
@@ -227,7 +257,8 @@ double filter_evaluate_digital_filter_real_double(double input, DigitalFilterRea
  */
 DigitalFilterRealDouble *filter_make_digital_filter_real_double(
     const VectorRealDouble *feedforward,
-    const VectorRealDouble *feedback
+    const VectorRealDouble *feedback,
+    const MemoryManager *manager
 );
 
 
@@ -237,7 +268,10 @@ DigitalFilterRealDouble *filter_make_digital_filter_real_double(
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-DigitalFilterRealDouble *filter_make_ewma_real_double(double alpha);
+DigitalFilterRealDouble *filter_make_ewma_real_double(
+    double alpha,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -245,7 +279,10 @@ DigitalFilterRealDouble *filter_make_ewma_real_double(double alpha);
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-DigitalFilterRealDouble *filter_make_first_order_iir_real_double(double cutoff_frequency);
+DigitalFilterRealDouble *filter_make_first_order_iir_real_double(
+    double cutoff_frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -260,7 +297,8 @@ DigitalFilterRealDouble *filter_make_sinc_real_double(
     double cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunctionDouble window
+    WindowFunctionDouble window,
+    const MemoryManager *manager
 );
 
 /**
@@ -271,7 +309,12 @@ DigitalFilterRealDouble *filter_make_sinc_real_double(
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-DigitalFilterRealDouble *filter_make_savgol_real_double(size_t window_length, int deriv, int polyorder);
+DigitalFilterRealDouble *filter_make_savgol_real_double(
+    size_t window_length, 
+    int deriv, 
+    int polyorder,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -299,6 +342,7 @@ typedef struct {
     VectorRealFloat *previous_input;
     VectorRealFloat *feedback; /** Feedback (IIR) terms of the filter */
     VectorRealFloat *previous_output;
+    Deallocator *free;
 } DigitalFilterRealFloat;
 /**
  * @brief 
@@ -318,7 +362,8 @@ float filter_evaluate_digital_filter_real_float(float input, DigitalFilterRealFl
  */
 DigitalFilterRealFloat *filter_make_digital_filter_real_float(
     const VectorRealFloat *feedforward,
-    const VectorRealFloat *feedback
+    const VectorRealFloat *feedback,
+    const MemoryManager *manager
 );
 
 
@@ -328,7 +373,10 @@ DigitalFilterRealFloat *filter_make_digital_filter_real_float(
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-DigitalFilterRealFloat *filter_make_ewma_real_float(float alpha);
+DigitalFilterRealFloat *filter_make_ewma_real_float(
+    float alpha,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -336,7 +384,10 @@ DigitalFilterRealFloat *filter_make_ewma_real_float(float alpha);
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-DigitalFilterRealFloat *filter_make_first_order_iir_real_float(float cutoff_frequency);
+DigitalFilterRealFloat *filter_make_first_order_iir_real_float(
+    float cutoff_frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -351,7 +402,8 @@ DigitalFilterRealFloat *filter_make_sinc_real_float(
     float cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    WindowFunctionFloat window
+    WindowFunctionFloat window,
+    const MemoryManager *manager
 );
 
 /**
@@ -362,7 +414,12 @@ DigitalFilterRealFloat *filter_make_sinc_real_float(
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-DigitalFilterRealFloat *filter_make_savgol_real_float(size_t window_length, int deriv, int polyorder);
+DigitalFilterRealFloat *filter_make_savgol_real_float(
+    size_t window_length, 
+    int deriv, 
+    int polyorder,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 

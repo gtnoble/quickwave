@@ -45,7 +45,10 @@ ${number-type} dirac_delta${function-tag}(${number-type} x) {
     filter-schema
 "
 
-${number-type} filter_evaluate_digital_filter${function-tag}(${number-type} input, ${filter-type} *filter) {
+${number-type} filter_evaluate_digital_filter${function-tag}(
+    ${number-type} input, 
+    ${filter-type} *filter
+) {
     assert_not_null(filter);
     assert_not_null(filter->feedforward);
 
@@ -65,30 +68,33 @@ ${number-type} filter_evaluate_digital_filter${function-tag}(${number-type} inpu
 
 ${filter-type} *filter_make_digital_filter${function-tag}(
     const ${vector-type} *feedforward,
-    const ${vector-type} *feedback
+    const ${vector-type} *feedback,
+    const MemoryManager *manager
 ) {
-    ${filter-type} *filter = malloc(sizeof(${filter-type}));
+    ${filter-type} *filter = manager->allocate(sizeof(${filter-type}));
     if (filter == NULL)
         return NULL;
+
+    filter->free = manager->deallocate;
     
-    filter->feedforward = vector_duplicate${function-tag}(feedforward);
+    filter->feedforward = vector_duplicate${function-tag}(feedforward, manager);
     if (filter->feedforward == NULL) {
         goto fail_allocate_feedforward;
     }
     
-    filter->previous_input = vector_new${function-tag}(vector_length${function-tag}(feedforward));
+    filter->previous_input = vector_new${function-tag}(vector_length${function-tag}(feedforward), manager);
     if (filter->previous_input == NULL) {
         goto fail_allocate_previous_input;
     }
     
     if (feedback != NULL) {
-        filter->feedback = vector_duplicate${function-tag}(feedback);
+        filter->feedback = vector_duplicate${function-tag}(feedback, manager);
         if (filter->feedback == NULL) {
             goto fail_allocate_feedback;
         }
         
         filter->previous_output = 
-            vector_new${function-tag}(vector_length${function-tag}(feedback));
+            vector_new${function-tag}(vector_length${function-tag}(feedback), manager);
         if (filter->previous_output == NULL) {
             goto fail_allocate_previous_output;
         }
@@ -135,13 +141,14 @@ void filter_free_digital_filter${function-tag}(${filter-type} *filter) {
         assert_not_null(filter->previous_output);
         vector_free${function-tag}(filter->previous_output);
     }
-    free(filter);
+    filter->free(filter);
 }
 
 ${filter-type} *filter_make_savgol${function-tag}(
     size_t filter_length, 
     int derivative, 
-    int polynomial_order
+    int polynomial_order,
+    const MemoryManager *manager
 ) {
     // Window length must be odd
     assert((filter_length & 0x1) == 1);
@@ -150,7 +157,7 @@ ${filter-type} *filter_make_savgol${function-tag}(
     assert(derivative <= polynomial_order);
 
     int center = 0;
-    ${vector-type} *feedforward = vector_new${function-tag}(filter_length);
+    ${vector-type} *feedforward = vector_new${function-tag}(filter_length, manager);
     if (feedforward == NULL) {
         return NULL;
     }
@@ -165,27 +172,30 @@ ${filter-type} *filter_make_savgol${function-tag}(
         );
     }
 
-    ${filter-type} *filter = filter_make_digital_filter${function-tag}(feedforward, NULL);
+    ${filter-type} *filter = filter_make_digital_filter${function-tag}(feedforward, NULL, manager);
     vector_free${function-tag}(feedforward);
     return filter;
 }
 
-${filter-type} *filter_make_ewma${function-tag}(${number-base-type} alpha) {
+${filter-type} *filter_make_ewma${function-tag}(
+    ${number-base-type} alpha, 
+    const MemoryManager *manager
+) {
     assert(alpha >= 0.0);
     assert(alpha <= 1.0);
 
-    ${vector-type} *feedforward = vector_new${function-tag}(1);
+    ${vector-type} *feedforward = vector_new${function-tag}(1, manager);
     if (feedforward == NULL)
         goto feedforward_allocation_failed;
     *vector_element${function-tag}(0, feedforward) = alpha;
 
-    ${vector-type} *feedback = vector_new${function-tag}(1);
+    ${vector-type} *feedback = vector_new${function-tag}(1, manager);
     if (feedback == NULL)
         goto feedback_allocation_failed;
     *vector_element${function-tag}(0, feedback) = 1 - alpha;
 
     ${filter-type} *filter = 
-        filter_make_digital_filter${function-tag}(feedforward, feedback);
+        filter_make_digital_filter${function-tag}(feedforward, feedback, manager);
 
     vector_free${function-tag}(feedforward);
     vector_free${function-tag}(feedback);
@@ -198,7 +208,10 @@ ${filter-type} *filter_make_ewma${function-tag}(${number-base-type} alpha) {
         return NULL;
 }
 
-${filter-type} *filter_make_first_order_iir${function-tag}(${number-base-type} cutoff_frequency) {
+${filter-type} *filter_make_first_order_iir${function-tag}(
+    ${number-base-type} cutoff_frequency, 
+    const MemoryManager *manager
+) {
     assert(cutoff_frequency < 0.5);
     assert(cutoff_frequency >= 0);
     ${number-base-type} angular_frequency = ordinary_frequency_to_angular${real-function-tag}(cutoff_frequency);
@@ -207,7 +220,8 @@ ${filter-type} *filter_make_first_order_iir${function-tag}(${number-base-type} c
         1 +
         sqrt(
             pow(cos(angular_frequency), 2) - 4 * cos(angular_frequency) + 3
-        )
+        ),
+        manager
     );
 }
 
@@ -215,7 +229,8 @@ ${filter-type} *filter_make_sinc${function-tag}(
     ${number-base-type} cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    ${window-function-type} window
+    ${window-function-type} window,
+    const MemoryManager *manager
 ) {
     assert(cutoff_frequency >= 0);
     assert(filter_type == LOW_PASS || filter_type == HIGH_PASS);
@@ -224,7 +239,7 @@ ${filter-type} *filter_make_sinc${function-tag}(
     if (window == NULL)
         window = window_rectangular${real-function-tag};
 
-    ${vector-type} *filter_coefficients = vector_new${function-tag}(length);
+    ${vector-type} *filter_coefficients = vector_new${function-tag}(length, manager);
     if (filter_coefficients == NULL) {
         return NULL;
     }
@@ -249,7 +264,7 @@ ${filter-type} *filter_make_sinc${function-tag}(
             dirac_delta_${number-base-type}(i - length / 2) - dc_corrected_coefficient;
     }
     ${filter-type} *filter = 
-        filter_make_digital_filter${function-tag}(filter_coefficients, NULL);
+        filter_make_digital_filter${function-tag}(filter_coefficients, NULL, manager);
     
     vector_free${function-tag}(filter_coefficients);
 

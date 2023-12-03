@@ -5,21 +5,25 @@
 "
 #include \"moving_average.h\"
 #include \"assertions.h\"
+#include \"memory.h\"
 "
 
     (generate-text 
     moving-average-schema
 "
-${moving-average-type} *moving_average_make${function-tag}(size_t length) {
-    ${moving-average-type} *filter = malloc(sizeof(${moving-average-type})); 
-    
+${moving-average-type} *moving_average_make${function-tag}(
+    size_t length, 
+    const MemoryManager *manager
+) {
+    ${moving-average-type} *filter = manager->allocate(sizeof(${moving-average-type})); 
     if (filter == NULL) { 
         return NULL; 
     } 
-    
-    filter->previous_input = vector_new${function-tag}(length); 
+    filter->free = manager->deallocate;
+
+    filter->previous_input = vector_new${function-tag}(length, manager); 
     if (filter->previous_input == NULL) { 
-        free(filter); 
+        filter->free(filter); 
         return NULL; 
     } 
     
@@ -28,7 +32,7 @@ ${moving-average-type} *moving_average_make${function-tag}(size_t length) {
     return filter;
 }
 
-double complex moving_average_evaluate${function-tag}(
+${number-type} moving_average_evaluate${function-tag}(
     ${number-type} input, 
     ${moving-average-type} *filter
 ) {
@@ -50,7 +54,7 @@ void moving_average_free${function-tag}(${moving-average-type} *filter) {
     assert_not_null(filter); 
     
     vector_free${function-tag}(filter->previous_input); 
-    free(filter); 
+    filter->free(filter); 
 }
 ")
 )

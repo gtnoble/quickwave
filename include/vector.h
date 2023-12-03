@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <complex.h>
 #include "assertions.h"
+#include "memory.h"
 #include <stdbool.h>
 /**
  * @brief 
@@ -14,6 +15,7 @@ typedef struct {
     size_t n_elements; /** Number of elements in the buffer */
     size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
     bool is_reversed;
+    Deallocator *free;
     double complex elements[]; /** Buffer elements */
 } VectorComplexDouble;
 
@@ -55,7 +57,7 @@ void vector_apply_complex_double(
     VectorComplexDouble *vector
 );
 
-VectorComplexDouble *vector_from_array_complex_double(size_t size, const double complex elements[]);
+VectorComplexDouble *vector_from_array_complex_double(size_t size, const double complex elements[], const MemoryManager *manager);
 
 /**
  * @brief 
@@ -63,9 +65,9 @@ VectorComplexDouble *vector_from_array_complex_double(size_t size, const double 
  * @param size Number of elements in the circular buffer
  * @return Vector
  */
-VectorComplexDouble *vector_new_complex_double(size_t size);
+VectorComplexDouble *vector_new_complex_double(size_t size, const MemoryManager *manager);
 
-VectorComplexDouble *vector_duplicate_complex_double(const VectorComplexDouble *vector);
+VectorComplexDouble *vector_duplicate_complex_double(const VectorComplexDouble *vector, const MemoryManager *manager);
 
 
 size_t vector_length_complex_double(const VectorComplexDouble *buf);
@@ -96,6 +98,7 @@ typedef struct {
     size_t n_elements; /** Number of elements in the buffer */
     size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
     bool is_reversed;
+    Deallocator *free;
     float complex elements[]; /** Buffer elements */
 } VectorComplexFloat;
 
@@ -137,7 +140,7 @@ void vector_apply_complex_float(
     VectorComplexFloat *vector
 );
 
-VectorComplexFloat *vector_from_array_complex_float(size_t size, const float complex elements[]);
+VectorComplexFloat *vector_from_array_complex_float(size_t size, const float complex elements[], const MemoryManager *manager);
 
 /**
  * @brief 
@@ -145,9 +148,9 @@ VectorComplexFloat *vector_from_array_complex_float(size_t size, const float com
  * @param size Number of elements in the circular buffer
  * @return Vector
  */
-VectorComplexFloat *vector_new_complex_float(size_t size);
+VectorComplexFloat *vector_new_complex_float(size_t size, const MemoryManager *manager);
 
-VectorComplexFloat *vector_duplicate_complex_float(const VectorComplexFloat *vector);
+VectorComplexFloat *vector_duplicate_complex_float(const VectorComplexFloat *vector, const MemoryManager *manager);
 
 
 size_t vector_length_complex_float(const VectorComplexFloat *buf);
@@ -178,6 +181,7 @@ typedef struct {
     size_t n_elements; /** Number of elements in the buffer */
     size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
     bool is_reversed;
+    Deallocator *free;
     double elements[]; /** Buffer elements */
 } VectorRealDouble;
 
@@ -219,7 +223,7 @@ void vector_apply_real_double(
     VectorRealDouble *vector
 );
 
-VectorRealDouble *vector_from_array_real_double(size_t size, const double elements[]);
+VectorRealDouble *vector_from_array_real_double(size_t size, const double elements[], const MemoryManager *manager);
 
 /**
  * @brief 
@@ -227,9 +231,9 @@ VectorRealDouble *vector_from_array_real_double(size_t size, const double elemen
  * @param size Number of elements in the circular buffer
  * @return Vector
  */
-VectorRealDouble *vector_new_real_double(size_t size);
+VectorRealDouble *vector_new_real_double(size_t size, const MemoryManager *manager);
 
-VectorRealDouble *vector_duplicate_real_double(const VectorRealDouble *vector);
+VectorRealDouble *vector_duplicate_real_double(const VectorRealDouble *vector, const MemoryManager *manager);
 
 
 size_t vector_length_real_double(const VectorRealDouble *buf);
@@ -260,6 +264,7 @@ typedef struct {
     size_t n_elements; /** Number of elements in the buffer */
     size_t last_element_index; /** Index for the last element in the buffer. This is shifted as elements are added. */
     bool is_reversed;
+    Deallocator *free;
     float elements[]; /** Buffer elements */
 } VectorRealFloat;
 
@@ -301,7 +306,7 @@ void vector_apply_real_float(
     VectorRealFloat *vector
 );
 
-VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[]);
+VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[], const MemoryManager *manager);
 
 /**
  * @brief 
@@ -309,9 +314,9 @@ VectorRealFloat *vector_from_array_real_float(size_t size, const float elements[
  * @param size Number of elements in the circular buffer
  * @return Vector
  */
-VectorRealFloat *vector_new_real_float(size_t size);
+VectorRealFloat *vector_new_real_float(size_t size, const MemoryManager *manager);
 
-VectorRealFloat *vector_duplicate_real_float(const VectorRealFloat *vector);
+VectorRealFloat *vector_duplicate_real_float(const VectorRealFloat *vector, const MemoryManager *manager);
 
 
 size_t vector_length_real_float(const VectorRealFloat *buf);

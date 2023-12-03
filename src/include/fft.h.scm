@@ -7,6 +7,7 @@
 #define QUICKWAVE_FFT
 
 #include \"vector.h\"
+#include \"memory.h\"
 
 "
 
@@ -18,9 +19,10 @@ typedef struct {
     ${number-type} *wave_table;
     int length;
     int *bit_reversal_work_area;
+    Deallocator *free;
 } ${fft-type};
 
-${fft-type} *fft_make_fft${function-tag}(int length);
+${fft-type} *fft_make_fft${function-tag}(int length, const MemoryManager *manager);
 void fft_free_fft${function-tag}(${fft-type} *fft);
 void fft_fft${function-tag}(${vector-type} *data, ${fft-type} *fft);
 void fft_ifft${function-tag}(${vector-type} *data, ${fft-type} *fft);

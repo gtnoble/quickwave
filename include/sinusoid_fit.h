@@ -4,6 +4,7 @@
 
 #include "oscillator.h"
 #include "moving_average.h"
+#include "memory.h"
 
 
 /**
@@ -14,8 +15,9 @@
  * over the window interval.
  */
 typedef struct {
-    OscillatorDouble reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
+    OscillatorDouble *reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
     MovingAverageComplexDouble *fit_window; /** Window over which the sinusoid is fit */
+    Deallocator *free;
 } SinusoidFitDouble;
 
 /**
@@ -25,7 +27,11 @@ typedef struct {
  * @param frequency normalized frequency of the fit sinusoids
  * @return sinusoid fitter
  */
-SinusoidFitDouble *sinusoid_fit_make_double(size_t window_length, double frequency);
+SinusoidFitDouble *sinusoid_fit_make_double(
+    size_t window_length, 
+    double frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -40,9 +46,13 @@ void sinusoid_fit_free_double(SinusoidFitDouble *model);
  * The incoming sample is added to this window and the sinusoid fit is calculated.
  * @param input incoming sample
  * @param model sinusoid fit
- * @return resulting fit sinusoid 
+ * @output resulting fit sinusoid 
  */
-OscillatorDouble sinusoid_fit_evaluate_double(double input, SinusoidFitDouble *model);
+void sinusoid_fit_evaluate_double(
+    double input, 
+    OscillatorDouble *output,
+    SinusoidFitDouble *model
+);
 
 
 
@@ -55,8 +65,9 @@ OscillatorDouble sinusoid_fit_evaluate_double(double input, SinusoidFitDouble *m
  * over the window interval.
  */
 typedef struct {
-    OscillatorFloat reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
+    OscillatorFloat *reference; /** Reference sinusoid. The fit sinusoid is relative to this.*/
     MovingAverageComplexFloat *fit_window; /** Window over which the sinusoid is fit */
+    Deallocator *free;
 } SinusoidFitFloat;
 
 /**
@@ -66,7 +77,11 @@ typedef struct {
  * @param frequency normalized frequency of the fit sinusoids
  * @return sinusoid fitter
  */
-SinusoidFitFloat *sinusoid_fit_make_float(size_t window_length, float frequency);
+SinusoidFitFloat *sinusoid_fit_make_float(
+    size_t window_length, 
+    float frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -81,9 +96,13 @@ void sinusoid_fit_free_float(SinusoidFitFloat *model);
  * The incoming sample is added to this window and the sinusoid fit is calculated.
  * @param input incoming sample
  * @param model sinusoid fit
- * @return resulting fit sinusoid 
+ * @output resulting fit sinusoid 
  */
-OscillatorFloat sinusoid_fit_evaluate_float(float input, SinusoidFitFloat *model);
+void sinusoid_fit_evaluate_float(
+    float input, 
+    OscillatorFloat *output,
+    SinusoidFitFloat *model
+);
 
 
 #endif

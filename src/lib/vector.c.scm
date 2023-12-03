@@ -7,6 +7,7 @@
 #include <math.h>
 #include <complex.h>
 #include <assert.h>
+#include \"memory.h\"
 #include \"vector.h\"")
 
 (define body 
@@ -70,20 +71,25 @@ void vector_apply${function-tag}(
     }
 }
 
-${vector-type} *vector_new${function-tag}(size_t size) {
-    ${vector-type} *circbuf = malloc(
+${vector-type} *vector_new${function-tag}(size_t size, const MemoryManager *manager) {
+    ${vector-type} *circbuf = manager->allocate(
         sizeof(${vector-type}) + sizeof(${number-type}) * size);
     if (circbuf == NULL)
         return NULL;
 
     circbuf->n_elements = size;
+    circbuf->free = manager->deallocate;
 
     vector_reset${function-tag}(circbuf);
     return circbuf;
 }
 
-${vector-type} *vector_from_array${function-tag}(size_t size, const ${number-type} elements[]) {
-    ${vector-type} *vector = vector_new${function-tag}(size);
+${vector-type} *vector_from_array${function-tag}(
+    size_t size, 
+    const ${number-type} elements[], 
+    const MemoryManager *manager
+) {
+    ${vector-type} *vector = vector_new${function-tag}(size, manager);
     if (vector == NULL) {
         return NULL;
     }
@@ -95,9 +101,12 @@ ${vector-type} *vector_from_array${function-tag}(size_t size, const ${number-typ
     return vector;
 }
 
-${vector-type} *vector_duplicate${function-tag}(const ${vector-type} *vector) {
+${vector-type} *vector_duplicate${function-tag}(
+    const ${vector-type} *vector, 
+    const MemoryManager *manager
+) {
     size_t vector_length = vector_length${function-tag}(vector);
-    ${vector-type} *new_vector = vector_new${function-tag}(vector_length);
+    ${vector-type} *new_vector = vector_new${function-tag}(vector_length, manager);
     if (new_vector == NULL) {
         return NULL;
     }
@@ -128,7 +137,7 @@ void vector_reset${function-tag}(${vector-type} *buf) {
 }
 
 void vector_free${function-tag}(${vector-type} *buf) {
-    free(buf);
+    buf->free(buf);
 }"))
 
 (define common-functions

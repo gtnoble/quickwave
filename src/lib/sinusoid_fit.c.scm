@@ -15,31 +15,52 @@
     (generate-text
         sinusoid-fit-schema
 "
-${sinusoid-fit-type} *sinusoid_fit_make${function-tag}(size_t window_length, ${number-type} frequency) {
-    ${sinusoid-fit-type} *model = malloc(sizeof(${sinusoid-fit-type}));
+${sinusoid-fit-type} *sinusoid_fit_make${function-tag}(
+    size_t window_length, 
+    ${number-type} frequency,
+    const MemoryManager *manager
+) {
+    ${sinusoid-fit-type} *model = manager->allocate(sizeof(${sinusoid-fit-type}));
     if (model == NULL) {
-        return NULL;
+        goto model_allocation_failure;
     }
 
-    model->fit_window = moving_average_make_complex${function-tag}(window_length);
-    if (model->fit_window == NULL) {
-        free(model); 
-        return NULL;
-    }
+    model->free = manager->deallocate;
 
-    model->reference = oscillator_make${function-tag}(0.0, frequency);
+    model->fit_window = moving_average_make_complex${function-tag}(
+        window_length,
+        manager
+    );
+    if (model->fit_window == NULL)
+        goto moving_average_alloc_failure;
+
+    model->reference = oscillator_make${function-tag}(0.0, frequency, manager);
+    if (model->reference == NULL)
+        goto oscillator_alloc_failure;
+
     return model;
+
+    oscillator_alloc_failure:
+        moving_average_free_complex${function-tag}(model->fit_window);
+    moving_average_alloc_failure:
+        manager->deallocate(model); 
+    model_allocation_failure:
+
+    return NULL;
 }
 
 void sinusoid_fit_free${function-tag}(${sinusoid-fit-type} *model) {
     moving_average_free_complex${function-tag}(model->fit_window);
-    free(model);
+    oscillator_free${function-tag}(model->reference);
+    model->free(model);
 }
 
-${oscillator-type} sinusoid_fit_evaluate${function-tag}(${number-type} input, ${sinusoid-fit-type} *model) {
+void sinusoid_fit_evaluate${function-tag}(
+    ${number-type} input, 
+    ${oscillator-type} *output,
+    ${sinusoid-fit-type} *model
+) {
     assert_not_null(model);
-
-    ${oscillator-type} reference = oscillator_update${function-tag}(0.0, &model->reference);
 
     /**
      * @brief 
@@ -49,7 +70,9 @@ ${oscillator-type} sinusoid_fit_evaluate${function-tag}(${number-type} input, ${
      * but with a phase that is relative to the phase of the input signal sinusoid.
      */
     ${number-type} complex phase_and_amplitude_relative_to_reference = 
-        conj${math-function-suffix}(oscillator_phase${function-tag}(reference)) * input;
+        conj${math-function-suffix}(
+            oscillator_phase${function-tag}(model->reference)
+        ) * input;
 
     /**
      * @brief 
@@ -68,7 +91,7 @@ ${oscillator-type} sinusoid_fit_evaluate${function-tag}(${number-type} input, ${
      * gives the positive frequency term of the DFT
      */
     ${number-type} complex absolute_positive_frequency_component = 
-        oscillator_phase${function-tag}(reference) * average_relative_phase_and_amplitude;
+        oscillator_phase${function-tag}(model->reference) * average_relative_phase_and_amplitude;
 
     /**
      * @brief 
@@ -83,10 +106,13 @@ ${oscillator-type} sinusoid_fit_evaluate${function-tag}(${number-type} input, ${
      * We have to add the positive and negative frequencies together
      * to perform the inverse DFT
      */
-    return (${oscillator-type}) {
-        .phasor = absolute_positive_frequency_component + 
-            absolute_negative_frequency_component,
-        .complex_frequency = oscillator_frequency${function-tag}(reference)
-    };
+    output->phasor = 
+        absolute_positive_frequency_component + 
+        absolute_negative_frequency_component;
+    output->complex_frequency = oscillator_frequency${function-tag}(
+        model->reference
+    );
+
+    oscillator_update${function-tag}(0.0, model->reference);
 }
 "))

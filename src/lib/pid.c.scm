@@ -10,18 +10,22 @@
     (generate-text
         pid-schema
 "
-${pid-type} pid_make${function-tag}(
+${pid-type} *pid_make${function-tag}(
     ${number-type} proportional_gain, 
     ${number-type} integral_gain, 
-    ${number-type} derivative_gain
+    ${number-type} derivative_gain,
+    const MemoryManager *manager
 ) {
-    ${pid-type} pid = {
-        .previous_input = 0.0,
-        .accumulated_input = 0.0,
-        .proportional_gain = proportional_gain,
-        .integral_gain = integral_gain,
-        .derivative_gain = derivative_gain
-    };
+    ${pid-type} *pid = manager->allocate(sizeof(${pid-type}));
+    if (pid == NULL) {
+        return NULL;
+    }
+    pid->previous_input = 0.0;
+    pid->accumulated_input = 0.0;
+    pid->proportional_gain = proportional_gain;
+    pid->integral_gain = integral_gain;
+    pid->derivative_gain = derivative_gain;
+    pid->free = manager->deallocate;
     return pid;
 }
 
@@ -36,6 +40,10 @@ ${number-type} pid_evaluate${function-tag}(${number-type} input, ${pid-type} *pi
 void pid_reset${function-tag}(${pid-type} *pid) {
     pid->accumulated_input = 0.0;
     pid->previous_input = 0.0;
+}
+
+void pid_free${function-tag}(${pid-type} *pid) {
+    pid->free(pid);
 }
 ")
 )

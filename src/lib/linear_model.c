@@ -3,20 +3,26 @@
 #include "filter.h"
 #include "moving_average.h"
 #include "assertions.h"
+#include "memory.h"
 
 
-LinearEstimatorDouble *linear_estimator_new_double(size_t window_length) {
-    LinearEstimatorDouble *estimator = malloc(sizeof(LinearEstimatorDouble));
+LinearEstimatorDouble *linear_estimator_new_double(
+    size_t window_length, 
+    MemoryManager *manager
+) {
+    LinearEstimatorDouble *estimator = manager->allocate(sizeof(LinearEstimatorDouble));
     if (estimator == NULL) {
         return NULL;
     }
 
-    MovingAverageRealDouble *intercept_estimator = moving_average_make_real_double(window_length);
+    estimator->free = manager->deallocate;
+
+    MovingAverageRealDouble *intercept_estimator = moving_average_make_real_double(window_length, manager);
     if (intercept_estimator == NULL) {
         goto intercept_estimator_alloc_failure;
     }
 
-    DigitalFilterRealDouble *slope_estimator = filter_make_savgol_real_double(window_length, 1, 1);
+    DigitalFilterRealDouble *slope_estimator = filter_make_savgol_real_double(window_length, 1, 1, manager);
     if (slope_estimator == NULL) {
         goto slope_estimator_alloc_failure;
     }
@@ -30,17 +36,21 @@ LinearEstimatorDouble *linear_estimator_new_double(size_t window_length) {
     slope_estimator_alloc_failure:
         moving_average_free_real_double(intercept_estimator);
     intercept_estimator_alloc_failure:
-        free(estimator);
+        estimator->free(estimator);
         return NULL;
 }
 
 void linear_estimator_free_double(LinearEstimatorDouble *model) {
     moving_average_free_real_double(model->intercept_estimator);
     filter_free_digital_filter_real_double(model->slope_estimator);
-    free(model);
+    model->free(model);
 }
 
-LinearModelDouble linear_estimator_estimate_double(double input, LinearEstimatorDouble *estimator) {
+void linear_estimator_estimate_double(
+    double input, 
+    LinearModelDouble *output_estimate,
+    LinearEstimatorDouble *estimator
+) {
     assert_not_null(estimator);
 
     double slope = filter_evaluate_digital_filter_real_double(input, estimator->slope_estimator);
@@ -48,31 +58,34 @@ LinearModelDouble linear_estimator_estimate_double(double input, LinearEstimator
         moving_average_evaluate_real_double(input, estimator->intercept_estimator) + 
         slope * 
         estimator->intercept_x_offset;
-    LinearModelDouble model = {
-        .intercept = intercept,
-        .slope = slope
-    };
-    return model;
+
+    output_estimate->intercept = intercept;
+    output_estimate->slope = slope;
 }
 
-double linear_model_predict_double(double x, LinearModelDouble model) {
-    return model.intercept + model.slope * x;
+double linear_model_predict_double(double x, const LinearModelDouble *model) {
+    return model->intercept + model->slope * x;
 }
 
 
 
-LinearEstimatorFloat *linear_estimator_new_float(size_t window_length) {
-    LinearEstimatorFloat *estimator = malloc(sizeof(LinearEstimatorFloat));
+LinearEstimatorFloat *linear_estimator_new_float(
+    size_t window_length, 
+    MemoryManager *manager
+) {
+    LinearEstimatorFloat *estimator = manager->allocate(sizeof(LinearEstimatorFloat));
     if (estimator == NULL) {
         return NULL;
     }
 
-    MovingAverageRealFloat *intercept_estimator = moving_average_make_real_float(window_length);
+    estimator->free = manager->deallocate;
+
+    MovingAverageRealFloat *intercept_estimator = moving_average_make_real_float(window_length, manager);
     if (intercept_estimator == NULL) {
         goto intercept_estimator_alloc_failure;
     }
 
-    DigitalFilterRealFloat *slope_estimator = filter_make_savgol_real_float(window_length, 1, 1);
+    DigitalFilterRealFloat *slope_estimator = filter_make_savgol_real_float(window_length, 1, 1, manager);
     if (slope_estimator == NULL) {
         goto slope_estimator_alloc_failure;
     }
@@ -86,17 +99,21 @@ LinearEstimatorFloat *linear_estimator_new_float(size_t window_length) {
     slope_estimator_alloc_failure:
         moving_average_free_real_float(intercept_estimator);
     intercept_estimator_alloc_failure:
-        free(estimator);
+        estimator->free(estimator);
         return NULL;
 }
 
 void linear_estimator_free_float(LinearEstimatorFloat *model) {
     moving_average_free_real_float(model->intercept_estimator);
     filter_free_digital_filter_real_float(model->slope_estimator);
-    free(model);
+    model->free(model);
 }
 
-LinearModelFloat linear_estimator_estimate_float(float input, LinearEstimatorFloat *estimator) {
+void linear_estimator_estimate_float(
+    float input, 
+    LinearModelFloat *output_estimate,
+    LinearEstimatorFloat *estimator
+) {
     assert_not_null(estimator);
 
     float slope = filter_evaluate_digital_filter_real_float(input, estimator->slope_estimator);
@@ -104,13 +121,11 @@ LinearModelFloat linear_estimator_estimate_float(float input, LinearEstimatorFlo
         moving_average_evaluate_real_float(input, estimator->intercept_estimator) + 
         slope * 
         estimator->intercept_x_offset;
-    LinearModelFloat model = {
-        .intercept = intercept,
-        .slope = slope
-    };
-    return model;
+
+    output_estimate->intercept = intercept;
+    output_estimate->slope = slope;
 }
 
-float linear_model_predict_float(float x, LinearModelFloat model) {
-    return model.intercept + model.slope * x;
+float linear_model_predict_float(float x, const LinearModelFloat *model) {
+    return model->intercept + model->slope * x;
 }

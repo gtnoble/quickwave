@@ -8,6 +8,7 @@
 
 #include <complex.h>
 #include \"vector.h\"
+#include \"memory.h\"
 "
 
 (generate-text 
@@ -22,6 +23,7 @@
 typedef struct {
     ${number-type} moving_sum;
     ${vector-type} *previous_input;
+    Deallocator *free;
 } ${moving-average-type};
 
 /**
@@ -30,7 +32,10 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-${moving-average-type} *moving_average_make${function-tag}(size_t length);
+${moving-average-type} *moving_average_make${function-tag}(
+    size_t length, 
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -39,7 +44,7 @@ ${moving-average-type} *moving_average_make${function-tag}(size_t length);
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_evaluate${function-tag}(
+${number-type} moving_average_evaluate${function-tag}(
     ${number-type} input, 
     ${moving-average-type} *filter
 );

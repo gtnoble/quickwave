@@ -9,6 +9,7 @@
 #include <complex.h>
 #include \"vector.h\"
 #include \"window.h\"
+#include \"memory.h\"
 
 
 /**
@@ -35,6 +36,7 @@ typedef struct {
     ${vector-type} *previous_input;
     ${vector-type} *feedback; /** Feedback (IIR) terms of the filter */
     ${vector-type} *previous_output;
+    Deallocator *free;
 } ${filter-type};
 /**
  * @brief 
@@ -54,7 +56,8 @@ ${number-type} filter_evaluate_digital_filter${function-tag}(${number-type} inpu
  */
 ${filter-type} *filter_make_digital_filter${function-tag}(
     const ${vector-type} *feedforward,
-    const ${vector-type} *feedback
+    const ${vector-type} *feedback,
+    const MemoryManager *manager
 );
 
 
@@ -64,7 +67,10 @@ ${filter-type} *filter_make_digital_filter${function-tag}(
  * @param alpha Smoothing factor 0 < alpha < 1. Smaller alpha means more smoothing.
  * @return EWMA filter 
  */
-${filter-type} *filter_make_ewma${function-tag}(${number-base-type} alpha);
+${filter-type} *filter_make_ewma${function-tag}(
+    ${number-base-type} alpha,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -72,7 +78,10 @@ ${filter-type} *filter_make_ewma${function-tag}(${number-base-type} alpha);
  * @param cutoff_frequency Normalized cutoff frequency
  * @return Constructed filter
  */
-${filter-type} *filter_make_first_order_iir${function-tag}(${number-base-type} cutoff_frequency);
+${filter-type} *filter_make_first_order_iir${function-tag}(
+    ${number-base-type} cutoff_frequency,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -87,7 +96,8 @@ ${filter-type} *filter_make_sinc${function-tag}(
     ${number-base-type} cutoff_frequency, 
     size_t length, 
     enum FilterType filter_type,
-    ${window-function-type} window
+    ${window-function-type} window,
+    const MemoryManager *manager
 );
 
 /**
@@ -98,7 +108,12 @@ ${filter-type} *filter_make_sinc${function-tag}(
  * @param polynomial_order Order of the polynomial used for smoothing. 1 is linear, 2 parabolic, etc.
  * @return Constructed filter
  */
-${filter-type} *filter_make_savgol${function-tag}(size_t window_length, int deriv, int polyorder);
+${filter-type} *filter_make_savgol${function-tag}(
+    size_t window_length, 
+    int deriv, 
+    int polyorder,
+    const MemoryManager *manager
+);
 
 /**
  * @brief 

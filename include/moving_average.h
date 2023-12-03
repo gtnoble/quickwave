@@ -4,6 +4,7 @@
 
 #include <complex.h>
 #include "vector.h"
+#include "memory.h"
 
 /**
  * @brief 
@@ -14,6 +15,7 @@
 typedef struct {
     double complex moving_sum;
     VectorComplexDouble *previous_input;
+    Deallocator *free;
 } MovingAverageComplexDouble;
 
 /**
@@ -22,7 +24,10 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageComplexDouble *moving_average_make_complex_double(size_t length);
+MovingAverageComplexDouble *moving_average_make_complex_double(
+    size_t length, 
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -62,6 +67,7 @@ void moving_average_free_complex_double(MovingAverageComplexDouble *filter);
 typedef struct {
     float complex moving_sum;
     VectorComplexFloat *previous_input;
+    Deallocator *free;
 } MovingAverageComplexFloat;
 
 /**
@@ -70,7 +76,10 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageComplexFloat *moving_average_make_complex_float(size_t length);
+MovingAverageComplexFloat *moving_average_make_complex_float(
+    size_t length, 
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -79,7 +88,7 @@ MovingAverageComplexFloat *moving_average_make_complex_float(size_t length);
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_evaluate_complex_float(
+float complex moving_average_evaluate_complex_float(
     float complex input, 
     MovingAverageComplexFloat *filter
 );
@@ -110,6 +119,7 @@ void moving_average_free_complex_float(MovingAverageComplexFloat *filter);
 typedef struct {
     double moving_sum;
     VectorRealDouble *previous_input;
+    Deallocator *free;
 } MovingAverageRealDouble;
 
 /**
@@ -118,7 +128,10 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageRealDouble *moving_average_make_real_double(size_t length);
+MovingAverageRealDouble *moving_average_make_real_double(
+    size_t length, 
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -127,7 +140,7 @@ MovingAverageRealDouble *moving_average_make_real_double(size_t length);
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_evaluate_real_double(
+double moving_average_evaluate_real_double(
     double input, 
     MovingAverageRealDouble *filter
 );
@@ -158,6 +171,7 @@ void moving_average_free_real_double(MovingAverageRealDouble *filter);
 typedef struct {
     float moving_sum;
     VectorRealFloat *previous_input;
+    Deallocator *free;
 } MovingAverageRealFloat;
 
 /**
@@ -166,7 +180,10 @@ typedef struct {
  * @param length Number of sequential elements to average
  * @return Constructed filter
  */
-MovingAverageRealFloat *moving_average_make_real_float(size_t length);
+MovingAverageRealFloat *moving_average_make_real_float(
+    size_t length, 
+    const MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -175,7 +192,7 @@ MovingAverageRealFloat *moving_average_make_real_float(size_t length);
  * @param filter Moving average filter
  * @return Filtered value
  */
-double complex moving_average_evaluate_real_float(
+float moving_average_evaluate_real_float(
     float input, 
     MovingAverageRealFloat *filter
 );

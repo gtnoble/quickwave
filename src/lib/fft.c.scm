@@ -20,24 +20,26 @@ static bool is_power_of_two(int n);
     (generate-text
         fft-schema
 "
-${fft-type} *fft_make_fft${function-tag}(int length) {
+${fft-type} *fft_make_fft${function-tag}(int length, const MemoryManager *manager) {
     assert(is_power_of_two(length));
     assert(length > 0);
 
-    ${fft-type} *fft = malloc(sizeof(${fft-type}));
+    ${fft-type} *fft = manager->allocate(sizeof(${fft-type}));
     if (fft == NULL)
         goto fft_allocation_failure;
     
-    fft->in_out_data = malloc(sizeof(${number-type}) * 2 * length);
+    fft->free = manager->deallocate;
+    
+    fft->in_out_data = manager->allocate(sizeof(${number-type}) * 2 * length);
     if (fft->in_out_data == NULL)
         goto data_allocation_failure;
 
     int bit_reversal_work_area_length = 2+(1<<(int)(log(length+0.5)/log(2))/2);
-    fft->bit_reversal_work_area = malloc(sizeof(int) * bit_reversal_work_area_length);
+    fft->bit_reversal_work_area = manager->allocate(sizeof(int) * bit_reversal_work_area_length);
     if (fft->bit_reversal_work_area == NULL)
         goto bit_reversal_allocation_failure;
     
-    fft->wave_table = malloc(sizeof(${number-type}) * (length / 2));
+    fft->wave_table = manager->allocate(sizeof(${number-type}) * (length / 2));
     if (fft->wave_table == NULL)
         goto wave_table_allocation_failure;
 
@@ -46,20 +48,20 @@ ${fft-type} *fft_make_fft${function-tag}(int length) {
     return fft;
 
     wave_table_allocation_failure:
-        free(fft->bit_reversal_work_area);
+        fft->free(fft->bit_reversal_work_area);
     bit_reversal_allocation_failure:
-        free(fft->in_out_data);
+        fft->free(fft->in_out_data);
     data_allocation_failure:
-        free(fft);
+        fft->free(fft);
     fft_allocation_failure:
         return NULL;
 }
 
 void fft_free_fft${function-tag}(${fft-type} *fft) {
-    free(fft->bit_reversal_work_area);
-    free(fft->in_out_data);
-    free(fft->wave_table);
-    free(fft);
+    fft->free(fft->bit_reversal_work_area);
+    fft->free(fft->in_out_data);
+    fft->free(fft->wave_table);
+    fft->free(fft);
 }
 
 void fft_fft${function-tag}(${vector-type} *data, ${fft-type} *fft) {

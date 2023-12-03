@@ -2,6 +2,8 @@
 #ifndef QUICKWAVE_PID
 #define QUICKWAVE_PID
 
+#include "memory.h"
+
 
 /**
  * @brief 
@@ -13,6 +15,7 @@ typedef struct {
     double proportional_gain; /** Gain for the proportional term of PID */
     double integral_gain; /** Gain for the integral term of the PID */
     double derivative_gain; /** Gain for the derivative term of the PID */
+    Deallocator *free;
 } PidDouble;
 
 /**
@@ -23,10 +26,11 @@ typedef struct {
  * @param derivative_gain Derivative gain
  * @return Constructed controller
  */
-PidDouble pid_make_double(
+PidDouble *pid_make_double(
     double proportional_gain, 
     double integral_gain, 
-    double derivative_gain
+    double derivative_gain,
+    const MemoryManager *manager
 );
 
 /**
@@ -45,6 +49,8 @@ void pid_reset_double(PidDouble *pid);
  */
 double pid_evaluate_double(double input, PidDouble *pid);
 
+void pid_free_double(PidDouble *pid);
+
 
 
 /**
@@ -57,6 +63,7 @@ typedef struct {
     float proportional_gain; /** Gain for the proportional term of PID */
     float integral_gain; /** Gain for the integral term of the PID */
     float derivative_gain; /** Gain for the derivative term of the PID */
+    Deallocator *free;
 } PidFloat;
 
 /**
@@ -67,10 +74,11 @@ typedef struct {
  * @param derivative_gain Derivative gain
  * @return Constructed controller
  */
-PidFloat pid_make_float(
+PidFloat *pid_make_float(
     float proportional_gain, 
     float integral_gain, 
-    float derivative_gain
+    float derivative_gain,
+    const MemoryManager *manager
 );
 
 /**
@@ -88,6 +96,8 @@ void pid_reset_float(PidFloat *pid);
  * @return control value
  */
 float pid_evaluate_float(float input, PidFloat *pid);
+
+void pid_free_float(PidFloat *pid);
 
 
 #endif

@@ -1,17 +1,21 @@
 
 #include "moving_average.h"
 #include "assertions.h"
+#include "memory.h"
 
-MovingAverageComplexDouble *moving_average_make_complex_double(size_t length) {
-    MovingAverageComplexDouble *filter = malloc(sizeof(MovingAverageComplexDouble)); 
-    
+MovingAverageComplexDouble *moving_average_make_complex_double(
+    size_t length, 
+    const MemoryManager *manager
+) {
+    MovingAverageComplexDouble *filter = manager->allocate(sizeof(MovingAverageComplexDouble)); 
     if (filter == NULL) { 
         return NULL; 
     } 
-    
-    filter->previous_input = vector_new_complex_double(length); 
+    filter->free = manager->deallocate;
+
+    filter->previous_input = vector_new_complex_double(length, manager); 
     if (filter->previous_input == NULL) { 
-        free(filter); 
+        filter->free(filter); 
         return NULL; 
     } 
     
@@ -42,21 +46,24 @@ void moving_average_free_complex_double(MovingAverageComplexDouble *filter) {
     assert_not_null(filter); 
     
     vector_free_complex_double(filter->previous_input); 
-    free(filter); 
+    filter->free(filter); 
 }
 
 
 
-MovingAverageComplexFloat *moving_average_make_complex_float(size_t length) {
-    MovingAverageComplexFloat *filter = malloc(sizeof(MovingAverageComplexFloat)); 
-    
+MovingAverageComplexFloat *moving_average_make_complex_float(
+    size_t length, 
+    const MemoryManager *manager
+) {
+    MovingAverageComplexFloat *filter = manager->allocate(sizeof(MovingAverageComplexFloat)); 
     if (filter == NULL) { 
         return NULL; 
     } 
-    
-    filter->previous_input = vector_new_complex_float(length); 
+    filter->free = manager->deallocate;
+
+    filter->previous_input = vector_new_complex_float(length, manager); 
     if (filter->previous_input == NULL) { 
-        free(filter); 
+        filter->free(filter); 
         return NULL; 
     } 
     
@@ -65,7 +72,7 @@ MovingAverageComplexFloat *moving_average_make_complex_float(size_t length) {
     return filter;
 }
 
-double complex moving_average_evaluate_complex_float(
+float complex moving_average_evaluate_complex_float(
     float complex input, 
     MovingAverageComplexFloat *filter
 ) {
@@ -87,21 +94,24 @@ void moving_average_free_complex_float(MovingAverageComplexFloat *filter) {
     assert_not_null(filter); 
     
     vector_free_complex_float(filter->previous_input); 
-    free(filter); 
+    filter->free(filter); 
 }
 
 
 
-MovingAverageRealDouble *moving_average_make_real_double(size_t length) {
-    MovingAverageRealDouble *filter = malloc(sizeof(MovingAverageRealDouble)); 
-    
+MovingAverageRealDouble *moving_average_make_real_double(
+    size_t length, 
+    const MemoryManager *manager
+) {
+    MovingAverageRealDouble *filter = manager->allocate(sizeof(MovingAverageRealDouble)); 
     if (filter == NULL) { 
         return NULL; 
     } 
-    
-    filter->previous_input = vector_new_real_double(length); 
+    filter->free = manager->deallocate;
+
+    filter->previous_input = vector_new_real_double(length, manager); 
     if (filter->previous_input == NULL) { 
-        free(filter); 
+        filter->free(filter); 
         return NULL; 
     } 
     
@@ -110,7 +120,7 @@ MovingAverageRealDouble *moving_average_make_real_double(size_t length) {
     return filter;
 }
 
-double complex moving_average_evaluate_real_double(
+double moving_average_evaluate_real_double(
     double input, 
     MovingAverageRealDouble *filter
 ) {
@@ -132,21 +142,24 @@ void moving_average_free_real_double(MovingAverageRealDouble *filter) {
     assert_not_null(filter); 
     
     vector_free_real_double(filter->previous_input); 
-    free(filter); 
+    filter->free(filter); 
 }
 
 
 
-MovingAverageRealFloat *moving_average_make_real_float(size_t length) {
-    MovingAverageRealFloat *filter = malloc(sizeof(MovingAverageRealFloat)); 
-    
+MovingAverageRealFloat *moving_average_make_real_float(
+    size_t length, 
+    const MemoryManager *manager
+) {
+    MovingAverageRealFloat *filter = manager->allocate(sizeof(MovingAverageRealFloat)); 
     if (filter == NULL) { 
         return NULL; 
     } 
-    
-    filter->previous_input = vector_new_real_float(length); 
+    filter->free = manager->deallocate;
+
+    filter->previous_input = vector_new_real_float(length, manager); 
     if (filter->previous_input == NULL) { 
-        free(filter); 
+        filter->free(filter); 
         return NULL; 
     } 
     
@@ -155,7 +168,7 @@ MovingAverageRealFloat *moving_average_make_real_float(size_t length) {
     return filter;
 }
 
-double complex moving_average_evaluate_real_float(
+float moving_average_evaluate_real_float(
     float input, 
     MovingAverageRealFloat *filter
 ) {
@@ -177,5 +190,5 @@ void moving_average_free_real_float(MovingAverageRealFloat *filter) {
     assert_not_null(filter); 
     
     vector_free_real_float(filter->previous_input); 
-    free(filter); 
+    filter->free(filter); 
 }

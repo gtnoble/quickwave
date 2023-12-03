@@ -7,6 +7,7 @@
 
 #include \"filter.h\"
 #include \"moving_average.h\"
+#include \"memory.h\"
 
 "
     (generate-text
@@ -29,6 +30,7 @@ typedef struct {
     ${moving-average-type} *intercept_estimator; /** Estimates the y-intercept of the linear fit */
     ${filter-type} *slope_estimator; /** Estimates the slope of the linear fit. This is a first-order, first-derivative Savitzky-Golay filterA. */
     ${number-type} intercept_x_offset; /** Number of samples estimator values are delayed. Used to adjust the returned fit to be relative to the most recent sample. */
+    Deallocator *free;
 } ${linear-estimator-type};
 
 /**
@@ -37,7 +39,10 @@ typedef struct {
  * @param window_length number of samples over which the fit is calculated
  * @return Running linear fit
  */
-${linear-estimator-type} *linear_estimator_new${function-tag}(size_t window_length);
+${linear-estimator-type} *linear_estimator_new${function-tag}(
+    size_t window_length, 
+    MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -51,9 +56,13 @@ void linear_estimator_free${function-tag}(${linear-estimator-type} *model);
  * Estimates the linear function model for the current sample.
  * @param input Current sample
  * @param estimator Running linear fit
- * @return Linear function parameters
+ * @param output_estimeate Linear function parameters output
  */
-${linear-model-type} linear_estimator_estimate${function-tag}(${number-type} input, ${linear-estimator-type} *estimator);
+void linear_estimator_estimate${function-tag}(
+    ${number-type} input, 
+    ${linear-model-type} *output_estimate,
+    ${linear-estimator-type} *estimator
+);
 
 /**
  * @brief 
@@ -62,7 +71,7 @@ ${linear-model-type} linear_estimator_estimate${function-tag}(${number-type} inp
  * @param model Linear function parameters
  * @return Predicted value 
  */
-${number-type} linear_model_predict${function-tag}(${number-type} x, ${linear-model-type} model);
+${number-type} linear_model_predict${function-tag}(${number-type} x, const ${linear-model-type} *model);
 
 ")
 

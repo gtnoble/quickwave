@@ -4,6 +4,7 @@
 
 #include "filter.h"
 #include "moving_average.h"
+#include "memory.h"
 
 
 /**
@@ -23,6 +24,7 @@ typedef struct {
     MovingAverageRealDouble *intercept_estimator; /** Estimates the y-intercept of the linear fit */
     DigitalFilterRealDouble *slope_estimator; /** Estimates the slope of the linear fit. This is a first-order, first-derivative Savitzky-Golay filterA. */
     double intercept_x_offset; /** Number of samples estimator values are delayed. Used to adjust the returned fit to be relative to the most recent sample. */
+    Deallocator *free;
 } LinearEstimatorDouble;
 
 /**
@@ -31,7 +33,10 @@ typedef struct {
  * @param window_length number of samples over which the fit is calculated
  * @return Running linear fit
  */
-LinearEstimatorDouble *linear_estimator_new_double(size_t window_length);
+LinearEstimatorDouble *linear_estimator_new_double(
+    size_t window_length, 
+    MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -45,9 +50,13 @@ void linear_estimator_free_double(LinearEstimatorDouble *model);
  * Estimates the linear function model for the current sample.
  * @param input Current sample
  * @param estimator Running linear fit
- * @return Linear function parameters
+ * @param output_estimeate Linear function parameters output
  */
-LinearModelDouble linear_estimator_estimate_double(double input, LinearEstimatorDouble *estimator);
+void linear_estimator_estimate_double(
+    double input, 
+    LinearModelDouble *output_estimate,
+    LinearEstimatorDouble *estimator
+);
 
 /**
  * @brief 
@@ -56,7 +65,7 @@ LinearModelDouble linear_estimator_estimate_double(double input, LinearEstimator
  * @param model Linear function parameters
  * @return Predicted value 
  */
-double linear_model_predict_double(double x, LinearModelDouble model);
+double linear_model_predict_double(double x, const LinearModelDouble *model);
 
 
 
@@ -78,6 +87,7 @@ typedef struct {
     MovingAverageRealFloat *intercept_estimator; /** Estimates the y-intercept of the linear fit */
     DigitalFilterRealFloat *slope_estimator; /** Estimates the slope of the linear fit. This is a first-order, first-derivative Savitzky-Golay filterA. */
     float intercept_x_offset; /** Number of samples estimator values are delayed. Used to adjust the returned fit to be relative to the most recent sample. */
+    Deallocator *free;
 } LinearEstimatorFloat;
 
 /**
@@ -86,7 +96,10 @@ typedef struct {
  * @param window_length number of samples over which the fit is calculated
  * @return Running linear fit
  */
-LinearEstimatorFloat *linear_estimator_new_float(size_t window_length);
+LinearEstimatorFloat *linear_estimator_new_float(
+    size_t window_length, 
+    MemoryManager *manager
+);
 
 /**
  * @brief 
@@ -100,9 +113,13 @@ void linear_estimator_free_float(LinearEstimatorFloat *model);
  * Estimates the linear function model for the current sample.
  * @param input Current sample
  * @param estimator Running linear fit
- * @return Linear function parameters
+ * @param output_estimeate Linear function parameters output
  */
-LinearModelFloat linear_estimator_estimate_float(float input, LinearEstimatorFloat *estimator);
+void linear_estimator_estimate_float(
+    float input, 
+    LinearModelFloat *output_estimate,
+    LinearEstimatorFloat *estimator
+);
 
 /**
  * @brief 
@@ -111,7 +128,7 @@ LinearModelFloat linear_estimator_estimate_float(float input, LinearEstimatorFlo
  * @param model Linear function parameters
  * @return Predicted value 
  */
-float linear_model_predict_float(float x, LinearModelFloat model);
+float linear_model_predict_float(float x, const LinearModelFloat *model);
 
 
 #endif

@@ -11,6 +11,7 @@
 #include \"filter.h\"
 #include \"oscillator.h\"
 #include \"pid.h\"
+#include \"memory.h\"
 
 
 "
@@ -27,6 +28,7 @@
 typedef struct {
     ${pid-type} loop_filter;
     ${oscillator-type} nco;
+    Deallocator *free;
 } ${pll-type};
 
 /**
@@ -37,9 +39,10 @@ typedef struct {
  * @param filter_context Context data to pass to loop filter when it is called. Can store filter state objects, etc.
  * @return Phase-locked loop
  */
-${pll-type} pll_make${function-tag}(
-    ${oscillator-type} vco_initial,
-    ${pid-type} loop_filter
+${pll-type} *pll_make${function-tag}(
+    const ${oscillator-type} *vco_initial,
+    const ${pid-type} *loop_filter,
+    const MemoryManager *manager
 );
 
 /**
@@ -47,9 +50,13 @@ ${pll-type} pll_make${function-tag}(
  * Evaluates a phase-locked loop (PLL)
  * @param input Next input signal value
  * @param pll PLL to evaluate
- * @return Numerically-controlled oscillator (NCO) state
+ * @poaram output Numerically-controlled oscillator (NCO) state
  */
-${oscillator-type} pll_evaluate${function-tag}(${number-type} input, ${pll-type} *pll);
+void pll_evaluate${function-tag}(
+    ${number-type} input, 
+    ${oscillator-type} *output,
+    ${pll-type} *pll
+);
 
 /**
  * @brief 
@@ -59,6 +66,8 @@ ${oscillator-type} pll_evaluate${function-tag}(${number-type} input, ${pll-type}
  */
 void pll_reset${function-tag}(${oscillator-type} vco_initial, ${pll-type} *pll);
 
+void pll_free${function-tag}(${pll-type} *pll);
+
 /**
  * @brief 
  * Creates a type 2 PLL loop filter
@@ -66,7 +75,10 @@ void pll_reset${function-tag}(${oscillator-type} vco_initial, ${pll-type} *pll);
  * @param damping_coefficient Damping coefficient
  * @return loop filter
  */
-${pid-type} pll_loop_filter_make${function-tag}(${number-type} noise_bandwidth, ${number-type} damping_coefficient);
+${pid-type} *pll_loop_filter_make${function-tag}(
+    ${number-type} noise_bandwidth, 
+    ${number-type} damping_coefficient,
+    const MemoryManager *manager);
 
 ")
 

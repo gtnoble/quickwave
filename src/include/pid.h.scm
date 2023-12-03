@@ -6,6 +6,8 @@
 #ifndef QUICKWAVE_PID
 #define QUICKWAVE_PID
 
+#include \"memory.h\"
+
 "
     (generate-text
         pid-schema
@@ -20,6 +22,7 @@ typedef struct {
     ${number-type} proportional_gain; /** Gain for the proportional term of PID */
     ${number-type} integral_gain; /** Gain for the integral term of the PID */
     ${number-type} derivative_gain; /** Gain for the derivative term of the PID */
+    Deallocator *free;
 } ${pid-type};
 
 /**
@@ -30,10 +33,11 @@ typedef struct {
  * @param derivative_gain Derivative gain
  * @return Constructed controller
  */
-${pid-type} pid_make${function-tag}(
+${pid-type} *pid_make${function-tag}(
     ${number-type} proportional_gain, 
     ${number-type} integral_gain, 
-    ${number-type} derivative_gain
+    ${number-type} derivative_gain,
+    const MemoryManager *manager
 );
 
 /**
@@ -51,6 +55,8 @@ void pid_reset${function-tag}(${pid-type} *pid);
  * @return control value
  */
 ${number-type} pid_evaluate${function-tag}(${number-type} input, ${pid-type} *pid);
+
+void pid_free${function-tag}(${pid-type} *pid);
 ")
 
 "
