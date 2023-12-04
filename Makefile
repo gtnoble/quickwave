@@ -2,7 +2,16 @@ CFLAGS=-g -Wall -Wpedantic -Wextra -Werror -std=c11 -I${INCLUDE_DIR} -I${FFT_INC
 
 LIB_SOURCE_DIR=src/lib
 LIB_SOURCE=${wildcard ${LIB_SOURCE_DIR}/*.c}
-LIB_OBJECTS=$(patsubst %.c,%.o,${LIB_SOURCE})
+
+LIB_STATIC_OBJECT_DIR=lib/static
+LIB_STATIC_OBJECTS=$(patsubst ${LIB_SOURCE_DIR}/%.c,${LIB_STATIC_OBJECT_DIR}/%.o,${LIB_SOURCE})
+STATIC_LIBRARY=${LIB_STATIC_OBJECT_DIR}/libquickwave.a
+
+LIB_DYNAMIC_OBJECT_DIR=lib/shared
+LIB_DYNAMIC_OBJECTS=$(patsubst ${LIB_SOURCE_DIR}/%.c,${LIB_DYNAMIC_OBJECT_DIR}/%.o,${LIB_SOURCE})
+DYNAMIC_CFLAGS=${CFLAGS} -fPIC
+DYNAMIC_LIBRARY=${LIB_DYNAMIC_OBJECT_DIR}/libquickwave.so
+
 INCLUDE_DIR=include
 INCLUDE_SOURCE_DIR=src/include
 
@@ -19,22 +28,32 @@ HEADER_SOURCE_DIR=src/include
 HEADER_SOURCE=$(wildcard ${HEADER_SOURCE_DIR}/*.h.scm)
 GENERATED_HEADERS=$(patsubst ${HEADER_SOURCE_DIR}/%.h.scm,${INCLUDE_DIR}/%.h,${HEADER_SOURCE})
 
-lib/libquickwave.a: ${LIB_OBJECTS} ${FFT_BIN_DIR}/ooura_fft.o
+.PHONY: all
+all: ${LIB_STATIC_OBJECT_DIR}/libquickwave.a ${LIB_DYNAMIC_OBJECT_DIR}/libquickwave.so
+
+# Static library
+
+${STATIC_LIBRARY}: ${LIB_STATIC_OBJECTS} ${LIB_STATIC_OBJECT_DIR}/ooura_fft.o
 	ar rcs $@ $^
 
-tests/test_%: ${TEST_SOURCE_DIR}/%.test.o lib/libquickwave.a ext/munit/munit.o 
-	$(CC) $(CFLAGS) $^ -lm -o $@
-
-${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
-	$(CC) $(CFLAGS) -c -Iext/munit $< -o $@
-
-${LIB_SOURCE_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h ${GENERATED_HEADERS}
+${LIB_STATIC_OBJECT_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h ${GENERATED_HEADERS}
 	$(CC) $(CFLAGS) -c $< -o $@
 
-ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
+${LIB_STATIC_OBJECT_DIR}/ooura_fft.o: ${FFT_SOURCE_DIR}/fft4g.c ${FFT_INCLUDE_DIR}/fftg.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-#Code generation
+# Dynamic library
+
+${DYNAMIC_LIBRARY}: ${LIB_DYNAMIC_OBJECTS} ${LIB_DYNAMIC_OBJECT_DIR}/ooura_fft.o
+	$(CC) -shared $^ -o $@
+
+${LIB_DYNAMIC_OBJECT_DIR}/%.o: ${LIB_SOURCE_DIR}/%.c ${INCLUDE_DIR}/%.h ${GENERATED_HEADERS}
+	$(CC) $(DYNAMIC_CFLAGS) -c $< -o $@
+
+${LIB_DYNAMIC_OBJECT_DIR}/ooura_fft.o: ${FFT_SOURCE_DIR}/fft4g.c ${FFT_INCLUDE_DIR}/fftg.h
+	$(CC) $(DYNAMIC_CFLAGS) -c $< -o $@
+
+# Code generation
 
 ${FFT_INCLUDE_DIR}/%.h: ${FFT_INCLUDE_DIR}/%.h.scm ${CODE_GENERATION_DEPENDENCIES}
 	guile -s $< > $@
@@ -42,14 +61,24 @@ ${FFT_INCLUDE_DIR}/%.h: ${FFT_INCLUDE_DIR}/%.h.scm ${CODE_GENERATION_DEPENDENCIE
 ${FFT_SOURCE_DIR}/%.c: ${FFT_SOURCE_DIR}/%.c.scm ${CODE_GENERATION_DEPENDENCIES}
 	guile -s $< > $@
 
-${FFT_BIN_DIR}/ooura_fft.o: ${FFT_SOURCE_DIR}/fft4g.c ${FFT_INCLUDE_DIR}/fftg.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
 ${LIB_SOURCE_DIR}/%.c: ${LIB_SOURCE_DIR}/%.c.scm ${CODE_GENERATION_DEPENDENCIES}
 	guile -s $< > $@
 
 ${INCLUDE_DIR}/%.h: ${INCLUDE_SOURCE_DIR}/%.h.scm ${CODE_GENERATION_DEPENDENCIES}
 	guile -s $< > $@
+
+# Tests
+
+ext/munit/munit.o: ext/munit/munit.c ext/munit/munit.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
+tests/test_%: ${TEST_SOURCE_DIR}/%.test.o lib/libquickwave.a ext/munit/munit.o 
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
+${TEST_SOURCE_DIR}/%.o: ${TEST_SOURCE_DIR}/%.c ${TEST_SOURCE_DIR}/test.h
+	$(CC) $(CFLAGS) -c -Iext/munit $< -o $@
+
 
 tests/iq.csv tests/const_freq.csv tests/sweep.csv &: tests/test_pll
 	./tests/test_pll
@@ -77,14 +106,15 @@ headers: ${GENERATED_HEADERS}
 
 .PHONY: install
 install: lib/libquickwave.a headers
-	cp lib/* /usr/local/lib
+	cp ${STATIC_LIBRARY} /usr/local/lib
+	cp ${DYNAMIC_LIBRARY} /usr/local/lib
+	ldconfig /usr/local/lib
 	mkdir -p /usr/local/include/quickwave
 	cp include/* /usr/local/include/quickwave
 
 .PHONY: clean
 clean:
 	rm -rf tests/*
-	rm -rf bin/*
-	rm -rf lib/*
-	rm -rf src/lib/*.o
+	rm -f ${LIB_STATIC_OBJECT_DIR}
+	rm -f ${LIB_DYNAMIC_OBJECT_DIR}
 	rm -rf src/test/*.o
